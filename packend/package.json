@@ -38,7 +38,9 @@
     "sib-api-v3-sdk": "^8.5.0"
   },
   "devDependencies": {
+    "@types/node": "^25.3.5",
     "@types/pg": "^8.18.0",
+    "nodemon": "^3.1.14",
     "prisma": "^7.4.2"
   }
 }
