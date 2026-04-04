@@ -1,6 +1,6 @@
 import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import pool from './db.js';
+import prisma from '../lib/prisma.ts';
 
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -10,15 +10,13 @@ const opts = {
 passport.use(
   new JwtStrategy(opts, async (jwt_payload, done) => {
     try {
-      const result = await pool.query(
-        'SELECT id_user, email, is_verified FROM project02.users WHERE id_user=$1',
-        [jwt_payload.id]
-      );
+      const user = await prisma.users.findUnique({
+        where: { id_user: jwt_payload.id },
+      });
 
-      if (result.rows.length > 0) {
-        const user = result.rows[0];
-        if (user.is_verified) {
-          return done(null, { id_user: user.id_user, email: user.email });
+      if (user) {
+        if (user.is_active) {
+          return done(null, { id_user: user.id_user, email: user.email, username: user.username, role: user.role });
         } else {
           return done(null, false, { message: 'User not verified' });
         }

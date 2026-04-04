@@ -1,4 +1,5 @@
 import express from 'express';
+import passport from 'passport';
 import validate from '../middleware/validate.js';
 import {
   authSchema,
@@ -14,10 +15,11 @@ import {
   forgotPassword,
   resetPassword,
   resendVerificationCode,
+
 } from '../controllers/auth.controller.js';
 import authLimiter from '../config/rateLimit.js';
 
-import passport from 'passport';
+
 import '../config/passport.js';
 
 const router = express.Router();
@@ -37,5 +39,7 @@ router.patch(
 
 router.post('/logout', logout);
 router.post('/token', token);
+
+
 
 export default router;

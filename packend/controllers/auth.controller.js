@@ -108,6 +108,7 @@ export const resendVerificationCode = async (req, res) => {
     return res.status(500).json(error);
   }
 };
+
 export const verify = async (req, res) => {
   const { email, code } = req.body;
 
@@ -123,7 +124,7 @@ export const verify = async (req, res) => {
     }
 
     const result = await prisma.users.update({
-      data: { is_verified: true },
+      data: { is_active: true, role: "user" },
       where: {
         email,
       },
@@ -157,13 +158,14 @@ export const verify = async (req, res) => {
       accessToken: accessToken,
     });
   } catch (error) {
+    console.log("❌ Error in verify:", error);
     return res.status(500).json(error);
   }
 };
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
-
+console.log("this is the email and password : ",email, password);
   try {
     const userExists = await prisma.users.findFirst({
       where: {
@@ -179,7 +181,7 @@ export const login = async (req, res) => {
     if (!validPassword) {
       return res.status(404).json({ error: "password or Email is not exist" });
     }
-    if (!user.is_verified) {
+    if (!user.is_active) {
       return res.status(403).json({ error: "Email not verified" });
     }
     const payload = {
@@ -191,13 +193,21 @@ export const login = async (req, res) => {
     const refreshToken = generateRefreshToken(payload);
     setRefreshCookie(res, refreshToken);
 
-    isDevelopment
+if(user.role === "admin"){
+     console.log(
+          `🎉 Welcome again Admin : ${email} and his token ${accessToken}`,
+        );
+}
+  else{isDevelopment
       ? await sendWelcomeEmail(email, user.username)
       : console.log(
           `🎉 Welcome again email : ${email} and his token ${accessToken}`,
-        );
+        );}  
 
-    res.status(201).json({ accessToken, id: user.id_user });
+
+   return res.status(201).json({ accessToken, id: user.id_user });
+
+
   } catch (error) {
     process.env.NODE_ENV === "development" &&
       console.log("❌ Error in login:", error);
@@ -227,10 +237,6 @@ export const token = (req, res) => {
   });
 };
 
-export const logout = (req, res) => {
-  clearRefreshCookie(res);
-  res.json({ message: "Logged out" });
-};
 
 export const forgotPassword = async (req, res) => {
   const email = req.body.email;
@@ -293,3 +299,10 @@ export const resetPassword = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+
+export const logout = (req, res) => {
+  clearRefreshCookie(res);
+  res.json({ message: "Logged out" });
+};
+

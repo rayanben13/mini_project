@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -8,13 +7,17 @@ datasource db {
 }
 
 model daily_reminders {
-  id            Int       @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   id_user       Int?
-  id_file       Int?
-  reminder_time DateTime? @db.Time(6)
-  created_at    DateTime? @default(now()) @db.Timestamp(6)
-  files         files?    @relation(fields: [id_file], references: [id_file], onDelete: Cascade, onUpdate: NoAction)
-  users         users?    @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
+  id_stuList    Int?
+  reminder_time DateTime?    @db.Time(6)
+  created_at    DateTime?    @default(now()) @db.Timestamp(6)
+  study_lists   study_lists? @relation(fields: [id_stuList], references: [id_stuList], onDelete: Cascade, onUpdate: NoAction)
+  users         users?       @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([id_stuList], map: "idx_reminders_list")
+  @@index([reminder_time], map: "idx_reminders_time")
+  @@index([id_user], map: "idx_reminders_user")
 }
 
 model file_reports {
@@ -22,9 +25,16 @@ model file_reports {
   id_user    Int?
   id_file    Int?
   reason     String
+  details    String?
+  status     String?   @default("pending") @db.VarChar
+  handled_at DateTime? @db.Timestamp(6)
   created_at DateTime? @default(now()) @db.Timestamp(6)
   files      files?    @relation(fields: [id_file], references: [id_file], onDelete: Cascade, onUpdate: NoAction)
   users      users?    @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([id_file], map: "idx_reports_file")
+  @@index([status], map: "idx_reports_status")
+  @@index([id_user], map: "idx_reports_user")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -38,8 +48,8 @@ model files {
   file_hash        String             @db.VarChar
   type             String             @db.VarChar
   status           String?            @default("pending") @db.VarChar
+  approved_at      DateTime?          @db.Timestamp(6)
   created_at       DateTime?          @default(now()) @db.Timestamp(6)
-  daily_reminders  daily_reminders[]
   file_reports     file_reports[]
   subjects         subjects           @relation(fields: [id_subject], references: [id_subject], onDelete: Cascade, onUpdate: NoAction)
   users            users              @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
@@ -48,6 +58,10 @@ model files {
 
   @@index([id_subject], map: "idx_files_subject")
   @@index([id_user], map: "idx_files_user")
+  @@index([creation_year], map: "idx_files_creation_year")
+  @@index([file_hash], map: "idx_files_hash")
+  @@index([status], map: "idx_files_status")
+  @@index([type], map: "idx_files_type")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -59,7 +73,8 @@ model follows {
   users_follows_following_idTousers users     @relation("follows_following_idTousers", fields: [following_id], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([follower_id, following_id])
-  @@index([follower_id], map: "idx_following")
+  @@index([follower_id], map: "idx_follows_follower")
+  @@index([following_id], map: "idx_follows_following")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -67,16 +82,17 @@ model interaction {
   id          Int          @id @default(autoincrement())
   id_user     Int?
   id_file     Int?
-  id_stulist  Int?
+  id_stuList  Int?
   type        String?      @db.VarChar
   created_at  DateTime?    @default(now()) @db.Timestamp(6)
   files       files?       @relation(fields: [id_file], references: [id_file], onDelete: Cascade, onUpdate: NoAction)
-  study_lists study_lists? @relation(fields: [id_stulist], references: [id_stulist], onDelete: Cascade, onUpdate: NoAction)
+  study_lists study_lists? @relation(fields: [id_stuList], references: [id_stuList], onDelete: Cascade, onUpdate: NoAction)
   users       users?       @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([id_user, id_file])
-  @@unique([id_user, id_stulist])
   @@index([id_file], map: "idx_interaction_file")
+  @@index([id_stuList], map: "idx_interaction_list")
+  @@index([type], map: "idx_interaction_type")
+  @@index([id_user], map: "idx_interaction_user")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -91,27 +107,40 @@ model notifications {
   users           users?    @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([id_user], map: "idx_notifications_user")
+  @@index([is_read], map: "idx_notifications_read")
+  @@index([related_type], map: "idx_notifications_type")
 }
 
 model study_list_files {
-  id_stulist  Int
+  id_stuList  Int
   id_file     Int
   files       files       @relation(fields: [id_file], references: [id_file], onDelete: Cascade, onUpdate: NoAction)
-  study_lists study_lists @relation(fields: [id_stulist], references: [id_stulist], onDelete: Cascade, onUpdate: NoAction)
+  study_lists study_lists @relation(fields: [id_stuList], references: [id_stuList], onDelete: Cascade, onUpdate: NoAction)
 
-  @@id([id_stulist, id_file])
+  @@id([id_stuList, id_file])
+  @@index([id_file], map: "idx_sl_files_file")
+  @@index([id_stuList], map: "idx_sl_files_list")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model study_lists {
-  id_stulist       Int                @id @default(autoincrement())
-  id_user          Int
-  name             String             @db.VarChar
-  privacy          String?            @default("public") @db.VarChar
-  created_at       DateTime?          @default(now()) @db.Timestamp(6)
-  interaction      interaction[]
-  study_list_files study_list_files[]
-  users            users              @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
+  id_stuList        Int                 @id @default(autoincrement())
+  id_user           Int
+  id_subject        Int
+  name              String              @db.VarChar
+  description       String              @db.VarChar
+  privacy           String?             @default("public") @db.VarChar
+  created_at        DateTime?           @default(now()) @db.Timestamp(6)
+  daily_reminders   daily_reminders[]
+  interaction       interaction[]
+  saved_study_lists saved_study_lists[]
+  study_list_files  study_list_files[]
+  subjects          subjects            @relation(fields: [id_subject], references: [id_subject], onDelete: Cascade, onUpdate: NoAction)
+  users             users               @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([privacy], map: "idx_study_lists_privacy")
+  @@index([id_subject], map: "idx_study_lists_subject")
+  @@index([id_user], map: "idx_study_lists_user")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -124,9 +153,13 @@ model subjects {
   course         String        @db.VarChar
   created_at     DateTime?     @default(now()) @db.Timestamp(6)
   files          files[]
+  study_lists    study_lists[]
   universities   universities? @relation(fields: [id_university], references: [id_university], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([id_university, academic_year, major, specialization, course])
+  @@index([course], map: "idx_subjects_course")
+  @@index([major], map: "idx_subjects_major")
+  @@index([id_university], map: "idx_subjects_university")
+  @@index([academic_year], map: "idx_subjects_year")
 }
 
 model universities {
@@ -136,11 +169,14 @@ model universities {
   created_at       DateTime?          @default(now()) @db.Timestamp(6)
   subjects         subjects[]
   user_information user_information[]
+
+  @@index([name], map: "idx_universities_name")
 }
 
 model university_majors {
-  id_m           Int       @id @default(autoincrement())
+  id_M           Int       @id @default(autoincrement())
   major          String?   @db.VarChar
+  academic_year  String    @db.VarChar
   specialization String?   @db.VarChar
   course         String?   @db.VarChar
   created_at     DateTime? @default(now()) @db.Timestamp(6)
@@ -150,33 +186,54 @@ model university_majors {
 model user_information {
   id_user        Int          @id
   id_university  Int
-  academic_year  String       @db.VarChar
   major          String       @db.VarChar
+  academic_year  String       @db.VarChar
   specialization String?      @db.VarChar
   created_at     DateTime?    @default(now()) @db.Timestamp(6)
   universities   universities @relation(fields: [id_university], references: [id_university], onDelete: Cascade, onUpdate: NoAction)
   users          users        @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([major], map: "idx_user_information_major")
+  @@index([id_university], map: "idx_user_information_university")
+  @@index([academic_year], map: "idx_user_information_year")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model users {
-  id_user                             Int               @id @default(autoincrement())
-  username                            String            @unique @db.VarChar
-  fullname                            String            @db.VarChar
+  id_user                             Int                 @id @default(autoincrement())
+  username                            String              @unique @db.VarChar
+  fullname                            String              @db.VarChar
   img_user                            String?
-  email                               String            @unique @db.VarChar
-  password                            String            @db.VarChar
-  is_active                           Boolean?          @default(false)
-  role                                String?           @default("guest") @db.VarChar
-  level                               Int?              @default(1)
-  created_at                          DateTime?         @default(now()) @db.Timestamp(6)
+  email                               String              @unique @db.VarChar
+  password                            String              @db.VarChar
+  is_active                           Boolean?            @default(false)
+  role                                String?             @default("guest") @db.VarChar
+  level                               Int?                @default(1)
+  created_at                          DateTime?           @default(now()) @db.Timestamp(6)
   daily_reminders                     daily_reminders[]
   file_reports                        file_reports[]
   files                               files[]
-  follows_follows_follower_idTousers  follows[]         @relation("follows_follower_idTousers")
-  follows_follows_following_idTousers follows[]         @relation("follows_following_idTousers")
+  follows_follows_follower_idTousers  follows[]           @relation("follows_follower_idTousers")
+  follows_follows_following_idTousers follows[]           @relation("follows_following_idTousers")
   interaction                         interaction[]
   notifications                       notifications[]
+  saved_study_lists                   saved_study_lists[]
   study_lists                         study_lists[]
   user_information                    user_information?
+
+  @@index([email], map: "idx_users_email")
+  @@index([role], map: "idx_users_role")
+  @@index([username], map: "idx_users_username")
+}
+
+model saved_study_lists {
+  id_user     Int
+  id_stuList  Int
+  created_at  DateTime?   @default(now()) @db.Timestamp(6)
+  study_lists study_lists @relation(fields: [id_stuList], references: [id_stuList], onDelete: Cascade, onUpdate: NoAction)
+  users       users       @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([id_user, id_stuList])
+  @@index([id_stuList], map: "idx_saved_list")
+  @@index([id_user], map: "idx_saved_user")
 }
