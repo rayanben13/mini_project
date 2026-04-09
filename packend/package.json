@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "set NODE_ENV=development && nodemon server.js",
+    "dev": "set NODE_ENV=development && start http://localhost:5000/api-docs && nodemon server.js",
     "start": "set NODE_ENV=production && node server.js"
   },
   "type": "module",
@@ -35,7 +35,10 @@
     "passport-jwt": "^4.0.1",
     "pg": "^8.20.0",
     "relative-time-format": "^1.1.12",
-    "sib-api-v3-sdk": "^8.5.0"
+    "sib-api-v3-sdk": "^8.5.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@types/node": "^25.3.5",

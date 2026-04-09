@@ -1,10 +1,11 @@
 import express from 'express';
-import passport from 'passport';
+
 import validate from '../middleware/validate.js';
 import {
   authSchema,
   shemaPassword,
   schemaEmail,
+  schemaUserInformation,
 } from '../schemas/auth.schema.js';
 import {
   register,
@@ -15,12 +16,14 @@ import {
   forgotPassword,
   resetPassword,
   resendVerificationCode,
-
+  SharchMoreInformation,
+  addedUserInformation,
+  MyInformation,
 } from '../controllers/auth.controller.js';
 import authLimiter from '../config/rateLimit.js';
 
-
 import '../config/passport.js';
+import passport from 'passport';
 
 const router = express.Router();
 
@@ -39,7 +42,16 @@ router.patch(
 
 router.post('/logout', logout);
 router.post('/token', token);
-
-
-
+router.get('/SharchMoreInformation', SharchMoreInformation);
+router.post(
+  '/addedUserInformation',
+  validate(schemaUserInformation),
+  passport.authenticate('jwt', { session: false }),
+  addedUserInformation
+);
+router.get(
+  '/MyInformation',
+  passport.authenticate('jwt', { session: false }),
+  MyInformation
+);
 export default router;

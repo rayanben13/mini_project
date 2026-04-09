@@ -12,6 +12,10 @@ import passport from 'passport';
 import './config/passport.js';
 
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+
+import YAML from 'yamljs';
+
 dotenv.config();
 
 const app = express();
@@ -19,6 +23,9 @@ const app = express();
 app.use(helmet());
 console.log('this is the mode :', process.env.NODE_ENV);
 app.use(Cors);
+
+const swaggerDocument = YAML.load('./swagger/authSwagger.yaml');
+
 if (process.env.NODE_ENV === 'production') {
   app.use(httpsRedirect);
 }
@@ -29,6 +36,8 @@ app.use(cookieParser());
 app.use(passport.initialize());
 
 app.use('/api/auth', authRouter);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const port = process.env.PORT;
 
