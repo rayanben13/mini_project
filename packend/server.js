@@ -26,7 +26,7 @@ app.use(Cors);
 
 const swaggerDocument = YAML.load('./swagger/authSwagger.yaml');
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV.trim() === 'production') {
   app.use(httpsRedirect);
 }
 
