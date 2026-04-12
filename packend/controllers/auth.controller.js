@@ -314,7 +314,7 @@ export const SharchMoreInformation = async (req, res) => {
       universities = universities.slice(0, 4);
       return res.status(200).json({ universities });
     } else if (mode == 'major') {
-      const majors = await prisma.university_majors.findMany({
+      let majors = await prisma.university_majors.findMany({
         where: {
           major: {
             contains: name,
@@ -330,7 +330,7 @@ export const SharchMoreInformation = async (req, res) => {
       if (majors.length === 0) {
         return res.status(404).json({ message: 'No results found' });
       }
-
+      majors = majors.map((item) => item.major);
       return res.status(200).json({ majors });
     } else if (mode == 'Spercialty') {
       const year = req.query.year?.trim();
@@ -338,7 +338,7 @@ export const SharchMoreInformation = async (req, res) => {
       if (!year || !major) {
         return res.status(400).json({ message: 'enter year and major' });
       }
-      const Spercialty = await prisma.university_majors.findMany({
+      let Spercialty = await prisma.university_majors.findMany({
         where: {
           specialization: {
             contains: name,
@@ -356,8 +356,45 @@ export const SharchMoreInformation = async (req, res) => {
       if (Spercialty.length === 0 || Spercialty === null) {
         return res.status(404).json({ message: 'No results found' });
       }
+      Spercialty = Spercialty.map((item) => item.specialization);
       return res.status(200).json({ Spercialty });
+    } else if (mode == 'subject') {
+      const year = req.query.year?.trim();
+      const major = req.query.major?.trim();
+
+      const yearAllowed = ['L1', 'L2', 'L3'];
+      let specialization = null;
+
+      if (!yearAllowed.includes(year)) {
+        specialization = req.query.specialization?.trim();
+      }
+
+      if (!year || !major) {
+        return res.status(400).json({ message: 'enter year and major' });
+      }
+      let subject = await prisma.university_majors.findMany({
+        where: {
+          course: {
+            contains: name,
+            mode: 'insensitive',
+          },
+          specialization: specialization,
+          academic_year: year,
+          major: major,
+        },
+        select: {
+          course: true,
+        },
+        distinct: ['course'],
+        take: 4,
+      });
+      if (subject.length === 0) {
+        return res.status(404).json({ message: 'No results found' });
+      }
+      subject = subject.map((item) => item.course);
+      return res.status(200).json({ subject });
     }
+
     return res.status(400).json({ message: 'choix you Mode' });
   } catch (err) {
     console.log(err);
@@ -415,33 +452,6 @@ export const addedUserInformation = async (req, res) => {
     return res
       .status(200)
       .json({ message: 'information is added', user_information });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: 'Server error' });
-  }
-};
-
-export const MyInformation = async (req, res) => {
-  try {
-    const user = req.user;
-
-    const result = await prisma.users.findFirst({
-      where: {
-        id_user: user.id_user,
-      },
-      select: {
-        username: true,
-        fullname: true,
-        img_user: true,
-        email: true,
-        role: true,
-        user_information: true,
-      },
-    });
-    if (!result) {
-      return res.status(404).json({ message: 'information is not exist' });
-    }
-    return res.status(200).json({ result });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: 'Server error' });

@@ -18,7 +18,6 @@ import {
   resendVerificationCode,
   SharchMoreInformation,
   addedUserInformation,
-  MyInformation,
 } from '../controllers/auth.controller.js';
 import authLimiter from '../config/rateLimit.js';
 
@@ -48,10 +47,5 @@ router.post(
   validate(schemaUserInformation),
   passport.authenticate('jwt', { session: false }),
   addedUserInformation
-);
-router.get(
-  '/MyInformation',
-  passport.authenticate('jwt', { session: false }),
-  MyInformation
 );
 export default router;

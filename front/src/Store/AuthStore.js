@@ -171,13 +171,20 @@ const AuthStore = create((set) => ({
     }
   },
 
-  searchMoreInformation: async ({ mode, name, year, major }) => {
+  searchMoreInformation: async ({
+    mode,
+    name,
+    year,
+    major,
+    specialization,
+  }) => {
     try {
       set({ loading: true });
 
       const params = { mode, name };
       if (year) params.year = year;
       if (major) params.major = major;
+      if (specialization) params.specialization = specialization;
 
       const response = await axios.get(`${API_URL}/SharchMoreInformation`, {
         params,
@@ -217,34 +224,6 @@ const AuthStore = create((set) => ({
     } catch (error) {
       console.error(
         'Save info error:',
-        error.response?.data?.error || error.response?.data?.message
-      );
-
-      return {
-        success: false,
-        message:
-          error.response?.data?.error ||
-          error.response?.data?.message ||
-          'Server error',
-      };
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  getMyInformation: async () => {
-    try {
-      set({ loading: true });
-      const { token } = AuthStore.getState().user;
-
-      const response = await axios.get(`${API_URL}/MyInformation`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      return { success: true, data: response.data };
-    } catch (error) {
-      console.error(
-        'Get info error:',
         error.response?.data?.error || error.response?.data?.message
       );
 

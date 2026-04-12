@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "set NODE_ENV=development && start http://localhost:5000/api-docs && nodemon server.js",
+    "dev": "set NODE_ENV=development && start http://localhost:5000/api-docs && nodemon -e js,yaml server.js",
     "start": "set NODE_ENV=production && node server.js"
   },
   "type": "module",
