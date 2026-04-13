@@ -1,0 +1,431 @@
+openapi: 3.0.0
+info:
+  title: Mini Project API
+  description: API endpoints for Mini Project.
+  version: 1.0.0
+tags:
+  - name: Auth
+    description: Authentication and identity management
+  - name: User
+    description: User profile and information management
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - username
+        - fullname
+      properties:
+        email:
+          type: string
+          format: email
+          example: 'ilyesdevelops@example.com'
+        password:
+          type: string
+          format: password
+          example: 'StrongPass123!'
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: 'ilyes123'
+        fullname:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: 'Ilyes Developer'
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: 'ilyesdevelops@example.com'
+        password:
+          type: string
+          format: password
+          example: 'StrongPass123!'
+
+    EmailRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: 'ilyesdevelops@example.com'
+
+    VerifyRequest:
+      type: object
+      required:
+        - email
+        - code
+      properties:
+        email:
+          type: string
+          format: email
+          example: 'ilyesdevelops@example.com'
+        code:
+          type: string
+          description: Verification code sent to email
+          example: '123456'
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: 'ilyesdevelops@example.com'
+        password:
+          type: string
+          format: password
+          example: 'NewStrongPass123!'
+
+    UserInformationRequest:
+      type: object
+      required:
+        - univ
+        - major
+        - spercialty
+        - academic_year
+      properties:
+        univ:
+          type: string
+          example: "Université d'Alger"
+        major:
+          type: string
+          example: 'Computer Science'
+        spercialty:
+          type: string
+          example: 'Software Engineering'
+        academic_year:
+          type: string
+          example: 'L3'
+
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      description: Creates a new user and sends a verification code to their email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Verification code sent successfully
+          content:
+            application/json:
+              example:
+                message: 'Verification code sent to email'
+                email: 'ilyesdevelops@example.com'
+        '404':
+          description: Email or username already exists
+          content:
+            application/json:
+              example:
+                error: 'Email or user name is exist '
+        '500':
+          description: Server error
+
+  /api/auth/resendVerificationCode:
+    post:
+      tags:
+        - Auth
+      summary: Resend Verification Code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              example:
+                message: 'New verification code sent to your email'
+        '404':
+          description: Email does not exist
+          content:
+            application/json:
+              example:
+                error: 'Email is NOT exist '
+
+  /api/auth/verify:
+    post:
+      tags:
+        - Auth
+      summary: Verify Email Code
+      description: Verifies the email address using the confirmation code. Returns access token (refresh token in HttpOnly cookie).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
+      responses:
+        '200':
+          description: Verified successfully
+          content:
+            application/json:
+              example:
+                message: 'Email verified successfully'
+                accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        '400':
+          description: Invalid or expired code
+          content:
+            application/json:
+              example:
+                message: 'Invalid code'
+
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login user
+      description: Authenticates user and returns an access token. Refresh token is set in cookies.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '201':
+          description: Successfully logged in
+          content:
+            application/json:
+              example:
+                accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        '403':
+          description: Email not verified
+          content:
+            application/json:
+              example:
+                error: 'Email not verified'
+        '404':
+          description: Invalid credentials
+          content:
+            application/json:
+              example:
+                error: 'password or Email is not exist'
+
+  /api/auth/forgotPassword:
+    post:
+      tags:
+        - Auth
+      summary: Forgot Password
+      description: Sends a password reset link to the provided email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+      responses:
+        '200':
+          description: Password reset link sent successfully
+          content:
+            application/json:
+              example:
+                message: 'Password reset link sent to your email'
+        '404':
+          description: Email does not exist
+
+  /api/auth/resetPassword/{resetTokenURL}:
+    patch:
+      tags:
+        - Auth
+      summary: Reset Password
+      description: Resets user's password using the token received via email.
+      parameters:
+        - name: resetTokenURL
+          in: path
+          required: true
+          example: 'a1b2c3d4e5f6g7h8'
+          schema:
+            type: string
+          description: The password reset token from the URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              example:
+                message: 'Update password is done'
+        '400':
+          description: Invalid or expired reset token
+          content:
+            application/json:
+              example:
+                message: 'Invalid or expired reset token'
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Logout user
+      description: Clears the refresh token cookie.
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              example:
+                message: 'Logged out'
+
+  /api/auth/token:
+    post:
+      tags:
+        - Auth
+      summary: Refresh Access Token
+      description: Generates a new access token using the refresh token from cookies. Note that you don't need body, relies on the `refreshToken` HttpOnly cookie!
+      responses:
+        '200':
+          description: Successfully refreshed token
+          content:
+            application/json:
+              example:
+                accessToken: 'eyJhbGciOiJIUzI...NewToken'
+        '401':
+          description: No refresh token (Not logged in)
+          content:
+            application/json:
+              example:
+                error: 'No refresh token'
+
+  /api/auth/SharchMoreInformation:
+    get:
+      tags:
+        - Auth
+      summary: Search University/Major Information
+      description: Search universities, majors, or specialties.
+      parameters:
+        - name: mode
+          in: query
+          required: true
+          example: 'univ'
+          schema:
+            type: string
+            enum: [univ, major, Spercialty, subject]
+          description: 'Search mode ("univ", "major", "Spercialty", "subject")'
+        - name: name
+          in: query
+          required: true
+          example: 'Alger'
+          schema:
+            type: string
+          description: Search query
+        - name: year
+          in: query
+          example: 'L3'
+          schema:
+            type: string
+          description: Academic year (required if mode is Spercialty)
+        - name: major
+          in: query
+          example: 'Computer Science'
+          schema:
+            type: string
+          description: Major name (required if mode is Spercialty or subject)
+        - name: specialization
+          in: query
+          example: 'Software Engineering'
+          schema:
+            type: string
+          description: Specialization name (required if mode is subject and year is not L1, L2, L3)
+      responses:
+        '200':
+          description: Search results successfully fetched
+          content:
+            application/json:
+              example:
+                universities:
+                  - "Université M'hamed Bouguerra de Boumerdes"
+                  - "Université Mentouri Constantine"
+                  - "Université Mouloud Mammeri de Tizi Ouzou"
+                  - "Université Abou Bekr Belkaid, Tlemcen"
+                majors:
+                  - 'Computer Science'
+                  - 'Data Science'
+                Spercialty:
+                  - 'SOFTWARE ENGINEERING'
+                  - 'ARTIFICIAL INTELLIGENCE'
+                subject:
+                  - 'Mathematics'
+                  - 'Algorithmics'
+        '400':
+          description: Missing parameters
+          content:
+            application/json:
+              example:
+                message: 'choix you Mode and name'
+        '404':
+          description: No results found
+
+  /api/auth/addedUserInformation:
+    post:
+      tags:
+        - Auth
+      summary: Add User Specific Information
+      description: Links user to specific university, major, and specialty. Requires Authentication.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInformationRequest'
+      responses:
+        '200':
+          description: Information added successfully
+          content:
+            application/json:
+              example:
+                message: 'information is added'
+                user_information:
+                  university: "Université d'Alger"
+                  major: 'Computer Science'
+                  specialization: 'SOFTWARE ENGINEERING'
+                  academic_year: 'L3'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Error with requested data
+          content:
+            application/json:
+              example:
+                message: 'university is not exist'

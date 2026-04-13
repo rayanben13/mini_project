@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
-
+import 'dotenv/config';
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const ACCESS_TOKEN_TTL =
-  process.env.MODE_ENV === 'production' ? process.env.ACCESS_TOKEN_TTL : '7d';
+  process.env.MODE_ENV === 'production' ? process.env.ACCESS_TOKEN_TTL : '300d';
 const REFRESH_TOKEN_TTL_DAYS = process.env.REFRESH_TOKEN_TTL_DAYS || 7;
 
 // 🔹 توليد access token
@@ -20,7 +20,7 @@ export const generateRefreshToken = (user) =>
 export const setRefreshCookie = (res, token) => {
   res.cookie('refreshToken', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV.trim() === 'production',
     sameSite: 'lax',
     maxAge: REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
     path: '/',
@@ -31,7 +31,7 @@ export const setRefreshCookie = (res, token) => {
 export const clearRefreshCookie = (res) => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV.trim() === 'production',
     sameSite: 'lax',
     path: '/',
   });
