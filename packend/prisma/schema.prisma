@@ -54,7 +54,7 @@ model files {
   file_reports     file_reports[]
   subjects         subjects           @relation(fields: [id_subject], references: [id_subject], onDelete: Cascade, onUpdate: NoAction)
   users            users              @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
-  interaction      interaction[]
+  files_likes      files_likes[]
   study_list_files study_list_files[]
 
   @@index([id_subject], map: "idx_files_subject")
@@ -78,24 +78,40 @@ model follows {
   @@index([following_id], map: "idx_follows_following")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model interaction {
-  id          Int          @id @default(autoincrement())
-  id_user     Int?
-  id_file     Int?
-  id_stuList  Int?
-  type        String?      @db.VarChar
-  created_at  DateTime?    @default(now()) @db.Timestamp(6)
-  files       files?       @relation(fields: [id_file], references: [id_file], onDelete: Cascade, onUpdate: NoAction)
-  study_lists study_lists? @relation(fields: [id_stuList], references: [id_stuList], onDelete: Cascade, onUpdate: NoAction)
-  users       users?       @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([id_file], map: "idx_interaction_file")
-  @@index([id_stuList], map: "idx_interaction_list")
-  @@index([type], map: "idx_interaction_type")
-  @@index([id_user], map: "idx_interaction_user")
+enum FileLikeType {
+  LIKE
+  DISLIKE
+}
+model files_likes {
+  id        Int   @id @default(autoincrement())
+  id_user   Int
+  id_file   Int
+  type      FileLikeType
+  created_at DateTime @default(now())
+
+  files files @relation(fields: [id_file], references: [id_file], onDelete: Cascade)
+  users users @relation(fields: [id_user], references: [id_user], onDelete: Cascade)
+
+  @@unique([id_user, id_file])
+  @@index([id_file])
+  @@index([id_user])
 }
 
+
+model studyList_likes {
+  id         Int   @id @default(autoincrement())
+  id_user    Int
+  id_stuList Int
+  created_at DateTime @default(now())
+
+  study_lists study_lists @relation(fields: [id_stuList], references: [id_stuList], onDelete: Cascade)
+  users users @relation(fields: [id_user], references: [id_user], onDelete: Cascade)
+
+  @@unique([id_user, id_stuList])
+  @@index([id_user])
+  @@index([id_stuList])
+}
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model notifications {
   id_notification Int       @id @default(autoincrement())
@@ -133,7 +149,7 @@ model study_lists {
   privacy           String?             @default("public") @db.VarChar
   created_at        DateTime?           @default(now()) @db.Timestamp(6)
   daily_reminders   daily_reminders[]
-  interaction       interaction[]
+  studyList_likes   studyList_likes[]
   saved_study_lists saved_study_lists[]
   study_list_files  study_list_files[]
   subjects          subjects            @relation(fields: [id_subject], references: [id_subject], onDelete: Cascade, onUpdate: NoAction)
@@ -147,6 +163,7 @@ model study_lists {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model subjects {
   id_subject     Int           @id @default(autoincrement())
+  university     String?   @db.VarChar(255)
   academic_year  String        @db.VarChar
   major          String        @db.VarChar
   specialization String?       @db.VarChar
@@ -202,7 +219,8 @@ model users {
   files                               files[]
   follows_follows_follower_idTousers  follows[]           @relation("follows_follower_idTousers")
   follows_follows_following_idTousers follows[]           @relation("follows_following_idTousers")
-  interaction                         interaction[]
+  files_likes                         files_likes[]
+  studyList_likes                     studyList_likes[]
   notifications                       notifications[]
   saved_study_lists                   saved_study_lists[]
   study_lists                         study_lists[]

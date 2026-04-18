@@ -350,6 +350,7 @@ export const SharchMoreInformation = async (req, res) => {
         select: {
           specialization: true,
         },
+
         distinct: ['specialization'],
         take: 4,
       });
@@ -416,7 +417,7 @@ export const addedUserInformation = async (req, res) => {
     const infoExist = await prisma.university_majors.findFirst({
       where: {
         major: { equals: major, mode: 'insensitive' },
-        specialization: { equals: spercialty, mode: 'insensitive' },
+        specialization: { equals: spercialty || null, mode: 'insensitive' },
         academic_year: academic_year,
       },
     });

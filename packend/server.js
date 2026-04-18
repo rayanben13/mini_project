@@ -5,6 +5,7 @@ import helmet from 'helmet';
 // routes
 import authRouter from './routes/auth.route.js';
 import userRouter from './routes/user.route.js';
+import filesRouter from './routes/files.route.js';
 
 // config
 import Cors from './config/cors.js';
@@ -50,8 +51,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
 
+//Router
+
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
+app.use('/api/files', filesRouter);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
