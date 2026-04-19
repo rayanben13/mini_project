@@ -40,7 +40,13 @@ export default function LoginPage() {
 
       if (result.success) {
         toast.success("Login successful!");
-        router.push("/profile");
+        const role = result.user?.role;
+
+        if (role === "admin") {
+          router.replace("/admin");
+        } else {
+          router.replace("/dashboard");
+        }
       } else {
         if (result.emailNotVerified) {
           toast.error(result.message);

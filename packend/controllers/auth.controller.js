@@ -222,6 +222,7 @@ export const login = async (req, res) => {
         email: user.email,
         username: user.username,
         avatar: user.img_user || null, // Add avatar to response
+        role: user.role, // Add role to response
       },
     });
   } catch (error) {

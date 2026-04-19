@@ -1,3 +1,4 @@
+import Cookies from "js-cookie";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { authService } from "../services/authService";
@@ -62,12 +63,17 @@ const useAuthStore = create(
           return get().handleAsync(
             async () => {
               const response = await authService.login(email, password);
+              console.log("Login response:", response);
 
-              const userData = response;
+              const userData = response.data || response;
 
-              if (response.success || userData.accessToken) {
-                Cookies.set("accessToken", response.accessToken, {
+              // التحقق من وجود التوكن مباشرة
+              if (userData && userData.accessToken) {
+                Cookies.set("accessToken", userData.accessToken, {
                   expires: 7,
+                  path: "/", // لضمان وصول الكوكي لكل الصفحات
+                  sameSite: "strict",
+                  secure: process.env.NODE_ENV === "production",
                 });
                 tokenManager.set(userData.accessToken);
 
@@ -76,14 +82,18 @@ const useAuthStore = create(
                     token: userData.accessToken,
                     email: userData.user?.email || email,
                     username: userData.user?.username,
-                    avatar: userData.user?.avatar, // Add avatar to user state
+                    avatar: userData.user?.avatar,
+                    role: userData.user?.role,
                   },
                   isAuthenticated: true,
                 });
 
                 return { success: true, data: userData };
               }
-              return response;
+              return {
+                success: false,
+                message: "Invalid response from server",
+              };
             },
             undefined,
             async (error) => {
