@@ -1,7 +1,10 @@
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import fileFilter from '../middleware/filterImg.js';
+import filterImg from '../middleware/filterImg.js';
+import filterFiles from '../middleware/filterFiles.js';
+
+export { cloudinary };
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -18,7 +21,16 @@ const storage = new CloudinaryStorage({
   },
 });
 
-export const Upload = multer({ storage, fileFilter });
+const storageFiles = multer.memoryStorage();
+
+export const Upload = multer({ storage, fileFilter: filterImg });
+export const UploadFiles = multer({
+  storage: storageFiles,
+  fileFilter: filterFiles,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB (اختياري هنا)
+  },
+});
 
 export function GetPublicId(url) {
   // الرابط: https://res.cloudinary.com/<cloud_name>/image/upload/v1234567890/prodactADD/filename.jpg
@@ -33,3 +45,21 @@ export function GetPublicId(url) {
 // How to delete img in cloudinary
 
 // cloudinary.uploader.destroy(publicId);
+
+// ☁️ رفع ملف إلى Cloudinary بشكل يدوي (مفيد في حالة الـ Buffer)
+export const uploadBufferToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'files',
+        resource_type: 'auto',
+        format: 'pdf',
+      },
+      (error, result) => {
+        if (result) resolve(result);
+        else reject(error);
+      }
+    );
+    stream.end(buffer);
+  });
+};

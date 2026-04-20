@@ -37,6 +37,16 @@ model file_reports {
   @@index([id_user], map: "idx_reports_user")
 }
 
+enum FileType {
+  TD
+  TP
+  COURS
+  EF
+  CC
+  RESUME
+  OTHER
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model files {
   id_file          Int                @id @default(autoincrement())
@@ -45,12 +55,11 @@ model files {
   title            String             @db.VarChar
   creation_year    String             @db.VarChar
   file_path        String
-  file_hash        String             @db.VarChar
-  type             String             @db.VarChar
+  file_hash        String?             @db.VarChar
+  type             FileType
   status           String?            @default("pending") @db.VarChar
   approved_at      DateTime?          @db.Timestamp(6)
   created_at       DateTime?          @default(now()) @db.Timestamp(6)
-  university       String?            @db.VarChar(255)
   file_reports     file_reports[]
   subjects         subjects           @relation(fields: [id_subject], references: [id_subject], onDelete: Cascade, onUpdate: NoAction)
   users            users              @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)

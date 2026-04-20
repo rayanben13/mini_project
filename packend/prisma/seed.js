@@ -23,9 +23,6 @@ async function main() {
     console.warn(
       'Please ensure university_majors table is populated before running the seed script.'
     );
-    console.warn(
-      'Generating some temporary subjects instead to avoid script failure...'
-    );
   }
 
   // 2. Clear existing data
@@ -144,7 +141,6 @@ async function main() {
           'OTHER',
         ]),
         status: faker.helpers.arrayElement(['pending', 'accepted', 'rejected']),
-        university: 'Université Abou Bekr Belkaid, Tlemcen',
       },
     });
     files.push(file);

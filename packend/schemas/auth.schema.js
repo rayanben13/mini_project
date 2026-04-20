@@ -27,6 +27,7 @@ const univ = Joi.string().min(3).max(50).trim().required();
 const major = Joi.string().min(3).max(30).trim().required();
 
 const years = ['L1', 'L2', 'L3', 'M1', 'M2'];
+const type_file = ['TD', 'TP', 'COURS', 'EF', 'CC', 'RESUME', 'OTHER'];
 
 const academic_year = Joi.string()
   .valid(...years)
@@ -54,4 +55,24 @@ export const schemaUserInformation = Joi.object({
   major,
   spercialty,
   academic_year,
+});
+
+//file uplode
+
+const title = Joi.string().min(3).max(100).trim().required();
+const creation_year = Joi.number().min(2000).max(2025).required();
+const type = Joi.string()
+  .valid(...type_file)
+  .required();
+const subject = Joi.string().min(3).max(100).trim().required();
+
+export const shemaUploadFile = Joi.object({
+  title,
+  univ,
+  major,
+  academic_year,
+  spercialty,
+  subject,
+  type,
+  creation_year,
 });
