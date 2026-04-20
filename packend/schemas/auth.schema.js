@@ -76,3 +76,29 @@ export const shemaUploadFile = Joi.object({
   type,
   creation_year,
 });
+
+//report file
+const type_report = [
+  'Inappropriate content',
+  'COPYRIGHT issuse',
+  'Spam or misleading',
+  'Incorrect information',
+  'Other',
+];
+const reason = Joi.string()
+  .valid(...type_report)
+  .required();
+const details = Joi.string().min(3).max(500).trim().required();
+
+export const schemaReportFile = Joi.object({
+  reason,
+  details,
+});
+
+//like file
+const type_like = ['LIKE', 'DISLIKE'];
+export const schemaLikeFile = Joi.object({
+  type: Joi.string()
+    .valid(...type_like)
+    .required(),
+});

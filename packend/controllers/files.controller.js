@@ -1,6 +1,7 @@
 import { count } from 'node:console';
 import prisma from '../lib/prisma.ts';
 import { getUniversities } from '../service/univAPI.js';
+import { io } from '../config/socket.js';
 
 import { cloudinary, uploadBufferToCloudinary } from '../config/Cloudinary.js';
 // import { getUniversities } from '../service/univAPI.js';
@@ -396,7 +397,7 @@ export const downloadFile = async (req, res) => {
   try {
     const id_file = Number(req.params.id_file);
     const fileRecord = await prisma.files.findUnique({
-      where: { id_file },
+      where: { id_file, status: 'accepted' },
     });
 
     if (!fileRecord) {
@@ -404,7 +405,7 @@ export const downloadFile = async (req, res) => {
     }
 
     const fileUrl = fileRecord.file_path; // Cloudinary URL
-    
+
     // To trigger an automatic download from Cloudinary, insert 'fl_attachment' into the URL parameters
     let downloadUrl = fileUrl;
     if (fileUrl.includes('/upload/')) {
@@ -416,5 +417,151 @@ export const downloadFile = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to download file' });
+  }
+};
+
+export const reportFile = async (req, res) => {
+  try {
+    const Me = req.user;
+    const id_file = Number(req.params.id_file);
+    const { reason, details } = req.body;
+
+    const fileExist = await prisma.files.findUnique({
+      where: { id_file, status: 'accepted' },
+    });
+
+    if (!fileExist) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const report = await prisma.file_reports.create({
+      data: {
+        users: {
+          connect: { id_user: Me.id_user },
+        },
+        files: {
+          connect: { id_file },
+        },
+        reason,
+        details,
+      },
+    });
+    return res.status(200).json(report);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to report file' });
+  }
+};
+
+export const likeOrDislikeFile = async (req, res) => {
+  try {
+    const Me = req.user;
+    const id_file = Number(req.params.id_file);
+    const { type } = req.body;
+
+    const fileExist = await prisma.files.findUnique({
+      where: { id_file, status: 'accepted' },
+    });
+
+    if (!fileExist) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const likeExist = await prisma.files_likes.findUnique({
+      where: {
+        id_user_id_file: {
+          id_user: Me.id_user,
+          id_file: id_file,
+        },
+      },
+    });
+
+    if (likeExist) {
+      return res.status(400).json({ error: 'You already liked this file' });
+    }
+
+    const like = await prisma.files_likes.create({
+      data: {
+        users: {
+          connect: { id_user: Me.id_user },
+        },
+        files: {
+          connect: { id_file },
+        },
+        type,
+      },
+    });
+
+    const ownerFile = await prisma.files.findUnique({
+      where: { id_file },
+    });
+
+    if (type === 'LIKE') {
+      await prisma.notifications.create({
+        data: {
+          id_user: ownerFile.id_user,
+          message: `${Me.username} liked your file: ${fileExist.title}`,
+          related_id: Me.id_user,
+          related_type: 'user',
+        },
+      });
+
+      io.to(ownerFile.id_user).emit('notification', {
+        message: `${Me.username} liked your file: ${fileExist.title}`,
+        related_id: Me.id_user,
+        related_type: 'user',
+      });
+
+      console.log('SOCKET DATA:', {
+        message: `${Me.username} liked your file: ${fileExist.title}`,
+        related_id: Me.id_user,
+        related_type: 'user',
+      });
+    }
+
+    return res.status(200).json(like);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to like file' });
+  }
+};
+
+export const saveFileToStudyList = async (req, res) => {
+  try {
+    const Me = req.user;
+    const id_file = Number(req.params.id_file);
+    const id_study_list = Number(req.params.id_study_list);
+
+    const fileExist = await prisma.files.findUnique({
+      where: { id_file, status: 'accepted' },
+    });
+
+    if (!fileExist) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const studyListExist = await prisma.study_lists.findUnique({
+      where: { id_stuList: id_study_list },
+    });
+
+    if (!studyListExist) {
+      return res.status(404).json({ error: 'Study list not found' });
+    }
+
+    const savedFile = await prisma.study_list_files.create({
+      data: {
+        study_lists: {
+          connect: { id_stuList: id_study_list },
+        },
+        files: {
+          connect: { id_file },
+        },
+      },
+    });
+
+    return res.status(200).json(savedFile);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save file to study list' });
   }
 };
