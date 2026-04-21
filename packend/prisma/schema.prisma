@@ -177,6 +177,7 @@ model subjects {
   major          String        @db.VarChar
   specialization String?       @db.VarChar
   course         String        @db.VarChar
+  course_description String?   @db.VarChar
   created_at     DateTime?     @default(now()) @db.Timestamp(6)
   files          files[]
   study_lists    study_lists[]

@@ -134,3 +134,17 @@ export const schemaReminder = Joi.object({
   date,
   time,
 });
+
+//search file
+
+// const year_creation = Joi.number().min(2000).max(2025).required();
+
+// export const schemaSearchFile = Joi.object({
+//   title: title.min(1).required(),
+//   univ: univ.optional(),
+//   major: major.optional(),
+//   academic_year: academic_year.optional(),
+//   spercialty: spercialty.optional(),
+//   type: type.optional(),
+//   year_creation: year_creation.optional(),
+// });

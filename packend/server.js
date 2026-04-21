@@ -13,6 +13,9 @@ import authRouter from './routes/auth.route.js';
 import userRouter from './routes/user.route.js';
 import filesRouter from './routes/files.route.js';
 import studyListRouter from './routes/studyList.route.js';
+import notificationRouter from './routes/notification.route.js';
+import searchRouter from './routes/search.route.js';
+import subjectsRouter from './routes/subjects.route.js';
 
 // config
 import Cors from './config/cors.js';
@@ -56,6 +59,9 @@ app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/files', filesRouter);
 app.use('/api/studyList', studyListRouter);
+app.use('/api/notification', notificationRouter);
+app.use('/api/search', searchRouter);
+app.use('/api/subjects', subjectsRouter);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 

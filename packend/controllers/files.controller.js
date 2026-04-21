@@ -360,6 +360,15 @@ export const UplodeNewFile = async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
+    const subjectExist = await prisma.subjects.findFirst({
+      where: {
+        major: { equals: major, mode: 'insensitive' },
+        specialization: { equals: spercialty || null, mode: 'insensitive' },
+        academic_year: academic_year,
+        course: { equals: subject || null, mode: 'insensitive' },
+      },
+    });
+
     // ☁️ الرفع إلى Cloudinary يدوياً لأن الملف في الذاكرة باستخدام الدالة المخصصة
     const cloudinaryResult = await uploadBufferToCloudinary(req.file.buffer);
     const file_path = cloudinaryResult.secure_url;
@@ -374,18 +383,26 @@ export const UplodeNewFile = async (req, res) => {
         type,
         file_hash,
         file_path,
-        subjects: {
-          create: {
-            major,
-            specialization: spercialty,
-            academic_year,
-            course: subject,
-            university: univ,
-          },
-        },
+
+        subjects: subjectExist
+          ? {
+              connect: {
+                id_subject: subjectExist.id_subject,
+              },
+            }
+          : {
+              create: {
+                major: infoExist.major,
+                specialization: infoExist.specialization,
+                academic_year: infoExist.academic_year,
+                course: infoExist.course,
+                university: univ,
+                course_description: infoExist.course_description,
+              },
+            },
       },
     });
-    res.status(200).json(file);
+    res.status(200).json({ message: 'File uploaded successfully', file });
   } catch (err) {
     console.error(err);
 

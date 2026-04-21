@@ -53,13 +53,14 @@ cron.schedule('* * * * *', async () => {
           related_type: 'study_list',
         });
 
-        console.log(`✅ Sent reminder to user ${reminder.users.username} (ID: ${reminder.users.id_user})`);
+        console.log(
+          `✅ Sent reminder to user ${reminder.users.username} (ID: ${reminder.users.id_user})`
+        );
 
         // Delete processed reminder
         await prisma.daily_reminders.delete({
           where: { id: reminder.id },
         });
-
       } catch (itemErr) {
         console.error(`❌ Error processing reminder ${reminder.id}:`, itemErr);
       }
