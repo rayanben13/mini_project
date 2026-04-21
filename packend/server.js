@@ -1,28 +1,27 @@
 import express from 'express';
-
 import helmet from 'helmet';
+import dotenv from 'dotenv';
+
+// Load env first
+dotenv.config();
+
+// Then load services that depend on env
+import './service/reminder.js';
 
 // routes
 import authRouter from './routes/auth.route.js';
 import userRouter from './routes/user.route.js';
 import filesRouter from './routes/files.route.js';
+import studyListRouter from './routes/studyList.route.js';
 
 // config
 import Cors from './config/cors.js';
 import httpsRedirect from './middleware/httpsRedirect.js';
-
 import cookieParser from 'cookie-parser';
-
 import passport from 'passport';
-
 import './config/passport.js';
-
-import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
-
 import YAML from 'yamljs';
-
-dotenv.config();
 
 const app = express();
 
@@ -42,7 +41,7 @@ const swaggerDocument = {
   },
 };
 
-if (process.env.NODE_ENV.trim() === 'production') {
+if (process.env.NODE_ENV && process.env.NODE_ENV.trim() === 'production') {
   app.use(httpsRedirect);
 }
 
@@ -56,6 +55,7 @@ app.use(passport.initialize());
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/files', filesRouter);
+app.use('/api/studyList', studyListRouter);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 

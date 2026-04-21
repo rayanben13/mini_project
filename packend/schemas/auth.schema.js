@@ -102,3 +102,35 @@ export const schemaLikeFile = Joi.object({
     .valid(...type_like)
     .required(),
 });
+
+//study list
+const name = Joi.string().min(3).max(100).trim().required();
+const description = Joi.string().min(3).max(500).trim().required();
+
+const privacy = Joi.string().valid('public', 'private').required();
+
+export const schemaStudyList = Joi.object({
+  name,
+  subject,
+  description,
+  privacy,
+});
+
+export const schemaEditStudyList = Joi.object({
+  name: name.optional(),
+  description: description.optional(),
+  privacy: privacy.optional(),
+}).min(1);
+
+//reminder
+const date = Joi.string()
+  .pattern(/^\d{4}-\d{2}-\d{2}$/)
+  .required();
+const time = Joi.string()
+  .pattern(/^([01]\d|2[0-3]):[0-5]\d$/)
+  .required();
+
+export const schemaReminder = Joi.object({
+  date,
+  time,
+});
