@@ -16,7 +16,12 @@ passport.use(
 
       if (user) {
         if (user.is_active) {
-          return done(null, { id_user: user.id_user, email: user.email, username: user.username, role: user.role });
+          return done(null, {
+            id_user: user.id_user,
+            email: user.email,
+            username: user.username,
+            role: user.role,
+          });
         } else {
           return done(null, false, { message: 'User not verified' });
         }

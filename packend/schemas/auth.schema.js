@@ -23,7 +23,7 @@ export const authSchema = Joi.object({
 export const shemaUsername = Joi.object({ username: username.optional() });
 export const schemaEmail = Joi.object({ email });
 
-const univ = Joi.string().min(3).max(50).trim().required();
+const univ = Joi.string().min(5).max(50).trim().required();
 const major = Joi.string().min(3).max(30).trim().required();
 
 const years = ['L1', 'L2', 'L3', 'M1', 'M2'];

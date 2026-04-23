@@ -1,12 +1,4 @@
-import { count } from 'node:console';
 import prisma from '../lib/prisma.ts';
-import { getUniversities } from '../service/univAPI.js';
-import { io } from '../config/socket.js';
-
-import { cloudinary, uploadBufferToCloudinary } from '../config/Cloudinary.js';
-// import { getUniversities } from '../service/univAPI.js';
-// import { io } from '../config/socket.js';
-// import { type } from 'os';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -148,6 +140,7 @@ export const showDetailSubject = async (req, res) => {
     const totalLists = await prisma.study_lists.count({
       where: {
         id_subject: id_subject,
+        privacy: 'public',
       },
     });
 
@@ -155,10 +148,12 @@ export const showDetailSubject = async (req, res) => {
     const studyLists = await prisma.study_lists.findMany({
       where: {
         id_subject: id_subject,
+        privacy: 'public',
       },
       select: {
         id_stuList: true,
         name: true,
+        privacy: true,
         users: {
           select: {
             id_user: true,

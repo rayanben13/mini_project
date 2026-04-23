@@ -2,11 +2,12 @@ import { count } from 'node:console';
 import prisma from '../lib/prisma.ts';
 import { getUniversities } from '../service/univAPI.js';
 import { io } from '../config/socket.js';
+import {
+  reminder_time_input,
+  reminder_time_output,
+} from '../config/dayjsTime.js';
 
 import { cloudinary, uploadBufferToCloudinary } from '../config/Cloudinary.js';
-// import { getUniversities } from '../service/univAPI.js';
-// import { io } from '../config/socket.js';
-// import { type } from 'os';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -239,6 +240,25 @@ export const showDetailStudyList = async (req, res) => {
     const page = Math.max(Number(req.query.page) || 1, 1);
     const skip = (page - 1) * limit;
 
+    const isMyStudyList = await prisma.study_lists.findUnique({
+      where: {
+        id_stuList,
+      },
+      select: {
+        id_user: true,
+        privacy: true,
+      },
+    });
+
+    if (
+      isMyStudyList.privacy === 'private' &&
+      isMyStudyList.id_user !== Me.id_user
+    ) {
+      return res
+        .status(403)
+        .json({ error: 'You are not authorized to access this study list' });
+    }
+
     // 🔍 جلب الدراسة مرة واحدة مع العلاقات
     const studyList = await prisma.study_lists.findUnique({
       where: { id_stuList },
@@ -370,7 +390,7 @@ export const showDetailStudyList = async (req, res) => {
       isOwner,
       isSaved,
       isAddReminder,
-      timeReminder,
+      reminder_time: reminder_time_output(timeReminder),
     };
 
     // 📦 files format
@@ -448,7 +468,9 @@ export const createStudyList = async (req, res) => {
       },
     });
 
-    return res.status(200).json({ studyList });
+    return res
+      .status(200)
+      .json({ message: 'Study list created successfully', studyList });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
@@ -502,7 +524,9 @@ export const editStudyList = async (req, res) => {
       },
     });
 
-    return res.status(200).json({ studyList });
+    return res
+      .status(200)
+      .json({ message: 'Study list updated successfully', studyList });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
@@ -611,7 +635,6 @@ export const loveStudyList = async (req, res) => {
       },
     });
 
-    // 🟡 UNLIKE
     if (isLoved) {
       await prisma.studyList_likes.deleteMany({
         where: {
@@ -625,7 +648,6 @@ export const loveStudyList = async (req, res) => {
       });
     }
 
-    // 🟢 LIKE
     const addLoveToStudyList = await prisma.studyList_likes.create({
       data: {
         id_user: Me.id_user,
@@ -674,7 +696,7 @@ export const addSetReminder = async (req, res) => {
 
     // Create a UTC date from the input
     // User requested "Global Time", so we append Z to ensure it's treated as UTC
-    const reminder_time = new Date(`${date}T${time}:00Z`);
+    const reminder_time = reminder_time_input(date, time);
 
     if (isNaN(reminder_time.getTime())) {
       return res.status(400).json({
@@ -687,17 +709,20 @@ export const addSetReminder = async (req, res) => {
     if (reminder_time < new Date()) {
       return res
         .status(400)
-        .json({ error: 'Reminder time must be in the future (UTC).' });
+        .json({ error: 'Reminder time must be in the future ' });
     }
 
     const studylistExist = await prisma.study_lists.findFirst({
       where: {
-        id_user: Me.id_user,
         id_stuList,
       },
     });
 
-    if (!studylistExist) {
+    if (
+      !studylistExist ||
+      (studylistExist.id_user !== Me.id_user &&
+        studylistExist.privacy === 'private')
+    ) {
       return res.status(404).json({
         error: 'Study list not found or you do not have permission.',
       });
@@ -731,7 +756,7 @@ export const addSetReminder = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: 'Study list added to reminder (UTC)',
+      message: 'Study list added to reminder',
       studyList,
     });
   } catch (err) {
@@ -810,11 +835,33 @@ export const deleteFileFromStudyList = async (req, res) => {
   }
 };
 
-export const startReminder = async (req, res) => {
+export const sharchMoreSubjects = async (req, res) => {
   try {
+    const subject = req.query.subject?.trim();
+
+    if (!subject) {
+      return res.status(400).json({
+        error: 'Missing subject',
+      });
+    }
+
+    let subjects = await prisma.subjects.findMany({
+      where: {
+        course: {
+          contains: subject,
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        course: true,
+      },
+      take: 3,
+    });
+
+    subjects = subjects.map((subject) => subject.course);
+
     return res.status(200).json({
-      message: 'Study list added to reminder',
-      studyList,
+      subjects,
     });
   } catch (err) {
     console.error(err);

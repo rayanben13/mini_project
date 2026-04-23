@@ -1,6 +1,8 @@
 import cron from 'node-cron';
 import prisma from '../lib/prisma.ts';
 import { io } from '../config/socket.js';
+import { sendReminderEmail } from '../config/Eamil.js';
+let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
 cron.schedule('* * * * *', async () => {
   const now = new Date();
@@ -22,6 +24,8 @@ cron.schedule('* * * * *', async () => {
           select: {
             id_user: true,
             username: true,
+            fullname: true,
+            email: true,
           },
         },
       },
@@ -57,7 +61,19 @@ cron.schedule('* * * * *', async () => {
           `✅ Sent reminder to user ${reminder.users.username} (ID: ${reminder.users.id_user})`
         );
 
+        //send to email
+
+        isDevelopment
+          ? console.log(
+              `Reminder to study ${reminder.study_lists.name} sent to user in email ${reminder.users.email} and his name is ${reminder.users.fullname}`
+            )
+          : await sendReminderEmail(
+              reminder.users.email,
+              reminder.users.fullname
+            );
+
         // Delete processed reminder
+
         await prisma.daily_reminders.delete({
           where: { id: reminder.id },
         });

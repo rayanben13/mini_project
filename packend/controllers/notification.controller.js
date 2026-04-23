@@ -78,6 +78,10 @@ export const markNotificationAsRead = async (req, res) => {
       return res.status(404).json({ error: 'Notification not found' });
     }
 
+    if (notificationExist.is_read) {
+      return res.status(400).json({ error: 'Notification already read' });
+    }
+
     const notification = await prisma.notifications.update({
       where: {
         id_notification,
@@ -88,7 +92,9 @@ export const markNotificationAsRead = async (req, res) => {
       },
     });
 
-    return res.status(200).json(notification);
+    return res
+      .status(200)
+      .json({ message: 'Notification marked as read', notification });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
@@ -99,13 +105,23 @@ export const deleteAllMyNotifications = async (req, res) => {
   try {
     const Me = req.user;
 
-    const notifications = await prisma.notifications.deleteMany({
+    const notifications = await prisma.notifications.findMany({
       where: {
         id_user: Me.id_user,
       },
     });
 
-    return res.status(200).json(notifications);
+    if (!notifications) {
+      return res.status(404).json({ error: 'Notifications not found' });
+    }
+
+    await prisma.notifications.deleteMany({
+      where: {
+        id_user: Me.id_user,
+      },
+    });
+
+    return res.status(200).json({ message: 'All notifications deleted' });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });

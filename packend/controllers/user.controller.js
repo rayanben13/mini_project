@@ -114,6 +114,12 @@ export const ShowUserByid = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    if (user.role === 'admin') {
+      return res
+        .status(403)
+        .json({ message: 'You are not authorized to view this profile' });
+    }
+
     // Stats
     const following = await prisma.follows.count({
       where: { follower_id: userId },
@@ -233,6 +239,11 @@ export const addFollow = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+    if (user.role !== 'user') {
+      return res
+        .status(403)
+        .json({ message: 'You are not authorized to follow this user' });
+    }
 
     const existing = await prisma.follows.findUnique({
       where: {
@@ -288,6 +299,18 @@ export const removeFollow = async (req, res) => {
     if (Me.id_user === userId) {
       return res.status(400).json({ message: 'You cannot unfollow yourself' });
     }
+    const user = await prisma.users.findUnique({
+      where: { id_user: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    if (user.role !== 'user') {
+      return res
+        .status(403)
+        .json({ message: 'You are not authorized to unfollow this user' });
+    }
 
     const existing = await prisma.follows.findUnique({
       where: {
@@ -304,10 +327,12 @@ export const removeFollow = async (req, res) => {
         .json({ message: 'You are not following this user' });
     }
 
-    await prisma.follows.deleteMany({
+    await prisma.follows.delete({
       where: {
-        follower_id: Me.id_user,
-        following_id: userId,
+        follower_id_following_id: {
+          follower_id: Me.id_user,
+          following_id: userId,
+        },
       },
     });
 
@@ -329,7 +354,7 @@ export const UpdateProfile = async (req, res) => {
       return res.status(404).json({ message: 'university is not exist' });
     }
 
-    const infoExist = await prisma.university_majors.count({
+    const infoExist = await prisma.university_majors.findFirst({
       where: {
         major: { equals: major, mode: 'insensitive' },
         specialization: { equals: spercialty, mode: 'insensitive' },
@@ -359,10 +384,10 @@ export const UpdateProfile = async (req, res) => {
         fullname: fullname,
         user_information: {
           update: {
-            university: univ,
-            major: major,
-            specialization: spercialty || null,
-            academic_year: academic_year,
+            university: universities[0],
+            major: infoExist.major,
+            specialization: infoExist.specialization || null,
+            academic_year: infoExist.academic_year,
           },
         },
       },

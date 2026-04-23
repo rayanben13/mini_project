@@ -155,6 +155,7 @@ export const verify = async (req, res) => {
 
     res.status(200).json({
       message: 'Email verified successfully',
+      role: user.role,
       accessToken: accessToken,
     });
   } catch (error) {
@@ -176,6 +177,17 @@ export const login = async (req, res) => {
     if (!userExists) {
       return res.status(404).json({ error: 'Email is NOT exist ' });
     }
+
+    const user_informationExists = await prisma.user_information.findFirst({
+      where: {
+        id_user: userExists.id_user,
+      },
+    });
+
+    if (!user_informationExists && userExists.role === 'user') {
+      return res.status(404).json({ error: 'User information is NOT exist ' });
+    }
+
     const user = userExists;
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
@@ -205,7 +217,7 @@ export const login = async (req, res) => {
         : await sendWelcomeEmail(email, user.username);
     }
 
-    return res.status(201).json({ accessToken });
+    return res.status(201).json({ role: user.role, accessToken });
   } catch (error) {
     process.env.NODE_ENV === 'development' &&
       console.log('❌ Error in login:', error);
@@ -306,100 +318,143 @@ export const SharchMoreInformation = async (req, res) => {
   try {
     const mode = req.query.mode?.trim();
     const name = req.query.name?.trim();
+
     if (!mode || !name) {
-      return res.status(400).json({ message: 'choix you Mode and name' });
-    }
-    if (mode == 'univ') {
-      let universities = await getUniversities(name);
-      universities = universities.slice(0, 4);
-      return res.status(200).json({ universities });
-    } else if (mode == 'major') {
-      let majors = await prisma.university_majors.findMany({
-        where: {
-          major: {
-            contains: name,
-            mode: 'insensitive',
-          },
-        },
-        select: {
-          major: true,
-        },
-        distinct: ['major'],
-        take: 4,
+      return res.status(400).json({
+        message: 'mode and name are required',
       });
-      if (majors.length === 0) {
-        return res.status(404).json({ message: 'No results found' });
-      }
-      majors = majors.map((item) => item.major);
-      return res.status(200).json({ majors });
-    } else if (mode == 'Spercialty') {
-      const year = req.query.year?.trim();
-      const major = req.query.major?.trim();
-      if (!year || !major) {
-        return res.status(400).json({ message: 'enter year and major' });
-      }
-      let Spercialty = await prisma.university_majors.findMany({
-        where: {
-          specialization: {
-            contains: name,
-            mode: 'insensitive',
-          },
-          academic_year: year,
-          major: major,
-        },
-        select: {
-          specialization: true,
-        },
-
-        distinct: ['specialization'],
-        take: 4,
-      });
-      if (Spercialty.length === 0 || Spercialty === null) {
-        return res.status(404).json({ message: 'No results found' });
-      }
-      Spercialty = Spercialty.map((item) => item.specialization);
-      return res.status(200).json({ Spercialty });
-    } else if (mode == 'subject') {
-      const year = req.query.year?.trim();
-      const major = req.query.major?.trim();
-
-      const yearAllowed = ['L1', 'L2', 'L3'];
-      let specialization = null;
-
-      if (!yearAllowed.includes(year)) {
-        specialization = req.query.specialization?.trim();
-      }
-
-      if (!year || !major) {
-        return res.status(400).json({ message: 'enter year and major' });
-      }
-      let subject = await prisma.university_majors.findMany({
-        where: {
-          course: {
-            contains: name,
-            mode: 'insensitive',
-          },
-          specialization: specialization,
-          academic_year: year,
-          major: major,
-        },
-        select: {
-          course: true,
-        },
-        distinct: ['course'],
-        take: 4,
-      });
-      if (subject.length === 0) {
-        return res.status(404).json({ message: 'No results found' });
-      }
-      subject = subject.map((item) => item.course);
-      return res.status(200).json({ subject });
     }
 
-    return res.status(400).json({ message: 'choix you Mode' });
+    const yearAllowed = ['L1', 'L2', 'L3'];
+
+    switch (mode) {
+      case 'univ': {
+        let universities = await getUniversities(name);
+        return res.status(200).json({
+          data: universities.slice(0, 4),
+        });
+      }
+
+      case 'major': {
+        const majors = await prisma.university_majors.findMany({
+          where: {
+            major: {
+              contains: name,
+              mode: 'insensitive',
+            },
+          },
+          select: { major: true },
+          distinct: ['major'],
+          take: 4,
+        });
+
+        if (!majors.length) {
+          return res.status(404).json({ message: 'No results found' });
+        }
+
+        return res.status(200).json({
+          data: majors.map((m) => m.major),
+        });
+      }
+
+      case 'specialty': {
+        const year = req.query.year?.trim();
+        const major = req.query.major?.trim();
+
+        if (!year || !major) {
+          return res.status(400).json({
+            message: 'year and major are required',
+          });
+        }
+
+        if (yearAllowed.includes(year)) {
+          return res.status(400).json({
+            message: 'Specialization not available for this year',
+          });
+        }
+
+        const specialties = await prisma.university_majors.findMany({
+          where: {
+            specialization: {
+              contains: name,
+              mode: 'insensitive',
+            },
+            academic_year: { equals: year, mode: 'insensitive' },
+            major: { contains: major, mode: 'insensitive' },
+          },
+          select: { specialization: true },
+          distinct: ['specialization'],
+          take: 4,
+        });
+
+        if (!specialties.length) {
+          return res.status(404).json({ message: 'No results found' });
+        }
+
+        return res.status(200).json({
+          data: specialties.map((s) => s.specialization),
+        });
+      }
+
+      case 'subject': {
+        const year = req.query.year?.trim();
+        const major = req.query.major?.trim();
+
+        if (!year || !major) {
+          return res.status(400).json({
+            message: 'year and major are required',
+          });
+        }
+
+        let specialization;
+
+        if (yearAllowed.includes(year)) {
+          specialization = undefined;
+        } else {
+          specialization = req.query.specialization?.trim();
+          if (!specialization) {
+            return res.status(400).json({
+              message: 'specialization is required',
+            });
+          }
+        }
+
+        const subjects = await prisma.university_majors.findMany({
+          where: {
+            course: {
+              contains: name,
+              mode: 'insensitive',
+            },
+            academic_year: year,
+            major: { contains: major, mode: 'insensitive' },
+            ...(specialization && {
+              specialization: { contains: specialization, mode: 'insensitive' },
+            }),
+          },
+          select: { course: true },
+          distinct: ['course'],
+          take: 4,
+        });
+
+        if (!subjects.length) {
+          return res.status(404).json({ message: 'No results found' });
+        }
+
+        return res.status(200).json({
+          data: subjects.map((s) => s.course),
+        });
+      }
+
+      default:
+        return res.status(400).json({
+          message: 'Invalid mode',
+        });
+    }
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error(err);
+    return res.status(500).json({
+      error: 'Server error',
+    });
   }
 };
 
@@ -410,7 +465,14 @@ export const addedUserInformation = async (req, res) => {
 
     const universities = await getUniversities(univ);
 
+    if (user.role !== 'user') {
+      return res.status(404).json({ message: 'you are not user' });
+    }
+
     if (universities.length === 0) {
+      return res.status(404).json({ message: 'university is not exist' });
+    }
+    if (universities.length > 1) {
       return res.status(404).json({ message: 'university is not exist' });
     }
 
@@ -422,7 +484,9 @@ export const addedUserInformation = async (req, res) => {
       },
     });
     if (!infoExist) {
-      return res.status(404).json({ message: 'information is not exist' });
+      return res
+        .status(404)
+        .json({ message: 'you are not added this information' });
     }
     const result = await prisma.user_information.findFirst({
       where: {
@@ -430,7 +494,9 @@ export const addedUserInformation = async (req, res) => {
       },
     });
     if (result) {
-      return res.status(404).json({ message: 'information is already exist' });
+      return res
+        .status(404)
+        .json({ message: 'you added information is already exist' });
     }
 
     const infoAdded = await prisma.users.update({
@@ -438,10 +504,10 @@ export const addedUserInformation = async (req, res) => {
       data: {
         user_information: {
           create: {
-            university: univ,
-            major: major,
-            specialization: spercialty.toUpperCase(),
-            academic_year: academic_year,
+            university: universities[0],
+            major: infoExist.major,
+            specialization: infoExist.specialization,
+            academic_year: infoExist.academic_year,
           },
         },
       },

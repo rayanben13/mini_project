@@ -7,17 +7,19 @@ import {
   yourSubjects,
   showDetailSubject,
 } from '../controllers/subjects.controller.js';
+import { requireUser } from '../middleware/checkUserInformation.js';
 const router = express.Router();
 
 router.get(
   '/your-subjects',
   passport.authenticate('jwt', { session: false }),
+  requireUser,
   yourSubjects
 );
 
 router.get(
   '/subject/:id_subject',
-  passport.authenticate('jwt', { session: false }),
+
   showDetailSubject
 );
 
