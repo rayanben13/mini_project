@@ -1,0 +1,205 @@
+tags:
+  - name: Notifications
+    description: Manage user notifications
+
+paths:
+  /api/notification/showMyNotifications:
+    get:
+      summary: Get all notifications for the current user
+      tags: [Notifications]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of notifications per page
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+      responses:
+        '200':
+          description: A paginated list of notifications for the authenticated user
+          content:
+            application/json:
+              example:
+                meta:
+                  current_page: 1
+                  last_page: 3
+                  per_page: 10
+                  total_my_notifications: 25
+                  from: 1
+                  to: 10
+                data:
+                  - id_notification: 1
+                    message: 'Jane Doe liked your file: Calculus I Notes'
+                    related_id: 5
+                    related_type: 'user'
+                    is_read: false
+                    created_at: '2 minutes ago'
+                  - id_notification: 2
+                    message: "Your file 'Physics Lecture' has been approved"
+                    related_id: 12
+                    related_type: 'file'
+                    is_read: true
+                    created_at: '1 hour ago'
+        '401':
+          description: Unauthorized - Token missing or invalid
+          content:
+            application/json:
+              example:
+                error: 'Unauthorized'
+        '403':
+          description: Forbidden - User role not allowed or profile incomplete
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: Not a user role
+                  value:
+                    message: 'You are not user'
+                ProfileIncomplete:
+                  summary: Profile information missing
+                  value:
+                    message: 'Complete your profile first'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/notification/markNotificationAsRead/{id_notification}:
+    put:
+      summary: Mark a specific notification as read
+      tags: [Notifications]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_notification
+          required: true
+          schema:
+            type: integer
+          description: The unique ID of the notification
+      responses:
+        '200':
+          description: Notification successfully updated to read status
+          content:
+            application/json:
+              example:
+                message: 'Notification marked as read'
+                notification:
+                  id_notification: 1
+                  id_user: 5
+                  message: 'Jane Doe liked your file: Calculus I Notes'
+                  is_read: true
+                  related_id: 5
+                  related_type: 'user'
+                  created_at: '2024-04-23T20:00:00.000Z'
+        '400':
+          description: Bad Request - Invalid ID format or notification already read
+          content:
+            application/json:
+              examples:
+                InvalidID:
+                  summary: Invalid ID format
+                  value:
+                    error: 'Invalid notification ID'
+                AlreadyRead:
+                  summary: Notification already read
+                  value:
+                    error: 'Notification already read'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                error: 'Unauthorized'
+        '403':
+          description: Forbidden - User role not allowed or profile incomplete
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: Not a user role
+                  value:
+                    message: 'You are not user'
+                ProfileIncomplete:
+                  summary: Profile information missing
+                  value:
+                    message: 'Complete your profile first'
+        '404':
+          description: Not Found - Notification doesn't exist or doesn't belong to the user
+          content:
+            application/json:
+              example:
+                error: 'Notification not found'
+        '422':
+          description: Unprocessable Entity - Profile information missing
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/notification/deleteAllMyNotifications:
+    delete:
+      summary: Clear all notifications for the authenticated user
+      tags: [Notifications]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: All notifications successfully removed
+          content:
+            application/json:
+              example:
+                message: 'All notifications deleted'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                error: 'Unauthorized'
+        '403':
+          description: Forbidden - User role not allowed or profile incomplete
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: Not a user role
+                  value:
+                    message: 'You are not user'
+                ProfileIncomplete:
+                  summary: Profile information missing
+                  value:
+                    message: 'Complete your profile first'
+        '404':
+          description: Notifications not found
+          content:
+            application/json:
+              example:
+                error: 'Notifications not found'
+        '422':
+          description: Unprocessable Entity - Profile information missing
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'

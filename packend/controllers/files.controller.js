@@ -369,7 +369,7 @@ export const showDetailFile = async (req, res) => {
       },
     });
     if (!file) {
-      return res.status(404).json({ error: 'File not found' });
+      return res.status(403).json({ error: 'File not found' });
     }
     const { files_likes, ...rest } = file;
     let statusLike = null;
@@ -423,7 +423,7 @@ export const UplodeNewFile = async (req, res) => {
     });
 
     if (!infoExist) {
-      return res.status(404).json({ message: 'information is not exist' });
+      return res.status(403).json({ message: 'information is not exist' });
     }
 
     if (!req.file) {
@@ -548,7 +548,7 @@ export const reportFile = async (req, res) => {
     }
 
     if (fileExist.id_user === Me.id_user) {
-      return res.status(400).json({ error: 'You cannot report your own file' });
+      return res.status(403).json({ error: 'You cannot report your own file' });
     }
 
     const reportExist = await prisma.file_reports.findFirst({
@@ -688,7 +688,7 @@ export const addLikeOrDislike = async (req, res) => {
         },
       });
 
-      return res.status(200).json({ message: 'Reaction removed' });
+      return res.status(201).json({ message: 'Reaction removed' });
     }
 
     // 🟢 إنشاء أو تحديث
@@ -768,7 +768,7 @@ export const saveFileToMyStudyList = async (req, res) => {
     });
 
     if (!MyStudyListExist) {
-      return res.status(404).json({ error: 'this is not your study list' });
+      return res.status(403).json({ error: 'this is not your study list' });
     }
 
     const fileAlreadySaved = await prisma.study_list_files.findUnique({

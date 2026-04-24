@@ -55,7 +55,6 @@ async function main() {
         password: hashedPassword,
         is_active: true,
         role: i === 0 ? 'admin' : 'user',
-        level: faker.number.int({ min: 1, max: 10 }),
       },
     });
     users.push(user);
@@ -109,7 +108,7 @@ async function main() {
       const subject = await prisma.subjects.create({
         data: {
           academic_year: 'L' + faker.number.int({ min: 1, max: 3 }),
-          major: 'Computer Science',
+          major: 'Informatique',
           course: faker.company.buzzNoun(),
         },
       });
@@ -129,8 +128,14 @@ async function main() {
         id_subject: randomSubject.id_subject,
         title: faker.commerce.productName() + ' Lecture Notes',
         creation_year: faker.date.past({ years: 3 }).getFullYear().toString(),
-        file_path: 'uploads/' + faker.system.fileName({ extension: 'pdf' }),
-        file_hash: faker.string.alphanumeric(32),
+        file_path: faker.helpers.arrayElement([
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991003/files/tta3wdi9ip4pqdokivnp.pdf',
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991046/files/i7uqi1iwktbjg0slf97m.pdf',
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991110/files/fbhuacw2h0gjbvbheyec.pdf',
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991132/files/uspfb72n19dfddgk3lnj.pdf',
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991178/files/lnkiryedncbhwhqyeelf.pdf',
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991199/files/gj6aq4ochc8du50wt3b8.pdf',
+        ]),
         type: faker.helpers.arrayElement([
           'TD',
           'TP',
@@ -243,9 +248,10 @@ async function main() {
         id_file: randomFile.id_file,
         reason: faker.helpers.arrayElement([
           'Inappropriate content',
-          'Copyright violation',
-          'Wrong subject',
-          'Poor quality',
+          'COPYRIGHT issuse',
+          'Spam or misleading',
+          'Incorrect information',
+          'Other',
         ]),
         details: faker.lorem.sentence(),
         status: faker.helpers.arrayElement(['pending', 'reviewed', 'ignored']),

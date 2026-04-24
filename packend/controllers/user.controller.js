@@ -297,7 +297,7 @@ export const removeFollow = async (req, res) => {
     const userId = Number(req.params.id_user);
 
     if (Me.id_user === userId) {
-      return res.status(400).json({ message: 'You cannot unfollow yourself' });
+      return res.status(400).json({ message: 'You can not unfollow yourself' });
     }
     const user = await prisma.users.findUnique({
       where: { id_user: userId },
@@ -323,7 +323,7 @@ export const removeFollow = async (req, res) => {
 
     if (!existing) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: 'You are not following this user' });
     }
 
@@ -351,7 +351,7 @@ export const UpdateProfile = async (req, res) => {
 
     const universities = await getUniversities(univ);
     if (!universities.length) {
-      return res.status(404).json({ message: 'university is not exist' });
+      return res.status(401).json({ message: 'university is not exist' });
     }
 
     const infoExist = await prisma.university_majors.findFirst({
@@ -363,7 +363,7 @@ export const UpdateProfile = async (req, res) => {
     });
 
     if (!infoExist) {
-      return res.status(404).json({ message: 'information is not exist' });
+      return res.status(402).json({ message: 'information is not exist' });
     }
 
     const olduser = await prisma.users.findUnique({
@@ -374,7 +374,7 @@ export const UpdateProfile = async (req, res) => {
     });
 
     if (!olduser) {
-      return res.status(404).json({ error: 'user is not exist' });
+      return res.status(403).json({ error: 'user is not exist' });
     }
 
     const user = await prisma.users.update({

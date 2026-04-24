@@ -33,14 +33,32 @@ console.log('this is the mode :', process.env.NODE_ENV);
 app.use(Cors);
 
 const authSwagger = YAML.load('./swagger/authSwagger.yaml');
-const userSwagger = YAML.load('./swagger/userSwagger.yaml');
+const userSwagger = YAML.load('./swagger/user/userSwagger.yaml');
+const filesSwagger = YAML.load('./swagger/user/filesSwagger.yaml');
+const studyListSwagger = YAML.load('./swagger/user/studyListSwagger.yaml');
+const searchSwagger = YAML.load('./swagger/allActurSwagger.yaml');
+const subjectsSwagger = YAML.load('./swagger/user/subjectsSwagger.yaml');
+const notificationSwagger = YAML.load('./swagger/user/notificationSwagger.yaml');
 
 const swaggerDocument = {
   ...authSwagger,
-  tags: [...(authSwagger?.tags || []), ...(userSwagger?.tags || [])],
+  tags: [
+    ...(authSwagger?.tags || []),
+    ...(userSwagger?.tags || []),
+    ...(filesSwagger?.tags || []),
+    ...(studyListSwagger?.tags || []),
+    ...(searchSwagger?.tags || []),
+    ...(subjectsSwagger?.tags || []),
+    ...(notificationSwagger?.tags || []),
+  ],
   paths: {
     ...(authSwagger?.paths || {}),
     ...(userSwagger?.paths || {}),
+    ...(filesSwagger?.paths || {}),
+    ...(studyListSwagger?.paths || {}),
+    ...(searchSwagger?.paths || {}),
+    ...(subjectsSwagger?.paths || {}),
+    ...(notificationSwagger?.paths || {}),
   },
 };
 

@@ -22,7 +22,7 @@ const AuthStore = create((set) => ({
       const response = await axios.post(`${API_URL}/login`, {
         email,
         password,
-      });
+      }, { withCredentials: true });
 
       localStorage.setItem('token', response.data.accessToken);
 
@@ -84,7 +84,7 @@ const AuthStore = create((set) => ({
       const response = await axios.post(`${API_URL}/verify`, {
         email,
         code,
-      });
+      }, { withCredentials: true });
 
       localStorage.setItem('token', response.data.accessToken);
 
@@ -239,12 +239,46 @@ const AuthStore = create((set) => ({
     }
   },
 
+  refreshToken: async () => {
+    try {
+      set({ loading: true });
+      const response = await axios.post(`${API_URL}/token`, {}, { withCredentials: true });
+      
+      localStorage.setItem('token', response.data.accessToken);
+      
+      set((state) => ({
+        user: {
+          ...state.user,
+          token: response.data.accessToken,
+        },
+      }));
+      
+      return { success: true, accessToken: response.data.accessToken };
+    } catch (error) {
+      console.error('Refresh token error:', error.response?.data?.error);
+      
+      // If refresh token fails, we should probably logout or clear state
+      set({
+        user: { token: '' },
+        statusUser: { statusUS: false },
+      });
+      localStorage.removeItem('token');
+
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
   logout: async () => {
     localStorage.removeItem('token');
     try {
       set({ loading: true });
 
-      await axios.post(`${API_URL}/logout`);
+      await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
 
       set({
         user: { id: null, token: '' },

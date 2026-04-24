@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Mini Project API
-  description: API endpoints for Mini Project.
+  description: API endpoints for Mini Project Authentication and User Info Management.
   version: 1.0.0
 tags:
   - name: Auth
@@ -106,7 +106,6 @@ components:
       required:
         - univ
         - major
-        - spercialty
         - academic_year
       properties:
         univ:
@@ -151,6 +150,10 @@ paths:
                 error: 'Email or user name is exist '
         '500':
           description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
 
   /api/auth/resendVerificationCode:
     post:
@@ -176,6 +179,12 @@ paths:
             application/json:
               example:
                 error: 'Email is NOT exist '
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
 
   /api/auth/verify:
     post:
@@ -196,13 +205,31 @@ paths:
             application/json:
               example:
                 message: 'Email verified successfully'
+                role: 'user'
                 accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         '400':
-          description: Invalid or expired code
+          description: Invalid or expired code, or user not found
+          content:
+            application/json:
+              examples:
+                invalid_expired:
+                  summary: Code expired or invalid
+                  value:
+                    message: 'Code expired or invalid'
+                invalid_code:
+                  summary: Invalid code
+                  value:
+                    message: 'Invalid code'
+                user_not_found:
+                  summary: User not found
+                  value:
+                    message: 'User not found or already verified'
+        '500':
+          description: Server error
           content:
             application/json:
               example:
-                message: 'Invalid code'
+                error: 'Server error'
 
   /api/auth/login:
     post:
@@ -222,6 +249,7 @@ paths:
           content:
             application/json:
               example:
+                role: 'user'
                 accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         '403':
           description: Email not verified
@@ -234,12 +262,24 @@ paths:
           content:
             application/json:
               examples:
-                invalid_credentials:
+                email_not_exist:
+                  summary: Email does not exist
                   value:
-                    error: 'password or Email is not exist'
+                    error: 'Email is NOT exist '
                 missing_info:
+                  summary: User information missing
                   value:
                     error: 'User information is NOT exist '
+                invalid_credentials:
+                  summary: Invalid password or email
+                  value:
+                    error: 'password or Email is not exist'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
 
   /api/auth/forgotPassword:
     post:
@@ -262,6 +302,16 @@ paths:
                 message: 'Password reset link sent to your email'
         '404':
           description: Email does not exist
+          content:
+            application/json:
+              example:
+                error: 'Email is NOT exist '
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
 
   /api/auth/resetPassword/{resetTokenURL}:
     patch:
@@ -296,6 +346,12 @@ paths:
             application/json:
               example:
                 message: 'Invalid or expired reset token'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
 
   /api/auth/logout:
     post:
@@ -316,27 +372,33 @@ paths:
       tags:
         - Auth
       summary: Refresh Access Token
-      description: Generates a new access token using the refresh token from cookies. Note that you don't need body, relies on the `refreshToken` HttpOnly cookie!
+      description: Generates a new access token using the refresh token from cookies.
       responses:
         '200':
           description: Successfully refreshed token
           content:
             application/json:
               example:
-                accessToken: 'eyJhbGciOiJIUzI...NewToken'
+                accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         '401':
           description: No refresh token (Not logged in)
           content:
             application/json:
               example:
                 error: 'No refresh token'
+        '403':
+          description: Invalid refresh token
+          content:
+            application/json:
+              example:
+                error: 'Invalid refresh token'
 
   /api/auth/SharchMoreInformation:
     get:
       tags:
         - Auth
       summary: Search University/Major Information
-      description: Search universities, majors, or specialties.
+      description: Search universities, majors, specialties, or subjects. Returns results in a 'data' array.
       parameters:
         - name: mode
           in: query
@@ -358,7 +420,7 @@ paths:
           example: 'L3'
           schema:
             type: string
-          description: Academic year (required if mode is Spercialty)
+          description: Academic year (required if mode is specialty or subject)
         - name: major
           in: query
           example: 'Computer Science'
@@ -376,29 +438,68 @@ paths:
           description: Search results successfully fetched
           content:
             application/json:
-              example:
-                universities:
-                  - "Université M'hamed Bouguerra de Boumerdes"
-                  - "Université Mentouri Constantine"
-                  - "Université Mouloud Mammeri de Tizi Ouzou"
-                  - "Université Abou Bekr Belkaid, Tlemcen"
-                majors:
-                  - 'Computer Science'
-                  - 'Data Science'
-                specialty:
-                  - 'SOFTWARE ENGINEERING'
-                  - 'ARTIFICIAL INTELLIGENCE'
-                subject:
-                  - 'Mathematics'
-                  - 'Algorithmics'
+              examples:
+                univ_results:
+                  summary: University search results
+                  value:
+                    data:
+                      - "Université M'hamed Bouguerra de Boumerdes"
+                      - "Université Mentouri Constantine"
+                major_results:
+                  summary: Major search results
+                  value:
+                    data:
+                      - 'Computer Science'
+                      - 'Data Science'
+                specialty_results:
+                  summary: Specialty search results
+                  value:
+                    data:
+                      - 'SOFTWARE ENGINEERING'
+                      - 'ARTIFICIAL INTELLIGENCE'
+                subject_results:
+                  summary: Subject search results
+                  value:
+                    data:
+                      - 'Mathematics'
+                      - 'Algorithmics'
         '400':
-          description: Missing parameters
+          description: Missing or invalid parameters
+          content:
+            application/json:
+              examples:
+                missing_params:
+                  summary: Missing mode or name
+                  value:
+                    message: 'mode and name are required'
+                missing_year_major:
+                  summary: Missing year or major (specialty/subject mode)
+                  value:
+                    message: 'year and major are required'
+                specialty_not_available:
+                  summary: Specialty not available for L1/L2/L3
+                  value:
+                    message: 'Specialization not available for this year'
+                missing_specialization:
+                  summary: Missing specialization (subject mode)
+                  value:
+                    message: 'specialization is required'
+                invalid_mode:
+                  summary: Invalid search mode
+                  value:
+                    message: 'Invalid mode'
+        '404':
+          description: No results found
           content:
             application/json:
               example:
-                message: 'choix you Mode and name'
-        '404':
-          description: No results found
+                message: 'No results found'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
 
   /api/auth/addedUserInformation:
     post:
@@ -422,23 +523,43 @@ paths:
               example:
                 message: 'information is added'
                 user_information:
+                  id_information: 1
                   university: "Université d'Alger"
                   major: 'Computer Science'
                   specialization: 'SOFTWARE ENGINEERING'
                   academic_year: 'L3'
+                  id_user: 123
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              example:
+                error: 'Unauthorized'
         '404':
           description: Error with requested data (university does not exist, info not valid, or info already added)
           content:
             application/json:
               examples:
+                not_user:
+                  summary: User role required
+                  value:
+                    message: 'you are not user'
                 univ_not_exist:
+                  summary: University not found
                   value:
                     message: 'university is not exist'
-                info_not_exist:
+                info_not_valid:
+                  summary: Information not found in database
                   value:
                     message: 'you are not added this information'
                 info_already_exist:
+                  summary: Profile already exists
                   value:
                     message: 'you added information is already exist'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+

@@ -11,7 +11,7 @@ export const requireUser = async (req, res, next) => {
   });
 
   if (!info) {
-    return res.status(403).json({
+    return res.status(422).json({
       message: 'Complete your profile first',
     });
   }
