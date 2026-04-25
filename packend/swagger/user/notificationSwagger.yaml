@@ -63,10 +63,12 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+        '422':
+          description: Unprocessable Entity - Profile information missing
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
         '500':
           description: Internal Server Error
           content:
@@ -130,10 +132,7 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
         '404':
           description: Not Found - Notification doesn't exist or doesn't belong to the user
           content:
@@ -181,10 +180,6 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
         '404':
           description: Notifications not found
           content:

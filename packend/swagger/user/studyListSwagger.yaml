@@ -57,10 +57,7 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
         '422':
           description: Unprocessable Entity - Profile information missing
           content:
@@ -128,10 +125,7 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
         '422':
           description: Unprocessable Entity - Profile information missing
           content:
@@ -200,10 +194,7 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
         '422':
           description: Unprocessable Entity - Profile information missing
           content:
@@ -373,10 +364,7 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
         '422':
           description: Unprocessable Entity - Profile information missing
           content:
@@ -446,10 +434,7 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
                 NotOwner:
                   summary: Not the owner of the study list
                   value:
@@ -491,9 +476,7 @@ paths:
           content:
             application/json:
               example:
-                studyList:
-                  id_stuList: 10
-                  name: 'Deleted List'
+                message: 'Study list deleted successfully'
         '403':
           description: Forbidden - User role not allowed, profile incomplete, or not the owner
           content:
@@ -503,20 +486,12 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
                 NotOwner:
                   summary: Not the owner
                   value:
                     error: 'You are not the owner of this study list'
-        '404':
-          description: Not Found - Study list not found
-          content:
-            application/json:
-              example:
-                error: 'Study list not found'
+
         '422':
           description: Unprocessable Entity - Profile information missing
           content:
@@ -567,10 +542,7 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
                 OwnerError:
                   summary: Cannot add own study list
                   value:
@@ -632,10 +604,6 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
         '404':
           description: Not Found - Study list not found
           content:
@@ -726,10 +694,6 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
         '404':
           description: Not Found - Study list not found or private (not yours)
           content:
@@ -788,10 +752,7 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
                 NotOwner:
                   summary: Not the owner of the study list
                   value:

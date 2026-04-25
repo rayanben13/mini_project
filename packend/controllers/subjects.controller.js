@@ -15,10 +15,6 @@ export const yourSubjects = async (req, res) => {
       where: { id_user: Me.id_user },
     });
 
-    if (!userInformation) {
-      return res.status(404).json({ error: 'User information not found' });
-    }
-
     // 📌 جلب subjects مع count (بدون N+1 problem)
     const subjects = await prisma.subjects.findMany({
       where: {

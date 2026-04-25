@@ -65,10 +65,7 @@ paths:
                   summary: Not a user role
                   value:
                     message: 'You are not user'
-                ProfileIncomplete:
-                  summary: Profile information missing
-                  value:
-                    message: 'Complete your profile first'
+
         '422':
           description: Unprocessable Entity - Profile information missing
           content:

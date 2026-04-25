@@ -119,7 +119,183 @@ components:
           example: 'Software Engineering'
         academic_year:
           type: string
+          enum: [L1, L2, L3, M1, M2]
           example: 'L3'
+
+    UpdateProfileRequest:
+      type: object
+      required:
+        - fullname
+        - univ
+        - major
+        - academic_year
+      properties:
+        fullname:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: 'Ilyes Developer'
+        univ:
+          type: string
+          minLength: 5
+          maxLength: 50
+          example: "Université d'Alger"
+        major:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: 'Computer Science'
+        spercialty:
+          type: string
+          minLength: 2
+          maxLength: 30
+          example: 'Software Engineering'
+        academic_year:
+          type: string
+          enum: [L1, L2, L3, M1, M2]
+          example: 'L3'
+        img_user:
+          type: string
+          format: binary
+          description: Profile image file (for multipart/form-data)
+
+    UploadFileRequest:
+      type: object
+      required:
+        - title
+        - univ
+        - major
+        - academic_year
+        - subject
+        - type
+        - creation_year
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: 'Calculus I Notes'
+        univ:
+          type: string
+          minLength: 5
+          maxLength: 50
+          example: "Université d'Alger"
+        major:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: 'Computer Science'
+        academic_year:
+          type: string
+          enum: [L1, L2, L3, M1, M2]
+          example: 'L3'
+        spercialty:
+          type: string
+          minLength: 2
+          maxLength: 30
+          example: 'Software Engineering'
+        subject:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: 'Mathematics'
+        type:
+          type: string
+          enum: [TD, TP, COURS, EF, CC, RESUME, OTHER]
+          example: 'COURS'
+        creation_year:
+          type: integer
+          minimum: 2000
+          maximum: 2025
+          example: 2023
+
+    ReportFileRequest:
+      type: object
+      required:
+        - reason
+        - details
+      properties:
+        reason:
+          type: string
+          enum: ['Inappropriate content', 'COPYRIGHT issuse', 'Spam or misleading', 'Incorrect information', 'Other']
+          example: 'Spam or misleading'
+        details:
+          type: string
+          minLength: 3
+          maxLength: 500
+          example: 'This file contains incorrect information about...'
+
+    LikeFileRequest:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [LIKE, DISLIKE]
+          example: 'LIKE'
+
+    StudyListRequest:
+      type: object
+      required:
+        - name
+        - subject
+        - description
+        - privacy
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: 'My Math List'
+        subject:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: 'Mathematics'
+        description:
+          type: string
+          minLength: 3
+          maxLength: 500
+          example: 'A collection of math resources'
+        privacy:
+          type: string
+          enum: [public, private]
+          example: 'public'
+
+    EditStudyListRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: 'Updated Math List'
+        description:
+          type: string
+          minLength: 3
+          maxLength: 500
+          example: 'Updated collection description'
+        privacy:
+          type: string
+          enum: [public, private]
+          example: 'private'
+
+    ReminderRequest:
+      type: object
+      required:
+        - date
+        - time
+      properties:
+        date:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+          example: '2023-12-31'
+        time:
+          type: string
+          pattern: '^([01]\d|2[0-3]):[0-5]\d$'
+          example: '14:30'
 
 paths:
   /api/auth/register:
@@ -523,12 +699,11 @@ paths:
               example:
                 message: 'information is added'
                 user_information:
-                  id_information: 1
+                  id_user: 123
                   university: "Université d'Alger"
                   major: 'Computer Science'
                   specialization: 'SOFTWARE ENGINEERING'
                   academic_year: 'L3'
-                  id_user: 123
         '401':
           description: Unauthorized
           content:

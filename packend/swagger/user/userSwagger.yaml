@@ -35,13 +35,11 @@ paths:
                         email: 'john@example.com'
                         role: 'user'
                         user_information:
-                          id_user_information: 10
                           id_user: 1
-                          bio: 'Software developer and student'
-                          univ: 'University of Science and Technology'
                           major: 'Computer Science'
-                          specialization: 'AI'
                           academic_year: 'M1'
+                          specialization: 'AI'
+                          university: 'University of Science and Technology'
                       stats:
                         following: 15
                         followers: 120
@@ -63,24 +61,20 @@ paths:
               example:
                 message: 'Unauthorized'
         '403':
-          description: Forbidden - Access denied
+          description: access denied
           content:
             application/json:
               examples:
                 NotAUser:
                   summary: User role is not 'user'
                   value:
-                    message: "You are not user"
-                NotAuthorized:
-                  summary: Not authorized to view this profile
-                  value:
-                    message: "You are not authorized to view this profile"
+                    message: 'You are not user'
         '422':
           description: Unprocessable Entity - User profile incomplete
           content:
             application/json:
               example:
-                message: "Complete your profile first"
+                message: 'Complete your profile first'
         '404':
           description: User not found
           content:
@@ -125,23 +119,44 @@ paths:
                         email: 'alice@example.com'
                         role: 'user'
                         user_information:
-                          id_user_information: 15
-                          bio: 'Researcher in Physics'
-                          university: 'MIT'
+                          id_user: 20
                           major: 'Physics'
-                          specialization: 'Quantum'
                           academic_year: 'Doc'
+                          specialization: 'Quantum'
+                          university: 'MIT'
                       stats:
                         following: 45
                         followers: 89
                         upload: 12
                       status: 'FOLLOWING'
-                NotFollowing:
+                None:
                   summary: Profile of a user you do not follow
-                  value: { "result": { "user": { "id_user": 21 }, "stats": { "following": 10 }, "status": "NOT_FOLLOWING" } }
-                Self:
+                  value:
+                    result:
+                      user: { 'id_user': 21 }
+                      stats: { 'following': 10 }
+                      status: 'NONE'
+                Me:
                   summary: Viewing your own profile via this endpoint
-                  value: { "result": { "user": { "id_user": 1 }, "stats": { "following": 15 }, "status": "SELF" } }
+                  value:
+                    result:
+                      user: { 'id_user': 1 }
+                      stats: { 'following': 15 }
+                      status: 'ME'
+                Mutual:
+                  summary: Mutual following relationship
+                  value:
+                    result:
+                      user: { 'id_user': 22 }
+                      stats: { 'following': 50 }
+                      status: 'MUTUAL'
+                FollowedBy:
+                  summary: This user follows you, but you don't follow them
+                  value:
+                    result:
+                      user: { 'id_user': 23 }
+                      stats: { 'following': 30 }
+                      status: 'FOLLOWED_BY'
         '403':
           description: Forbidden - Access denied
           content:
@@ -150,17 +165,17 @@ paths:
                 NotAUser:
                   summary: User role is not 'user'
                   value:
-                    message: "You are not user"
+                    message: 'You are not user'
                 NotAuthorized:
                   summary: Not authorized to view this profile
                   value:
-                    message: "You are not authorized to view this profile"
+                    message: 'You are not authorized to view this profile'
         '422':
           description: Unprocessable Entity - User profile incomplete
           content:
             application/json:
               example:
-                message: "Complete your profile first"
+                message: 'Complete your profile first'
         '404':
           description: User not found
           content:
@@ -213,17 +228,17 @@ paths:
                 NotAUser:
                   summary: User role is not 'user'
                   value:
-                    message: "You are not user"
+                    message: 'You are not user'
                 NotAuthorized:
                   summary: Not authorized to follow this user
                   value:
-                    message: "You are not authorized to follow this user"
+                    message: 'You are not authorized to follow this user'
         '422':
           description: Unprocessable Entity - User profile incomplete
           content:
             application/json:
               example:
-                message: "Complete your profile first"
+                message: 'Complete your profile first'
         '404':
           description: User not found
           content:
@@ -277,17 +292,17 @@ paths:
                 NotAUser:
                   summary: User role is not 'user'
                   value:
-                    message: "You are not user"
+                    message: 'You are not user'
                 NotAuthorized:
                   summary: Not authorized to unfollow this user
                   value:
-                    message: "You are not authorized to unfollow this user"
+                    message: 'You are not authorized to unfollow this user'
         '422':
           description: Unprocessable Entity - User profile incomplete
           content:
             application/json:
               example:
-                message: "Complete your profile first"
+                message: 'Complete your profile first'
         '404':
           description: User not found
           content:
@@ -315,18 +330,37 @@ paths:
               properties:
                 fullname:
                   type: string
+                  minLength: 3
+                  maxLength: 30
+                  example: 'Ilyes Developer'
+                  required: true
                 univ:
                   type: string
+                  minLength: 5
+                  maxLength: 50
                   description: University name
+                  required: true
+                  example: "Université d'Alger"
                 major:
                   type: string
+                  minLength: 3
+                  maxLength: 30
                   description: Major name
+                  required: true
+                  example: 'Computer Science'
                 spercialty:
                   type: string
-                  description: Specialty name
+                  minLength: 2
+                  maxLength: 30
+                  description: Specialty name (Matches Joi schema typo)
+                  required: true
+                  example: 'Software Engineering'
                 academic_year:
                   type: string
-                  description: Academic year (e.g., L1, L2, L3, M1, M2)
+                  enum: [L1, L2, L3, M1, M2]
+                  description: Academic year
+                  required: true
+                  example: 'L3'
                 img_user:
                   type: string
                   format: binary
@@ -344,8 +378,7 @@ paths:
                 email: 'john@example.com'
                 role: 'user'
                 user_information:
-                  id_user_information: 10
-                  bio: 'Updated bio'
+                  id_user: 1
                   university: 'USTHB'
                   major: 'Computer Science'
                   specialization: 'AI'
@@ -361,12 +394,9 @@ paths:
           content:
             application/json:
               examples:
-                MajorNotExist:
-                  summary: Major not found
-                  value: { "message": "major is not exist" }
                 InfoNotExist:
                   summary: Information record not found
-                  value: { "message": "information is not exist" }
+                  value: { 'message': 'information is not exist' }
         '403':
           description: Forbidden - Access denied
           content:
@@ -375,17 +405,17 @@ paths:
                 NotAUser:
                   summary: User role is not 'user'
                   value:
-                    message: "You are not user"
+                    message: 'You are not user'
                 UserNotExist:
                   summary: User record not found
                   value:
-                    message: "user is not exist"
+                    message: 'user is not exist'
         '422':
           description: Unprocessable Entity - User profile incomplete
           content:
             application/json:
               example:
-                message: "Complete your profile first"
+                message: 'Complete your profile first'
         '500':
           description: Server error
           content:

@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 
-export const io = new Server(3000, {
+export const io = new Server(5001, {
   cors: { origin: '*' },
 });
 

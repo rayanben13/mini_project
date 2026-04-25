@@ -18,10 +18,6 @@ export const showTopFilesForUser = async (req, res) => {
       where: { id_user: Me.id_user },
     });
 
-    if (!userInformation) {
-      return res.status(404).json({ error: 'User information not found' });
-    }
-    console.log(userInformation);
     const total_files = await prisma.files.count({
       where: {
         status: 'accepted',

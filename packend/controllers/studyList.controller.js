@@ -24,17 +24,13 @@ export const showRecommendedStudyList = async (req, res) => {
       where: { id_user: Me.id_user },
     });
 
-    if (!userInformation) {
-      return res.status(404).json({ error: 'User information not found' });
-    }
-
     // 📌 جلب study lists مع count (بدون N+1 problem)
     const studyLists = await prisma.study_lists.findMany({
       where: {
         subjects: {
-          academic_year: userInformation.academic_year,
-          major: userInformation.major,
-          specialization: userInformation.specialization,
+          academic_year: userInformation?.academic_year,
+          major: userInformation?.major,
+          specialization: userInformation?.specialization,
         },
         privacy: 'public',
       },
@@ -557,7 +553,7 @@ export const deleteStudyList = async (req, res) => {
       },
     });
 
-    return res.status(200).json({ studyList });
+    return res.status(200).json({ message: 'Study list deleted successfully' });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
