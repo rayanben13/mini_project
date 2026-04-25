@@ -484,9 +484,7 @@ export const addedUserInformation = async (req, res) => {
       },
     });
     if (!infoExist) {
-      return res
-        .status(404)
-        .json({ message: 'you are not added this information' });
+      return res.status(404).json({ message: 'information is not exist' });
     }
     const result = await prisma.user_information.findFirst({
       where: {
