@@ -1,18 +1,26 @@
-import { create } from 'zustand';
-import axios from 'axios';
+import { create } from "zustand";
+import axios from "axios";
 
-const API_URL = 'http://localhost:5000/api/auth';
+const API_URL = "http://localhost:5000/api/auth";
 
-const savedToken = localStorage.getItem('token');
-
-const AuthStore = create((set) => ({
+const AuthStore = create((set, get) => ({
   user: {
-    token: savedToken || '',
+    token: null,
   },
 
   loading: false,
-  statusUser: {
-    statusUS: false,
+  isAuthenticated: false,
+
+  // ✅ init auth from localStorage (safe for Next.js)
+  initAuth: () => {
+    if (typeof window === "undefined") return;
+
+    const token = localStorage.getItem("token");
+
+    set({
+      user: { token },
+      isAuthenticated: !!token,
+    });
   },
 
   login: async ({ email, password }) => {
@@ -52,29 +60,30 @@ const AuthStore = create((set) => ({
     }
   },
 
-  signup: async ({ fullname, username, email, password }) => {
-    try {
-      set({ loading: true });
+signup: async ({ fullname, username, email, password }) => {
+  try {
+    set({ loading: true });
 
-      const response = await axios.post(`${API_URL}/register`, {
-        fullname,
-        username,
-        email,
-        password,
-      });
+    const res = await axios.post(`${API_URL}/register`, {
+      fullname,
+      username,
+      email,
+      password,
+    });
 
-      return { success: true };
-    } catch (error) {
-      console.error('Login error:', error.response?.data?.error);
-
-      return {
-        success: false,
-        message: error.response?.data?.error || 'Server error',
-      };
-    } finally {
-      set({ loading: false });
-    }
-  },
+    return {
+      success: true,
+      data: res.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.error || "Server error",
+    };
+  } finally {
+    set({ loading: false });
+  }
+},
 
   verifyEmail: async ({ email, code }) => {
     try {

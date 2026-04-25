@@ -18,6 +18,7 @@ const useFilesStore = create((set) => ({
     set({ loading: true });
     try {
       const response = await axios.get(`${FILES_API_URL}/showTopFilesForUser`, useFilesStore.getState().getAuthHeader());
+      
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
