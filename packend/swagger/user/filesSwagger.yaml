@@ -1,0 +1,690 @@
+tags:
+  - name: Files
+    description: File upload, interaction, and management
+
+paths:
+  /api/files/showTopFilesForUser:
+    get:
+      summary: Show top recommended files for the user
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Limit the number of files returned (max 50)
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+      responses:
+        '200':
+          description: A list of top files recommended for the user based on their profile
+          content:
+            application/json:
+              example:
+                meta:
+                  current_page: 1
+                  last_page: 5
+                  per_page: 10
+                  total_files: 48
+                  from: 1
+                  to: 10
+                data:
+                  - id_file: 1
+                    file_path: 'https://res.cloudinary.com/...'
+                    title: 'Calculus I Notes'
+                    type: 'TP'
+                    major: 'Computer Science'
+                    specialization: 'AI'
+                    academic_year: 'L1'
+                    course: 'Mathematics'
+                    likes_count: 25
+                    status: 'accepted'
+        '401':
+          description: Unauthorized - Token missing or invalid
+          content:
+            application/json:
+              example:
+                error: 'Unauthorized'
+        '403':
+          description: Forbidden - User role is not 'user'
+          content:
+            application/json:
+              example:
+                message: 'You are not user'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/files/showfilesLikes:
+    get:
+      summary: Show files that the user has liked
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: A list of files the user has liked
+          content:
+            application/json:
+              example:
+                meta:
+                  current_page: 1
+                  last_page: 2
+                  per_page: 10
+                  total_files: 15
+                  from: 1
+                  to: 10
+                data:
+                  - id: 5
+                    id_user: 10
+                    id_file: 12
+                    type: 'LIKE'
+                    file_path: 'https://...'
+                    title: 'Physics Lecture'
+                    type_file: 'TD'
+                    major: 'Physics'
+                    specialization: null
+                    academic_year: 'L2'
+                    course: 'Quantum Mechanics'
+                    status: 'accepted'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                error: 'Unauthorized'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              example:
+                message: 'You are not user'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/files/showMyFiles:
+    get:
+      summary: Show files uploaded by the user
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: A list of files uploaded by the user
+          content:
+            application/json:
+              example:
+                meta:
+                  current_page: 1
+                  last_page: 1
+                  per_page: 10
+                  total_files: 3
+                  from: 1
+                  to: 3
+                data:
+                  - id_file: 20
+                    file_path: 'https://...'
+                    title: 'My Lab Report'
+                    type_file: 'TP'
+                    major: 'Biology'
+                    specialization: 'Botany'
+                    academic_year: 'L3'
+                    course: 'Plant Biology'
+                    status: 'accepted'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                error: 'Unauthorized'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              example:
+                message: 'You are not user'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/files/showDetailFile/{id_file}:
+    get:
+      summary: Get details of a specific file
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detailed information about the file
+          content:
+            application/json:
+              example:
+                id_file: 1
+                file_path: 'https://...'
+                title: 'Calculus I Notes'
+                creation_year: '2023'
+                type: 'TP'
+                status: 'accepted'
+                approved_at: '2023-11-01T12:00:00Z'
+                subjects:
+                  major: 'Computer Science'
+                  specialization: 'AI'
+                  academic_year: 'L1'
+                  course: 'Mathematics'
+                  university: 'USTHB'
+                users:
+                  id_user: 5
+                  fullname: 'Jane Doe'
+                  username: 'jane_d'
+                  img_user: 'https://...'
+                like: 45
+                dislike: 2
+                statusLike: 'LIKE'
+        '400':
+          description: Bad Request - Missing ID
+          content:
+            application/json:
+              example:
+                error: 'File ID is required'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: User role is not 'user'
+                  value:
+                    message: 'You are not user'
+                FileNotFound:
+                  summary: File not found (Access restricted)
+                  value:
+                    error: 'File not found'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: Not Found - File not found
+          content:
+            application/json:
+              example:
+                error: 'File not found'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/files/UplodeNewFile:
+    post:
+      summary: Upload a new file
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                univ:
+                  type: string
+                  description: University name
+                major:
+                  type: string
+                  description: Major name
+                academic_year:
+                  type: string
+                  description: Academic year (L1, L2, etc.)
+                spercialty:
+                  type: string
+                  description: Specialization name
+                subject:
+                  type: string
+                  description: Course name
+                type:
+                  type: string
+                  description: File type (TP/TD/COURS...)
+                creation_year:
+                  type: integer
+                file:
+                  type: string
+                  format: binary
+              required:
+                [
+                  title,
+                  univ,
+                  major,
+                  academic_year,
+                  type,
+                  file,
+                  subject,
+                  creation_year,
+                ]
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              example:
+                message: 'File uploaded successfully'
+                file:
+                  id_file: 101
+                  id_user: 5
+                  id_subject: 2
+                  title: 'New Lecture'
+                  creation_year: '2024'
+                  type: 'TD'
+                  file_path: 'https://res.cloudinary.com/...'
+                  status: 'pending'
+                  created_at: '2024-04-23T20:00:00Z'
+                  approved_at: null
+        '400':
+          description: Bad Request - No file uploaded
+          content:
+            application/json:
+              example:
+                message: 'No file uploaded'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: User role is not 'user'
+                  value:
+                    message: 'You are not user'
+                InfoNotExist:
+                  summary: Subject information not found
+                  value:
+                    message: 'information is not exist'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: Not Found - university not in database
+          content:
+            application/json:
+              example:
+                message: 'university is not exist'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/files/deleteMeOwnfile/{id_file}:
+    delete:
+      summary: Delete user's own file (must be accepted first)
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: File deleted successfully
+          content:
+            application/json:
+              example:
+                message: 'File deleted successfully'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              example:
+                message: 'You are not user'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: Not Found - File not found, not accepted, or user is not the owner
+          content:
+            application/json:
+              example:
+                error: 'File not found or not accepted or not owner'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Failed to delete file'
+
+  /api/files/reportFile/{id_file}:
+    post:
+      summary: Report a file for violations
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                details:
+                  type: string
+              required: [reason]
+      responses:
+        '200':
+          description: File reported successfully
+          content:
+            application/json:
+              example:
+                id_report: 1
+                id_user: 5
+                id_file: 12
+                reason: 'Inappropriate content'
+                details: 'Explicit language used'
+                created_at: '2024-04-23T20:00:00Z'
+        '400':
+          description: Bad Request - Already reported by this user
+          content:
+            application/json:
+              example:
+                error: 'You already reported this file'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: User role is not 'user'
+                  value:
+                    message: 'You are not user'
+                OwnFileReport:
+                  summary: Cannot report own file
+                  value:
+                    error: 'You cannot report your own file'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: Not Found - File not found or not currently accepted
+          content:
+            application/json:
+              example:
+                error: 'File not found or not accepted'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Failed to report file'
+
+  /api/files/likeOrDislikeFile/{id_file}:
+    post:
+      summary: Like or dislike a file (Toggle)
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [LIKE, DISLIKE]
+              required: [type]
+      responses:
+        '200':
+          description: Reaction added or updated
+          content:
+            application/json:
+              example:
+                message: 'processed successfully'
+                like:
+                  id_user_id_file: { id_user: 5, id_file: 12 }
+                  id_user: 5
+                  id_file: 12
+                  type: 'LIKE'
+        '201':
+          description: Reaction removed (Toggled off)
+          content:
+            application/json:
+              example:
+                message: 'Reaction removed'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              example:
+                message: 'You are not user'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: Not Found - File not found or not accepted
+          content:
+            application/json:
+              example:
+                error: 'File not found or not accepted'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Failed to process like'
+
+  /api/files/saveFileToStudyList/{id_file}/{id_study_list}:
+    post:
+      summary: Save a file to a specific study list
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: id_study_list
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: File saved successfully
+          content:
+            application/json:
+              example:
+                message: 'File saved to study list successfully'
+                savedFile:
+                  id_stuList: 5
+                  id_file: 12
+        '400':
+          description: Bad Request - File already exists in this study list
+          content:
+            application/json:
+              example:
+                error: 'File already saved to study list'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: User role is not 'user'
+                  value:
+                    message: 'You are not user'
+                NotYourStudyList:
+                  summary: Not the owner of the study list
+                  value:
+                    error: 'this is not your study list'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: Not Found - File not found or not accepted
+          content:
+            application/json:
+              example:
+                error: 'File not found or not accepted'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Failed to save file to study list'
+
+  /api/files/download/{id_file}:
+    get:
+      summary: Download a file (Redirects to Cloudinary with attachment header)
+      tags: [Files]
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      responses:
+        '302':
+          description: Redirect to the Cloudinary URL with fl_attachment parameter
+        '404':
+          description: Not Found - File not found or not accepted
+          content:
+            application/json:
+              example:
+                error: 'File not found or not accepted'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Failed to download file'
+
+  /api/files/getShareLink/{id_file}:
+    get:
+      summary: Generate a share link for a file
+      tags: [Files]
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Public share link returned
+          content:
+            application/json:
+              example:
+                link: 'http://localhost:3000/files/12'
+        '404':
+          description: Not Found - File not found or not accepted
+          content:
+            application/json:
+              example:
+                error: 'File not found or not accepted'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'

@@ -87,3 +87,23 @@ export const sendWelcomeEmail = async (email, name) => {
 
   console.log(`📨 Welcome email sent to ${email}`);
 };
+
+export const sendReminderEmail = async (email, name) => {
+  const subject = 'Reminder to study';
+  const html = `
+    <div style="font-family: Arial, sans-serif; text-align: center;">
+      <h2>Reminder to study</h2>
+      <p>Hi ${name},</p>
+      <p>It's time to study!</p>
+    </div>
+  `;
+
+  await sendEmail({
+    to: email,
+    subject,
+    text: `Hi ${name}, It's time to study!`,
+    html,
+  });
+
+  console.log(`📨 Reminder email sent to ${email}`);
+};

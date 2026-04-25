@@ -1,210 +1,300 @@
-import Cookies from "js-cookie";
-import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
-import { authService } from "../services/authService";
-import { tokenManager } from "../utils/tokenManager";
+import { create } from 'zustand';
+import axios from 'axios';
 
-// Initialize isAuthenticated based on token existence
-const initialIsAuthenticated = tokenManager.exists();
+const API_URL = 'http://localhost:5000/api/auth';
 
-const initialState = {
-  user: null,
+const savedToken = localStorage.getItem('token');
+
+const AuthStore = create((set) => ({
+  user: {
+    token: savedToken || '',
+  },
+
   loading: false,
-  error: null,
-  isAuthenticated: initialIsAuthenticated, // Add this line
-};
+  statusUser: {
+    statusUS: false,
+  },
 
-const useAuthStore = create(
-  devtools(
-    persist(
-      (set, get) => ({
-        ...initialState,
+  login: async ({ email, password }) => {
+    try {
+      set({ loading: true });
 
-        // Helper to handle async operations
-        handleAsync: async (asyncFn, onSuccess, onError) => {
-          set({ loading: true, error: null });
-          try {
-            const result = await asyncFn();
-            if (onSuccess) onSuccess(result);
-            return { success: true, data: result };
-          } catch (error) {
-            let errorMessage = "Server error";
+      const response = await axios.post(`${API_URL}/login`, {
+        email,
+        password,
+      }, { withCredentials: true });
 
-            // Properly handle different error types
-            if (error.response) {
-              // Server responded with error
-              errorMessage =
-                error.response.data?.error ||
-                error.response.data?.message ||
-                errorMessage;
-            } else if (error.request) {
-              // No response from server
-              errorMessage =
-                "No response from server. Please check your internet connection.";
-            } else {
-              // Request setup error or custom error
-              errorMessage = error.message || errorMessage;
-            }
+      localStorage.setItem('token', response.data.accessToken);
 
-            set({ error: errorMessage });
-
-            // Call custom error handler if provided
-            if (onError) {
-              return onError(error);
-            }
-
-            return { success: false, message: errorMessage };
-          } finally {
-            set({ loading: false });
-          }
+      set((state) => ({
+        user: {
+          token: response.data.accessToken,
         },
+        statusUser: { statusUS: true },
+      }));
 
-        login: async (email, password) => {
-          return get().handleAsync(
-            async () => {
-              const response = await authService.login(email, password);
-              console.log("Login response:", response);
-
-              const userData = response.data || response;
-
-              // التحقق من وجود التوكن مباشرة
-              if (userData && userData.accessToken) {
-                Cookies.set("accessToken", userData.accessToken, {
-                  expires: 7,
-                  path: "/", // لضمان وصول الكوكي لكل الصفحات
-                  sameSite: "strict",
-                  secure: process.env.NODE_ENV === "production",
-                });
-                tokenManager.set(userData.accessToken);
-
-                set({
-                  user: {
-                    token: userData.accessToken,
-                    email: userData.user?.email || email,
-                    username: userData.user?.username,
-                    avatar: userData.user?.avatar,
-                    role: userData.user?.role,
-                  },
-                  isAuthenticated: true,
-                });
-
-                return { success: true, data: userData };
-              }
-              return {
-                success: false,
-                message: "Invalid response from server",
-              };
-            },
-            undefined,
-            async (error) => {
-              const isEmailNotVerified =
-                error.response?.status === 403 &&
-                (error.response.data?.verified === false ||
-                  error.response.data?.error?.includes("Email not verified"));
-
-              if (isEmailNotVerified) {
-                return {
-                  success: false,
-                  message: error.response.data.error || "Email not verified",
-                  emailNotVerified: true,
-                  email: error.response.data.email || email,
-                };
-              }
-
-              const errorMessage =
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                error.message ||
-                "Login failed";
-              return { success: false, message: errorMessage };
-            },
-          );
+      return { success: true };
+    } catch (error) {
+      set({
+        statusUser: {
+          statusUS: false,
         },
+      });
 
-        signup: async (fullname, username, email, password) => {
-          return get().handleAsync(() =>
-            authService.signup(fullname, username, email, password),
-          );
+      console.error('Login error:', error.response?.data?.error);
+
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  signup: async ({ fullname, username, email, password }) => {
+    try {
+      set({ loading: true });
+
+      const response = await axios.post(`${API_URL}/register`, {
+        fullname,
+        username,
+        email,
+        password,
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Login error:', error.response?.data?.error);
+
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  verifyEmail: async ({ email, code }) => {
+    try {
+      console.log('Verifying email:', email, 'with code:', code);
+      set({ loading: true });
+
+      const response = await axios.post(`${API_URL}/verify`, {
+        email,
+        code,
+      }, { withCredentials: true });
+
+      localStorage.setItem('token', response.data.accessToken);
+
+      set({
+        user: {
+          token: response.data.accessToken,
         },
+      });
 
-        verifyEmail: async (email, code) => {
-          return get().handleAsync(
-            () => authService.verifyEmail(email, code),
-            (data) => {
-              tokenManager.set(data.accessToken);
-              set({
-                user: {
-                  token: data.accessToken,
-                  email: data.user.email, // Add user email
-                  username: data.user.username, // Add username
-                  avatar: data.user.avatar,
-                },
-                isAuthenticated: true, // Update this state
-              });
-            },
-          );
+      return { success: true };
+    } catch (error) {
+      console.error('Login error:', error.response?.data?.error);
+
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  resendVerificationCode: async ({ email }) => {
+    try {
+      set({ loading: true });
+
+      await axios.post(`${API_URL}/resendVerificationCode`, {
+        email,
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Login error:', error.response?.data?.error);
+
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  forgetPassword: async ({ email }) => {
+    try {
+      set({ loading: true });
+
+      await axios.post(`${API_URL}/forgotPassword`, {
+        email,
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Upload error:', error.response?.data?.error);
+
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  resetPassword: async ({ email, password, token }) => {
+    try {
+      set({ loading: true });
+
+      await axios.patch(`${API_URL}/resetPassword/${token}`, {
+        email,
+        password,
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Upload error:', error.response?.data?.error);
+
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  searchMoreInformation: async ({
+    mode,
+    name,
+    year,
+    major,
+    specialization,
+  }) => {
+    try {
+      set({ loading: true });
+
+      const params = { mode, name };
+      if (year) params.year = year;
+      if (major) params.major = major;
+      if (specialization) params.specialization = specialization;
+
+      const response = await axios.get(`${API_URL}/SharchMoreInformation`, {
+        params,
+      });
+
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error(
+        'Search error:',
+        error.response?.data?.error || error.response?.data?.message
+      );
+
+      return {
+        success: false,
+        message:
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  addedUserInformation: async ({ univ, major, spercialty, academic_year }) => {
+    try {
+      set({ loading: true });
+      const { token } = AuthStore.getState().user;
+
+      const response = await axios.post(
+        `${API_URL}/addedUserInformation`,
+        { univ, major, spercialty, academic_year },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error(
+        'Save info error:',
+        error.response?.data?.error || error.response?.data?.message
+      );
+
+      return {
+        success: false,
+        message:
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  refreshToken: async () => {
+    try {
+      set({ loading: true });
+      const response = await axios.post(`${API_URL}/token`, {}, { withCredentials: true });
+      
+      localStorage.setItem('token', response.data.accessToken);
+      
+      set((state) => ({
+        user: {
+          ...state.user,
+          token: response.data.accessToken,
         },
+      }));
+      
+      return { success: true, accessToken: response.data.accessToken };
+    } catch (error) {
+      console.error('Refresh token error:', error.response?.data?.error);
+      
+      // If refresh token fails, we should probably logout or clear state
+      set({
+        user: { token: '' },
+        statusUser: { statusUS: false },
+      });
+      localStorage.removeItem('token');
 
-        resendVerificationCode: async (email) => {
-          return get().handleAsync(() =>
-            authService.resendVerificationCode(email),
-          );
-        },
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
 
-        forgotPassword: async (email) => {
-          return get().handleAsync(() => authService.forgotPassword(email));
-        },
+  logout: async () => {
+    localStorage.removeItem('token');
+    try {
+      set({ loading: true });
 
-        resetPassword: async (email, password, token) => {
-          return get().handleAsync(() =>
-            authService.resetPassword(email, password, token),
-          );
-        },
+      await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
 
-        searchMoreInformation: async (params) => {
-          return get().handleAsync(() =>
-            authService.searchMoreInformation(params),
-          );
-        },
+      set({
+        user: { id: null, token: '' },
+        statusUser: { statusUS: false },
+      });
+    } catch (error) {
+      console.error('Logout error:', error.response?.data?.error);
 
-        addUserInformation: async (univ, major, spercialty, academic_year) => {
-          return get().handleAsync(() =>
-            authService.addUserInformation(
-              univ,
-              major,
-              spercialty,
-              academic_year,
-            ),
-          );
-        },
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+}));
 
-        logout: async () => {
-          tokenManager.remove();
-          try {
-            await authService.logout();
-            Cookies.remove("accessToken");
-          } catch (error) {
-            console.error("Logout error:", error);
-          } finally {
-            set({
-              ...initialState,
-              user: null,
-              isAuthenticated: false, // Update this state
-            });
-          }
-        },
-
-        clearError: () => set({ error: null }),
-      }),
-      {
-        name: "auth-storage",
-        partialize: (state) => ({
-          user: state.user,
-          isAuthenticated: state.isAuthenticated, // Persist this state
-        }),
-      },
-    ),
-  ),
-);
-
-export default useAuthStore;
+export default AuthStore;

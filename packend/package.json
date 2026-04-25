@@ -9,6 +9,9 @@
     "start": "set NODE_ENV=production && node server.js"
   },
   "type": "module",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -20,7 +23,7 @@
     "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "dayjs": "^1.11.19",
+    "dayjs": "^1.11.20",
     "dotenv": "^17.3.1",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
@@ -31,16 +34,19 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "node-cron": "^4.2.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.20.0",
     "relative-time-format": "^1.1.12",
     "sib-api-v3-sdk": "^8.5.0",
+    "socket.io": "^4.8.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.5.0",
     "@types/node": "^25.3.5",
     "@types/pg": "^8.18.0",
     "nodemon": "^3.1.14",

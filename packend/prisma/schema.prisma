@@ -10,7 +10,7 @@ model daily_reminders {
   id            Int          @id @default(autoincrement())
   id_user       Int?
   id_stuList    Int?
-  reminder_time DateTime?    @db.Time(6)
+  reminder_time DateTime?    
   created_at    DateTime?    @default(now()) @db.Timestamp(6)
   study_lists   study_lists? @relation(fields: [id_stuList], references: [id_stuList], onDelete: Cascade, onUpdate: NoAction)
   users         users?       @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
@@ -20,13 +20,19 @@ model daily_reminders {
   @@index([id_user], map: "idx_reminders_user")
 }
 
+enum ReportStatus {
+  pending
+  reviewed
+  ignored
+}
+
 model file_reports {
   id_report  Int       @id @default(autoincrement())
   id_user    Int?
   id_file    Int?
   reason     String
   details    String?
-  status     String?   @default("pending") @db.VarChar
+  status     ReportStatus @default(pending)
   handled_at DateTime? @db.Timestamp(6)
   created_at DateTime? @default(now()) @db.Timestamp(6)
   files      files?    @relation(fields: [id_file], references: [id_file], onDelete: Cascade, onUpdate: NoAction)
@@ -37,7 +43,25 @@ model file_reports {
   @@index([id_user], map: "idx_reports_user")
 }
 
+enum FileType {
+  TD
+  TP
+  COURS
+  EF
+  CC
+  RESUME
+  OTHER
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+
+
+enum FileStatus {
+  pending
+  accepted
+  rejected
+}
+
 model files {
   id_file          Int                @id @default(autoincrement())
   id_user          Int
@@ -45,16 +69,15 @@ model files {
   title            String             @db.VarChar
   creation_year    String             @db.VarChar
   file_path        String
-  file_hash        String             @db.VarChar
-  type             String             @db.VarChar
-  status           String?            @default("pending") @db.VarChar
+  file_hash        String?             @db.VarChar
+  type             FileType
+  status           FileStatus         @default(pending)
   approved_at      DateTime?          @db.Timestamp(6)
   created_at       DateTime?          @default(now()) @db.Timestamp(6)
-  university       String?            @db.VarChar(255)
   file_reports     file_reports[]
   subjects         subjects           @relation(fields: [id_subject], references: [id_subject], onDelete: Cascade, onUpdate: NoAction)
   users            users              @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
-  interaction      interaction[]
+  files_likes      files_likes[]
   study_list_files study_list_files[]
 
   @@index([id_subject], map: "idx_files_subject")
@@ -78,31 +101,53 @@ model follows {
   @@index([following_id], map: "idx_follows_following")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model interaction {
-  id          Int          @id @default(autoincrement())
-  id_user     Int?
-  id_file     Int?
-  id_stuList  Int?
-  type        String?      @db.VarChar
-  created_at  DateTime?    @default(now()) @db.Timestamp(6)
-  files       files?       @relation(fields: [id_file], references: [id_file], onDelete: Cascade, onUpdate: NoAction)
-  study_lists study_lists? @relation(fields: [id_stuList], references: [id_stuList], onDelete: Cascade, onUpdate: NoAction)
-  users       users?       @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([id_file], map: "idx_interaction_file")
-  @@index([id_stuList], map: "idx_interaction_list")
-  @@index([type], map: "idx_interaction_type")
-  @@index([id_user], map: "idx_interaction_user")
+enum FileLikeType {
+  LIKE
+  DISLIKE
+}
+model files_likes {
+  id        Int   @id @default(autoincrement())
+  id_user   Int
+  id_file   Int
+  type      FileLikeType
+  created_at DateTime @default(now())
+
+  files files @relation(fields: [id_file], references: [id_file], onDelete: Cascade)
+  users users @relation(fields: [id_user], references: [id_user], onDelete: Cascade)
+
+  @@unique([id_user, id_file])
+  @@index([id_file])
+  @@index([id_user])
 }
 
+
+model studyList_likes {
+  id         Int   @id @default(autoincrement())
+  id_user    Int
+  id_stuList Int
+  created_at DateTime @default(now())
+
+  study_lists study_lists @relation(fields: [id_stuList], references: [id_stuList], onDelete: Cascade)
+  users users @relation(fields: [id_user], references: [id_user], onDelete: Cascade)
+
+  @@unique([id_user, id_stuList])
+  @@index([id_user])
+  @@index([id_stuList])
+}
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+enum RelatedType {
+  user
+  file
+  study_list
+}
+
 model notifications {
   id_notification Int       @id @default(autoincrement())
   id_user         Int?
   message         String
   related_id      Int?
-  related_type    String?   @db.VarChar
+  related_type    RelatedType
   is_read         Boolean?  @default(false)
   created_at      DateTime? @default(now()) @db.Timestamp(6)
   users           users?    @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: NoAction)
@@ -124,16 +169,21 @@ model study_list_files {
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+enum Privacy {
+  public
+  private
+}
+
 model study_lists {
   id_stuList        Int                 @id @default(autoincrement())
   id_user           Int
   id_subject        Int
   name              String              @db.VarChar
   description       String              @db.VarChar
-  privacy           String?             @default("public") @db.VarChar
+  privacy           Privacy             @default(public)
   created_at        DateTime?           @default(now()) @db.Timestamp(6)
   daily_reminders   daily_reminders[]
-  interaction       interaction[]
+  studyList_likes   studyList_likes[]
   saved_study_lists saved_study_lists[]
   study_list_files  study_list_files[]
   subjects          subjects            @relation(fields: [id_subject], references: [id_subject], onDelete: Cascade, onUpdate: NoAction)
@@ -143,14 +193,23 @@ model study_lists {
   @@index([id_subject], map: "idx_study_lists_subject")
   @@index([id_user], map: "idx_study_lists_user")
 }
+enum AcademicYear {
+ L1
+ L2
+ L3
+ M1
+ M2
+}
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model subjects {
   id_subject     Int           @id @default(autoincrement())
-  academic_year  String        @db.VarChar
+  university     String?   @db.VarChar(255)
+  academic_year  AcademicYear        
   major          String        @db.VarChar
   specialization String?       @db.VarChar
   course         String        @db.VarChar
+  course_description String?   @db.VarChar
   created_at     DateTime?     @default(now()) @db.Timestamp(6)
   files          files[]
   study_lists    study_lists[]
@@ -165,7 +224,7 @@ model university_majors {
   course         String?   @db.VarChar
   course_description String?   @db.VarChar
   major          String?   @db.VarChar
-  academic_year  String    @db.VarChar
+  academic_year  AcademicYear    
   specialization String?   @db.VarChar
 
   created_at     DateTime? @default(now()) @db.Timestamp(6)
@@ -175,7 +234,7 @@ model university_majors {
 model user_information {
   id_user        Int       @id
   major          String    @db.VarChar
-  academic_year  String    @db.VarChar
+  academic_year  AcademicYear
   specialization String?   @db.VarChar
   created_at     DateTime? @default(now()) @db.Timestamp(6)
   university     String?   @db.VarChar(255)
@@ -183,6 +242,12 @@ model user_information {
 
   @@index([major], map: "idx_user_information_major")
   @@index([academic_year], map: "idx_user_information_year")
+}
+
+enum Roles {
+  user
+  admin
+  guest
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -194,7 +259,7 @@ model users {
   email                               String              @unique @db.VarChar
   password                            String              @db.VarChar
   is_active                           Boolean?            @default(false)
-  role                                String?             @default("guest") @db.VarChar
+  role                                Roles               @default(guest)
   level                               Int?                @default(1)
   created_at                          DateTime?           @default(now()) @db.Timestamp(6)
   daily_reminders                     daily_reminders[]
@@ -202,7 +267,8 @@ model users {
   files                               files[]
   follows_follows_follower_idTousers  follows[]           @relation("follows_follower_idTousers")
   follows_follows_following_idTousers follows[]           @relation("follows_following_idTousers")
-  interaction                         interaction[]
+  files_likes                         files_likes[]
+  studyList_likes                     studyList_likes[]
   notifications                       notifications[]
   saved_study_lists                   saved_study_lists[]
   study_lists                         study_lists[]

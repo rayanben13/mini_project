@@ -1,0 +1,424 @@
+tags:
+  - name: User
+    description: User profile and social operations
+
+paths:
+  /api/user/MyInformation:
+    get:
+      summary: Get current authenticated user profile
+      tags: [User]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: ProfileDropdown
+          schema:
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
+          description: If true, returns slim version for profile dropdown
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              examples:
+                DetailedProfile:
+                  summary: Full user profile with stats
+                  value:
+                    result:
+                      information:
+                        id_user: 1
+                        username: 'john_doe'
+                        fullname: 'John Doe'
+                        img_user: 'https://res.cloudinary.com/demo/image/upload/v1/profile.jpg'
+                        email: 'john@example.com'
+                        role: 'user'
+                        user_information:
+                          id_user: 1
+                          major: 'Computer Science'
+                          academic_year: 'M1'
+                          specialization: 'AI'
+                          university: 'University of Science and Technology'
+                      stats:
+                        following: 15
+                        followers: 120
+                        upload: 5
+                SlimProfile:
+                  summary: Minimal profile for dropdown UI
+                  value:
+                    profileData:
+                      id_user: 1
+                      username: 'john_doe'
+                      fullname: 'John Doe'
+                      img_user: null
+                      email: 'john@example.com'
+                      role: 'user'
+        '401':
+          description: Unauthorized - Token missing or invalid
+          content:
+            application/json:
+              example:
+                message: 'Unauthorized'
+        '403':
+          description: access denied
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: User role is not 'user'
+                  value:
+                    message: 'You are not user'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                message: 'User not found'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/user/ShowUserByid/{id_user}:
+    get:
+      summary: Get user profile by ID
+      tags: [User]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_user
+          required: true
+          schema:
+            type: integer
+          description: The user ID to retrieve
+      responses:
+        '200':
+          description: User profile found
+          content:
+            application/json:
+              examples:
+                Following:
+                  summary: Profile of a user you follow
+                  value:
+                    result:
+                      user:
+                        id_user: 20
+                        username: 'alice_smith'
+                        fullname: 'Alice Smith'
+                        img_user: null
+                        email: 'alice@example.com'
+                        role: 'user'
+                        user_information:
+                          id_user: 20
+                          major: 'Physics'
+                          academic_year: 'Doc'
+                          specialization: 'Quantum'
+                          university: 'MIT'
+                      stats:
+                        following: 45
+                        followers: 89
+                        upload: 12
+                      status: 'FOLLOWING'
+                None:
+                  summary: Profile of a user you do not follow
+                  value:
+                    result:
+                      user: { 'id_user': 21 }
+                      stats: { 'following': 10 }
+                      status: 'NONE'
+                Me:
+                  summary: Viewing your own profile via this endpoint
+                  value:
+                    result:
+                      user: { 'id_user': 1 }
+                      stats: { 'following': 15 }
+                      status: 'ME'
+                Mutual:
+                  summary: Mutual following relationship
+                  value:
+                    result:
+                      user: { 'id_user': 22 }
+                      stats: { 'following': 50 }
+                      status: 'MUTUAL'
+                FollowedBy:
+                  summary: This user follows you, but you don't follow them
+                  value:
+                    result:
+                      user: { 'id_user': 23 }
+                      stats: { 'following': 30 }
+                      status: 'FOLLOWED_BY'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: User role is not 'user'
+                  value:
+                    message: 'You are not user'
+                NotAuthorized:
+                  summary: Not authorized to view this profile
+                  value:
+                    message: 'You are not authorized to view this profile'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                message: 'User not found'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/user/addFollow/{id_user}:
+    post:
+      summary: Follow a user
+      tags: [User]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_user
+          required: true
+          schema:
+            type: integer
+          description: The ID of the user to follow
+      responses:
+        '200':
+          description: Successfully followed or already following
+          content:
+            application/json:
+              examples:
+                Success:
+                  summary: Successfully followed
+                  value: { 'message': 'Followed successfully' }
+                AlreadyFollowing:
+                  summary: User is already followed
+                  value: { 'message': 'Already following' }
+        '400':
+          description: Bad request - Cannot follow self
+          content:
+            application/json:
+              example:
+                message: 'You cannot follow yourself'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: User role is not 'user'
+                  value:
+                    message: 'You are not user'
+                NotAuthorized:
+                  summary: Not authorized to follow this user
+                  value:
+                    message: 'You are not authorized to follow this user'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                message: 'User not found'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/user/removeFollow/{id_user}:
+    delete:
+      summary: Unfollow a user
+      tags: [User]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_user
+          required: true
+          schema:
+            type: integer
+          description: The ID of the user to unfollow
+      responses:
+        '200':
+          description: Successfully unfollowed
+          content:
+            application/json:
+              example:
+                message: 'Unfollowed successfully'
+        '400':
+          description: Bad request - Cannot unfollow self
+          content:
+            application/json:
+              example:
+                message: 'You can not unfollow yourself'
+        '401':
+          description: Unauthorized - Not following
+          content:
+            application/json:
+              example:
+                message: 'You are not following this user'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: User role is not 'user'
+                  value:
+                    message: 'You are not user'
+                NotAuthorized:
+                  summary: Not authorized to unfollow this user
+                  value:
+                    message: 'You are not authorized to unfollow this user'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                message: 'User not found'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/user/UpdateProfile:
+    put:
+      summary: Update user profile
+      tags: [User]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fullname:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                  example: 'Ilyes Developer'
+                  required: true
+                univ:
+                  type: string
+                  minLength: 5
+                  maxLength: 50
+                  description: University name
+                  required: true
+                  example: "Université d'Alger"
+                major:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                  description: Major name
+                  required: true
+                  example: 'Computer Science'
+                spercialty:
+                  type: string
+                  minLength: 2
+                  maxLength: 30
+                  description: Specialty name (Matches Joi schema typo)
+                  required: true
+                  example: 'Software Engineering'
+                academic_year:
+                  type: string
+                  enum: [L1, L2, L3, M1, M2]
+                  description: Academic year
+                  required: true
+                  example: 'L3'
+                img_user:
+                  type: string
+                  format: binary
+                  description: Profile image file
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              example:
+                id_user: 1
+                username: 'john_doe'
+                fullname: 'John Updated'
+                img_user: 'https://res.cloudinary.com/demo/image/upload/v2/new_profile.jpg'
+                email: 'john@example.com'
+                role: 'user'
+                user_information:
+                  id_user: 1
+                  university: 'USTHB'
+                  major: 'Computer Science'
+                  specialization: 'AI'
+                  academic_year: 'M2'
+        '401':
+          description: Validation error - University doesn't exist
+          content:
+            application/json:
+              example:
+                message: 'university is not exist'
+        '402':
+          description: Validation error - Major or information doesn't exist
+          content:
+            application/json:
+              examples:
+                InfoNotExist:
+                  summary: Information record not found
+                  value: { 'message': 'information is not exist' }
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              examples:
+                NotAUser:
+                  summary: User role is not 'user'
+                  value:
+                    message: 'You are not user'
+                UserNotExist:
+                  summary: User record not found
+                  value:
+                    message: 'user is not exist'
+        '422':
+          description: Unprocessable Entity - User profile incomplete
+          content:
+            application/json:
+              example:
+                message: 'Complete your profile first'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                error: 'Server error'

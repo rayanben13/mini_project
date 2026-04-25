@@ -182,6 +182,17 @@ export const login = async (req, res) => {
     if (!userExists) {
       return res.status(404).json({ error: "Email is NOT exist " });
     }
+
+    const user_informationExists = await prisma.user_information.findFirst({
+      where: {
+        id_user: userExists.id_user,
+      },
+    });
+
+    if (!user_informationExists && userExists.role === "user") {
+      return res.status(404).json({ error: "User information is NOT exist " });
+    }
+
     const user = userExists;
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
@@ -215,16 +226,7 @@ export const login = async (req, res) => {
         : await sendWelcomeEmail(email, user.username);
     }
 
-    return res.status(200).json({
-      accessToken,
-      user: {
-        id: user.id_user,
-        email: user.email,
-        username: user.username,
-        avatar: user.img_user || null, // Add avatar to response
-        role: user.role, // Add role to response
-      },
-    });
+    return res.status(201).json({ accessToken });
   } catch (error) {
     process.env.NODE_ENV === "development" &&
       console.log("❌ Error in login:", error);
@@ -325,8 +327,9 @@ export const SharchMoreInformation = async (req, res) => {
   try {
     const mode = req.query.mode?.trim();
     const name = req.query.name?.trim();
+
     if (!mode || !name) {
-      return res.status(400).json({ message: "choix your Mode and name" });
+      return res.status(400).json({ message: "choix you Mode and name" });
     }
     if (mode == "univ") {
       let universities = await getUniversities(name);
@@ -357,7 +360,7 @@ export const SharchMoreInformation = async (req, res) => {
       if (!year || !major) {
         return res.status(400).json({ message: "enter year and major" });
       }
-      let Specialty = await prisma.university_majors.findMany({
+      let Spercialty = await prisma.university_majors.findMany({
         where: {
           specialization: {
             contains: name,
@@ -372,11 +375,11 @@ export const SharchMoreInformation = async (req, res) => {
         distinct: ["specialization"],
         take: 4,
       });
-      if (Specialty.length === 0 || Specialty === null) {
+      if (Spercialty.length === 0 || Spercialty === null) {
         return res.status(404).json({ message: "No results found" });
       }
-      Specialty = Specialty.map((item) => item.specialization);
-      return res.status(200).json({ Specialty });
+      Spercialty = Spercialty.map((item) => item.specialization);
+      return res.status(200).json({ Spercialty });
     } else if (mode == "subject") {
       const year = req.query.year?.trim();
       const major = req.query.major?.trim();
@@ -428,7 +431,14 @@ export const addedUserInformation = async (req, res) => {
 
     const universities = await getUniversities(univ);
 
+    if (user.role !== "user") {
+      return res.status(404).json({ message: "you are not user" });
+    }
+
     if (universities.length === 0) {
+      return res.status(404).json({ message: "university is not exist" });
+    }
+    if (universities.length > 1) {
       return res.status(404).json({ message: "university is not exist" });
     }
 
@@ -456,10 +466,10 @@ export const addedUserInformation = async (req, res) => {
       data: {
         user_information: {
           create: {
-            university: univ,
-            major: major,
-            specialization: spercialty.toUpperCase(),
-            academic_year: academic_year,
+            university: universities[0],
+            major: infoExist.major,
+            specialization: infoExist.specialization,
+            academic_year: infoExist.academic_year,
           },
         },
       },
