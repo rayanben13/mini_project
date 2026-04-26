@@ -17,14 +17,20 @@ const useFilesStore = create((set) => ({
   showTopFilesForUser: async () => {
     set({ loading: true });
     try {
-      const response = await axios.get(`${FILES_API_URL}/showTopFilesForUser`, useFilesStore.getState().getAuthHeader());
-      
+      const response = await axios.get(
+        `${FILES_API_URL}/showTopFilesForUser`,
+        useFilesStore.getState().getAuthHeader()
+      );
+
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error fetching top files:', error);
-      return { success: false, message: error.response?.data?.error || 'Server error' };
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
     }
   },
 
@@ -32,27 +38,39 @@ const useFilesStore = create((set) => ({
   showfilesLikes: async () => {
     set({ loading: true });
     try {
-      const response = await axios.get(`${FILES_API_URL}/showfilesLikes`, useFilesStore.getState().getAuthHeader());
+      const response = await axios.get(
+        `${FILES_API_URL}/showfilesLikes`,
+        useFilesStore.getState().getAuthHeader()
+      );
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error fetching liked files:', error);
-      return { success: false, message: error.response?.data?.error || 'Server error' };
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
     }
   },
 
   // إظهار ملفات المستخدم الخاصة
-  showMyFiles: async () => {
+  showMyFiles: async (queryParams = {}) => {
     set({ loading: true });
     try {
-      const response = await axios.get(`${FILES_API_URL}/showMyFiles`, useFilesStore.getState().getAuthHeader());
+      const response = await axios.get(`${FILES_API_URL}/showMyFiles`, {
+        ...useFilesStore.getState().getAuthHeader(),
+        params: queryParams,
+      });
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error fetching my files:', error);
-      return { success: false, message: error.response?.data?.error || 'Server error' };
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
     }
   },
 
@@ -60,13 +78,19 @@ const useFilesStore = create((set) => ({
   showDetailFile: async (id_file) => {
     set({ loading: true });
     try {
-      const response = await axios.get(`${FILES_API_URL}/showDetailFile/${id_file}`, useFilesStore.getState().getAuthHeader());
+      const response = await axios.get(
+        `${FILES_API_URL}/showDetailFile/${id_file}`,
+        useFilesStore.getState().getAuthHeader()
+      );
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error fetching file details:', error);
-      return { success: false, message: error.response?.data?.error || 'Server error' };
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
     }
   },
 
@@ -76,18 +100,25 @@ const useFilesStore = create((set) => ({
     set({ loading: true });
     try {
       const { token } = AuthStore.getState().user;
-      const response = await axios.post(`${FILES_API_URL}/UplodeNewFile`, fileData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+      const response = await axios.post(
+        `${FILES_API_URL}/UplodeNewFile`,
+        fileData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
         }
-      });
+      );
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error uploading file:', error);
-      return { success: false, message: error.response?.data?.error || 'Server error' };
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
     }
   },
 
@@ -95,13 +126,19 @@ const useFilesStore = create((set) => ({
   deleteMeOwnfile: async (id_file) => {
     set({ loading: true });
     try {
-      const response = await axios.delete(`${FILES_API_URL}/deleteMeOwnfile/${id_file}`, useFilesStore.getState().getAuthHeader());
+      const response = await axios.delete(
+        `${FILES_API_URL}/deleteMeOwnfile/${id_file}`,
+        useFilesStore.getState().getAuthHeader()
+      );
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error deleting file:', error);
-      return { success: false, message: error.response?.data?.error || 'Server error' };
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
     }
   },
 
@@ -109,13 +146,20 @@ const useFilesStore = create((set) => ({
   reportFile: async (id_file, reason) => {
     set({ loading: true });
     try {
-      const response = await axios.post(`${FILES_API_URL}/reportFile/${id_file}`, { reason_report: reason }, useFilesStore.getState().getAuthHeader());
+      const response = await axios.post(
+        `${FILES_API_URL}/reportFile/${id_file}`,
+        { reason_report: reason },
+        useFilesStore.getState().getAuthHeader()
+      );
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error reporting file:', error);
-      return { success: false, message: error.response?.data?.error || 'Server error' };
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
     }
   },
 
@@ -124,13 +168,20 @@ const useFilesStore = create((set) => ({
     // action: 'LIKE' or 'DISLIKE'
     set({ loading: true });
     try {
-      const response = await axios.post(`${FILES_API_URL}/likeOrDislikeFile/${id_file}`, { action }, useFilesStore.getState().getAuthHeader());
+      const response = await axios.post(
+        `${FILES_API_URL}/likeOrDislikeFile/${id_file}`,
+        { action },
+        useFilesStore.getState().getAuthHeader()
+      );
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error liking/disliking file:', error);
-      return { success: false, message: error.response?.data?.error || 'Server error' };
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
     }
   },
 
@@ -138,16 +189,22 @@ const useFilesStore = create((set) => ({
   saveFileToStudyList: async (id_file, id_study_list) => {
     set({ loading: true });
     try {
-      const response = await axios.post(`${FILES_API_URL}/saveFileToStudyList/${id_file}/${id_study_list}`, {}, useFilesStore.getState().getAuthHeader());
+      const response = await axios.post(
+        `${FILES_API_URL}/saveFileToStudyList/${id_file}/${id_study_list}`,
+        {},
+        useFilesStore.getState().getAuthHeader()
+      );
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error saving file to study list:', error);
-      return { success: false, message: error.response?.data?.error || 'Server error' };
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
     }
   },
-
 }));
 
 export default useFilesStore;

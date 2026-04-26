@@ -217,7 +217,14 @@ components:
       properties:
         reason:
           type: string
-          enum: ['Inappropriate content', 'COPYRIGHT issuse', 'Spam or misleading', 'Incorrect information', 'Other']
+          enum:
+            [
+              'Inappropriate content',
+              'COPYRIGHT issuse',
+              'Spam or misleading',
+              'Incorrect information',
+              'Other',
+            ]
           example: 'Spam or misleading'
         details:
           type: string
@@ -620,7 +627,7 @@ paths:
                   value:
                     data:
                       - "Université M'hamed Bouguerra de Boumerdes"
-                      - "Université Mentouri Constantine"
+                      - 'Université Mentouri Constantine'
                 major_results:
                   summary: Major search results
                   value:
@@ -648,22 +655,7 @@ paths:
                   summary: Missing mode or name
                   value:
                     message: 'mode and name are required'
-                missing_year_major:
-                  summary: Missing year or major (specialty/subject mode)
-                  value:
-                    message: 'year and major are required'
-                specialty_not_available:
-                  summary: Specialty not available for L1/L2/L3
-                  value:
-                    message: 'Specialization not available for this year'
-                missing_specialization:
-                  summary: Missing specialization (subject mode)
-                  value:
-                    message: 'specialization is required'
-                invalid_mode:
-                  summary: Invalid search mode
-                  value:
-                    message: 'Invalid mode'
+
         '404':
           description: No results found
           content:
@@ -737,4 +729,3 @@ paths:
             application/json:
               example:
                 error: 'Server error'
-

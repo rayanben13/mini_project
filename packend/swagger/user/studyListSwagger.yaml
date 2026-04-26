@@ -780,34 +780,3 @@ paths:
             application/json:
               example:
                 error: 'Server error'
-
-  /api/studyList/sharchMoreSubjects:
-    get:
-      summary: Search for more subjects (Autocomplete)
-      tags: [StudyLists]
-      parameters:
-        - in: query
-          name: subject
-          required: true
-          schema:
-            type: string
-          description: Subject name search query
-      responses:
-        '200':
-          description: List of matching subjects
-          content:
-            application/json:
-              example:
-                subjects: ['Mathematics', 'Matrix Theory', 'Advanced Math']
-        '400':
-          description: Bad Request - Missing subject query
-          content:
-            application/json:
-              example:
-                error: 'Missing subject'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              example:
-                error: 'Server error'

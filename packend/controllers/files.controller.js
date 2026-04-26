@@ -225,18 +225,27 @@ export const showMyFiles = async (req, res) => {
     const limit = Math.min(Number(req.query.limit) || 10, 50);
     const page = Math.max(Number(req.query.page) || 1, 1);
     const skip = (page - 1) * limit;
+    let show_status = req.query.show;
+    const validStatus = ['pending', 'accepted', 'rejected', 'all'];
+
+    if (show_status && !validStatus.includes(show_status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    if (!show_status) {
+      show_status = 'all';
+    }
 
     const total_files = await prisma.files.count({
       where: {
         id_user: Me.id_user,
-        status: 'accepted',
+        ...(show_status !== 'all' && { status: show_status }),
       },
     });
 
     const files = await prisma.files.findMany({
       where: {
         id_user: Me.id_user,
-        status: 'accepted',
+        ...(show_status !== 'all' && { status: show_status }),
       },
       select: {
         id_file: true,
@@ -290,7 +299,6 @@ export const showDetailFile = async (req, res) => {
   try {
     const Me = req.user;
     const id_file = Number(req.params.id_file);
-    console.log(id_file);
     if (!id_file) {
       return res.status(400).json({ error: 'File ID is required' });
     }

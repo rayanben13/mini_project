@@ -830,37 +830,3 @@ export const deleteFileFromStudyList = async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 };
-
-export const sharchMoreSubjects = async (req, res) => {
-  try {
-    const subject = req.query.subject?.trim();
-
-    if (!subject) {
-      return res.status(400).json({
-        error: 'Missing subject',
-      });
-    }
-
-    let subjects = await prisma.subjects.findMany({
-      where: {
-        course: {
-          contains: subject,
-          mode: 'insensitive',
-        },
-      },
-      select: {
-        course: true,
-      },
-      take: 3,
-    });
-
-    subjects = subjects.map((subject) => subject.course);
-
-    return res.status(200).json({
-      subjects,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Server error' });
-  }
-};
