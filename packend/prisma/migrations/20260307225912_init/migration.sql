@@ -1,5 +1,5 @@
 ﻿-- CreateSchema
--- CREATE SCHEMA IF NOT EXISTS "public";
+CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
 CREATE TYPE "ReportStatus" AS ENUM ('pending', 'reviewed', 'ignored');
