@@ -641,60 +641,7 @@ paths:
                 error: 'Failed to save file to study list'
 
  
-    get:
-      summary: Download a file (Redirects to Cloudinary with attachment header)
-      tags: [Files]
-      parameters:
-        - in: path
-          name: id_file
-          required: true
-          schema:
-            type: integer
-      responses:
-        '302':
-          description: Redirect to the Cloudinary URL with fl_attachment parameter
-        '404':
-          description: Not Found - File not found or not accepted
-          content:
-            application/json:
-              example:
-                error: 'File not found or not accepted'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              example:
-                error: 'Failed to download file'
 
- 
-    get:
-      summary: Generate a share link for a file
-      tags: [Files]
-      parameters:
-        - in: path
-          name: id_file
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Public share link returned
-          content:
-            application/json:
-              example:
-                link: 'http://localhost:3000/files/12'
-        '404':
-          description: Not Found - File not found or not accepted
-          content:
-            application/json:
-              example:
-                error: 'File not found or not accepted'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              example:
-                error: 'Server error'
 
   /api/files/showFilesUserById/{id_user}:
     get:

@@ -357,7 +357,7 @@ export const SharchMoreInformation = async (req, res) => {
         return res.status(200).json({ majors });
       }
 
-      case 'Spercialty': {
+      case 'specialty': {
         const year = req.query.year?.trim();
         const major = req.query.major?.trim();
 
