@@ -1,12 +1,12 @@
 tags:
-  - name: Search
-    description: Search for files and subjects
+  - name: ALL ACTURIAL
+    description: ALL ACTURIAL
 
 paths:
   /api/search/searchFiles:
     get:
       summary: Search for files across the platform
-      tags: [Search]
+      tags: [ALL ACTURIAL]
       parameters:
         - in: query
           name: title
@@ -56,7 +56,7 @@ paths:
             default: 10
           description: Number of items per page (max 50)
       responses:
-        "200":
+        '200':
           description: Successful search results
           content:
             application/json:
@@ -70,25 +70,25 @@ paths:
                   to: 10
                 data:
                   - id_file: 1
-                    file_path: "https://res.cloudinary.com/..."
-                    title: "Calculus I Notes"
-                    type_file: "PDF"
-                    major: "Computer Science"
-                    specialization: "AI"
-                    academic_year: "L1"
-                    course: "Mathematics"
-                    status: "accepted"
-        "500":
+                    file_path: 'https://res.cloudinary.com/...'
+                    title: 'Calculus I Notes'
+                    type_file: 'PDF'
+                    major: 'Computer Science'
+                    specialization: 'AI'
+                    academic_year: 'L1'
+                    course: 'Mathematics'
+                    status: 'accepted'
+        '500':
           description: Internal Server Error
           content:
             application/json:
               example:
-                error: "Server error"
+                error: 'Server error'
 
   /api/search/searchSubjects:
     get:
       summary: Search for subjects across the platform
-      tags: [Search]
+      tags: [ALL ACTURIAL]
       parameters:
         - in: query
           name: course
@@ -123,7 +123,7 @@ paths:
             default: 10
           description: Number of items per page
       responses:
-        "200":
+        '200':
           description: Successful search results
           content:
             application/json:
@@ -137,15 +137,297 @@ paths:
                   to: 10
                 data:
                   - id_subject: 5
-                    course: "Linear Algebra"
-                    major: "Mathematics"
+                    course: 'Linear Algebra'
+                    major: 'Mathematics'
                     specialization: null
-                    academic_year: "L1"
+                    academic_year: 'L1'
                     _count:
                       files: 25
-        "500":
+        '500':
           description: Internal Server Error
           content:
             application/json:
               example:
-                error: "Server error"
+                error: 'Server error'
+
+  /api/files/download/{id_file}:
+    get:
+      summary: Download a file (Redirects to Cloudinary)
+      tags: [ALL ACTURIAL]
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      responses:
+        '302':
+          description: Redirect to the Cloudinary download link
+        '404':
+          description: File not found or not accepted
+        '500':
+          description: Server error
+
+  /api/files/getShareLink/{id_file}:
+    get:
+      summary: Get a shareable link for a file
+      tags: [ALL ACTURIAL]
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Share link generated successfully
+          content:
+            application/json:
+              example:
+                link: 'http://localhost:3000/files/1'
+        '404':
+          description: File not found or not accepted
+        '500':
+          description: Server error
+
+  /api/files/showDetailFile/{id_file}:
+    get:
+      summary: Get detailed information about a specific file
+      tags: [ALL ACTURIAL]
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: File details retrieved successfully
+          content:
+            application/json:
+              example:
+                id_file: 1
+                file_path: 'https://res.cloudinary.com/demo/image/upload/v123456/sample.pdf'
+                title: 'Calculus I - Chapter 1 Notes'
+                creation_year: '2023'
+                type: 'COURS'
+                status: 'accepted'
+                approved_at: '2023-11-01T12:00:00.000Z'
+                subjects:
+                  major: 'Computer Science'
+                  specialization: 'Artificial Intelligence'
+                  academic_year: 'L1'
+                  course: 'Mathematics'
+                  university: 'USTHB'
+                users:
+                  id_user: 5
+                  fullname: 'Jane Doe'
+                  username: 'jane_d'
+                  img_user: 'https://res.cloudinary.com/demo/image/upload/profile.jpg'
+                like: 45
+                dislike: 2
+                statusLike: 'LIKE'
+        '400':
+          description: Bad Request - Missing or invalid File ID
+          content:
+            application/json:
+              example:
+                error: 'File ID is required'
+        '404':
+          description: Not Found - File doesn't exist or is not accepted (for non-admins)
+          content:
+            application/json:
+              example:
+                error: 'File not found'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/subjects/subject/{id_subject}:
+    get:
+      summary: Get detailed information about a subject including its accepted files
+      tags: [ALL ACTURIAL]
+      parameters:
+        - in: path
+          name: id_subject
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: page_files
+          schema:
+            type: integer
+            default: 1
+          description: Page number for files pagination
+        - in: query
+          name: limit_files
+          schema:
+            type: integer
+            default: 10
+          description: Number of files per page
+        - in: query
+          name: page_lists
+          schema:
+            type: integer
+            default: 1
+          description: Page number for study lists pagination
+        - in: query
+          name: limit_lists
+          schema:
+            type: integer
+            default: 5
+          description: Number of study lists per page
+      responses:
+        '200':
+          description: Subject details retrieved successfully
+          content:
+            application/json:
+              example:
+                subject:
+                  id_subject: 5
+                  course: 'Linear Algebra'
+                  major: 'Mathematics'
+                  specialization: 'Applied Math'
+                  academic_year: 'L1'
+                  course_description: 'Introduction to linear algebra, vectors, and matrices.'
+                files:
+                  TD:
+                    - id_file: 2
+                      title: 'TD 1: Vectors'
+                      file_path: 'https://res.cloudinary.com/...'
+                      type: 'TD'
+                      status: 'accepted'
+                    - id_file: 4
+                      title: 'TD 2: Matrices'
+                      file_path: 'https://res.cloudinary.com/...'
+                      type: 'TD'
+                      status: 'accepted'
+                  TP:
+                    - id_file: 1
+                      title: 'Lab 1: Matrix Multiplication'
+                      file_path: 'https://res.cloudinary.com/...'
+                      type: 'TP'
+                      status: 'accepted'
+                  COURS:
+                    - id_file: 3
+                      title: 'Lecture 1: Basics'
+                      file_path: 'https://res.cloudinary.com/...'
+                      type: 'COURS'
+                      status: 'accepted'
+                    - id_file: 6
+                      title: 'Lecture 2: Vector Spaces'
+                      file_path: 'https://res.cloudinary.com/...'
+                      type: 'COURS'
+                      status: 'accepted'
+                  EF:
+                    - id_file: 7
+                      title: 'Final Exam 2022'
+                      file_path: 'https://res.cloudinary.com/...'
+                      type: 'EF'
+                      status: 'accepted'
+                  CC: []
+                  RESUME: []
+                  OTHER: []
+                files_meta:
+                  current_page: 1
+                  last_page: 2
+                  per_page: 10
+                  total: 15
+                  from: 1
+                  to: 10
+                study_lists:
+                  - id_stuList: 1
+                    name: 'Final Exam Preparation'
+                    privacy: 'public'
+                    users:
+                      id_user: 10
+                      fullname: 'John Smith'
+                    _count:
+                      study_list_files: 5
+                  - id_stuList: 3
+                    name: 'Top Rated Materials'
+                    privacy: 'public'
+                    users:
+                      id_user: 12
+                      fullname: 'Alice Wonder'
+                    _count:
+                      study_list_files: 12
+                lists_meta:
+                  current_page: 1
+                  last_page: 1
+                  per_page: 5
+                  total: 2
+                  from: 1
+                  to: 2
+        '400':
+          description: Bad Request - Invalid subject ID
+          content:
+            application/json:
+              example:
+                error: 'Invalid subject ID'
+        '404':
+          description: Not Found - Subject doesn't exist
+          content:
+            application/json:
+              example:
+                error: 'Subject not found'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: 'Server error'
+
+  /api/files/showFilesUserById/{id_user}:
+    get:
+      summary: Get all accepted files for a specific user
+      tags: [Files]
+      parameters:
+        - in: path
+          name: id_user
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: User files retrieved successfully
+          content:
+            application/json:
+              example:
+                meta:
+                  current_page: 1
+                  last_page: 1
+                  per_page: 10
+                  total_files: 5
+                  from: 1
+                  to: 5
+                data:
+                  - id_file: 10
+                    file_path: 'https://res.cloudinary.com/...'
+                    title: 'Physics Homework'
+                    type: 'TD'
+                    status: 'accepted'
+                    subjects:
+                      major: 'Physics'
+                      specialization: 'Quantum'
+                      academic_year: 'L2'
+                      course: 'Mechanics'
+        '400':
+          description: User ID is required
+        '404':
+          description: User not found
+        '500':
+          description: Server error

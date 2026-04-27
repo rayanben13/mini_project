@@ -58,8 +58,9 @@ export const yourSubjects = async (req, res) => {
 
 export const showDetailSubject = async (req, res) => {
   try {
+    const Me = req.user;
     const id_subject = Number(req.params.id_subject);
-
+    console.log(Me);
     if (isNaN(id_subject)) {
       return res.status(400).json({ error: 'Invalid subject ID' });
     }
@@ -68,11 +69,6 @@ export const showDetailSubject = async (req, res) => {
     const pageFiles = Math.max(Number(req.query.page_files) || 1, 1);
     const limitFiles = Math.min(Number(req.query.limit_files) || 10, 50);
     const skipFiles = (pageFiles - 1) * limitFiles;
-
-    // 🟢 pagination study lists
-    const pageLists = Math.max(Number(req.query.page_lists) || 1, 1);
-    const limitLists = Math.min(Number(req.query.limit_lists) || 5, 50);
-    const skipLists = (pageLists - 1) * limitLists;
 
     // 🟢 subject
     const subject = await prisma.subjects.findUnique({
@@ -91,20 +87,13 @@ export const showDetailSubject = async (req, res) => {
       return res.status(404).json({ error: 'Subject not found' });
     }
 
-    // 🟢 total files
+    // 🟢 files
     const totalFiles = await prisma.files.count({
-      where: {
-        id_subject,
-        status: 'accepted',
-      },
+      where: { id_subject, status: 'accepted' },
     });
 
-    // 🟢 files with pagination
     const files = await prisma.files.findMany({
-      where: {
-        id_subject,
-        status: 'accepted',
-      },
+      where: { id_subject, status: 'accepted' },
       select: {
         id_file: true,
         file_path: true,
@@ -116,15 +105,13 @@ export const showDetailSubject = async (req, res) => {
       take: limitFiles,
     });
 
-    // 🟢 grouping files
+    // 🟢 grouping
     const types = ['TD', 'TP', 'COURS', 'EF', 'CC', 'RESUME', 'OTHER'];
-
     const groupedFiles = {};
     types.forEach((t) => (groupedFiles[t] = []));
 
     files.forEach((file) => {
       const type = file.type?.toUpperCase();
-
       if (types.includes(type)) {
         groupedFiles[type].push(file);
       } else {
@@ -132,39 +119,57 @@ export const showDetailSubject = async (req, res) => {
       }
     });
 
-    // 🟢 total study lists
-    const totalLists = await prisma.study_lists.count({
-      where: {
-        id_subject: id_subject,
-        privacy: 'public',
-      },
-    });
+    // 🟢 study lists ONLY for user
+    let studyLists = [];
+    let listsMeta = null;
 
-    // 🟢 study lists with pagination
-    const studyLists = await prisma.study_lists.findMany({
-      where: {
-        id_subject: id_subject,
-        privacy: 'public',
-      },
-      select: {
-        id_stuList: true,
-        name: true,
-        privacy: true,
-        users: {
-          select: {
-            id_user: true,
-            fullname: true,
+    if (Me.role === 'user') {
+      const pageLists = Math.max(Number(req.query.page_lists) || 1, 1);
+      const limitLists = Math.min(Number(req.query.limit_lists) || 5, 50);
+      const skipLists = (pageLists - 1) * limitLists;
+
+      const totalLists = await prisma.study_lists.count({
+        where: {
+          id_subject,
+          privacy: 'public',
+        },
+      });
+
+      studyLists = await prisma.study_lists.findMany({
+        where: {
+          id_subject,
+          privacy: 'public',
+        },
+        select: {
+          id_stuList: true,
+          name: true,
+          privacy: true,
+          users: {
+            select: {
+              id_user: true,
+              fullname: true,
+            },
+          },
+          _count: {
+            select: {
+              study_list_files: true,
+            },
           },
         },
-        _count: {
-          select: {
-            study_list_files: true,
-          },
-        },
-      },
-      skip: skipLists,
-      take: limitLists,
-    });
+        skip: skipLists,
+        take: limitLists,
+      });
+
+      listsMeta = {
+        current_page: pageLists,
+        last_page: Math.ceil(totalLists / limitLists),
+        per_page: limitLists,
+        total: totalLists,
+        from: totalLists === 0 ? 0 : (pageLists - 1) * limitLists + 1,
+        to: (pageLists - 1) * limitLists + studyLists.length,
+      };
+    }
+
     // 🟢 response
     return res.status(200).json({
       subject,
@@ -179,15 +184,10 @@ export const showDetailSubject = async (req, res) => {
         to: (pageFiles - 1) * limitFiles + files.length,
       },
 
-      study_lists: studyLists,
-      lists_meta: {
-        current_page: pageLists,
-        last_page: Math.ceil(totalLists / limitLists),
-        per_page: limitLists,
-        total: totalLists,
-        from: totalLists === 0 ? 0 : (pageLists - 1) * limitLists + 1,
-        to: (pageLists - 1) * limitLists + studyLists.length,
-      },
+      ...(Me.role === 'user' && {
+        study_lists: studyLists,
+        lists_meta: listsMeta,
+      }),
     });
   } catch (err) {
     console.error(err);

@@ -4,7 +4,7 @@ import AuthStore from '../AuthStore.js';
 
 const FILES_API_URL = 'http://localhost:5000/api/files';
 
-const useFilesStore = create((set) => ({
+const useFilesStore = create((set, get) => ({
   loading: false,
 
   // دالة مساعدة للحصول على الهيدر مع التوكن
@@ -19,7 +19,7 @@ const useFilesStore = create((set) => ({
     try {
       const response = await axios.get(
         `${FILES_API_URL}/showTopFilesForUser`,
-        useFilesStore.getState().getAuthHeader()
+        get().getAuthHeader()
       );
 
       set({ loading: false });
@@ -40,7 +40,7 @@ const useFilesStore = create((set) => ({
     try {
       const response = await axios.get(
         `${FILES_API_URL}/showfilesLikes`,
-        useFilesStore.getState().getAuthHeader()
+        get().getAuthHeader()
       );
       set({ loading: false });
       return { success: true, data: response.data };
@@ -59,7 +59,7 @@ const useFilesStore = create((set) => ({
     set({ loading: true });
     try {
       const response = await axios.get(`${FILES_API_URL}/showMyFiles`, {
-        ...useFilesStore.getState().getAuthHeader(),
+        ...get().getAuthHeader(),
         params: queryParams,
       });
       set({ loading: false });
@@ -80,7 +80,7 @@ const useFilesStore = create((set) => ({
     try {
       const response = await axios.get(
         `${FILES_API_URL}/showDetailFile/${id_file}`,
-        useFilesStore.getState().getAuthHeader()
+        get().getAuthHeader()
       );
       set({ loading: false });
       return { success: true, data: response.data };
@@ -128,7 +128,7 @@ const useFilesStore = create((set) => ({
     try {
       const response = await axios.delete(
         `${FILES_API_URL}/deleteMeOwnfile/${id_file}`,
-        useFilesStore.getState().getAuthHeader()
+        get().getAuthHeader()
       );
       set({ loading: false });
       return { success: true, data: response.data };
@@ -149,7 +149,7 @@ const useFilesStore = create((set) => ({
       const response = await axios.post(
         `${FILES_API_URL}/reportFile/${id_file}`,
         { reason_report: reason },
-        useFilesStore.getState().getAuthHeader()
+        get().getAuthHeader()
       );
       set({ loading: false });
       return { success: true, data: response.data };
@@ -171,7 +171,7 @@ const useFilesStore = create((set) => ({
       const response = await axios.post(
         `${FILES_API_URL}/likeOrDislikeFile/${id_file}`,
         { action },
-        useFilesStore.getState().getAuthHeader()
+        get().getAuthHeader()
       );
       set({ loading: false });
       return { success: true, data: response.data };
@@ -192,13 +192,36 @@ const useFilesStore = create((set) => ({
       const response = await axios.post(
         `${FILES_API_URL}/saveFileToStudyList/${id_file}/${id_study_list}`,
         {},
-        useFilesStore.getState().getAuthHeader()
+        get().getAuthHeader()
       );
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       set({ loading: false });
       console.error('Error saving file to study list:', error);
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    }
+  },
+
+  // إظهار ملفات مستخدم معين (عام)
+  showFilesUserById: async (id_user, queryParams = {}) => {
+    set({ loading: true });
+    try {
+      const response = await axios.get(
+        `${FILES_API_URL}/showFilesUserById/${id_user}`,
+        {
+          ...get().getAuthHeader(),
+          params: queryParams,
+        }
+      );
+      set({ loading: false });
+      return { success: true, data: response.data };
+    } catch (error) {
+      set({ loading: false });
+      console.error('Error fetching user files:', error);
       return {
         success: false,
         message: error.response?.data?.error || 'Server error',

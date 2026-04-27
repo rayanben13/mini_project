@@ -15,6 +15,7 @@ import {
   loveStudyList,
   addSetReminder,
   deleteFileFromStudyList,
+  showStudyListUserById,
 } from '../controllers/studyList.controller.js';
 import validate from '../middleware/validate.js';
 import { schemaReminder } from '../schemas/auth.schema.js';
@@ -99,5 +100,7 @@ router.delete(
   requireUser,
   deleteFileFromStudyList
 );
+
+router.get('/showStudyListUserById/:id_user', showStudyListUserById);
 
 export default router;

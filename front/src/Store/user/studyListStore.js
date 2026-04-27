@@ -217,6 +217,26 @@ const useStudyListStore = create((set) => ({
       };
     }
   },
+
+  showStudyListUserById: async (id_user, queryParams = {}) => {
+    set({ loading: true });
+    try {
+      const response = await axios.get(
+        `${STUDYLIST_API_URL}/showStudyListUserById/${id_user}`,
+        {
+          params: queryParams,
+        }
+      );
+      set({ loading: false });
+      return { success: true, data: response.data };
+    } catch (error) {
+      set({ loading: false });
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Server error',
+      };
+    }
+  },
 }));
 
 export default useStudyListStore;
