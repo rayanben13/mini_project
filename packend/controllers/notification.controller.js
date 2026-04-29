@@ -1,4 +1,4 @@
-import prisma from '../lib/prisma.ts';
+import prisma from '../lib/prisma.js';
 import dayjs from '../config/dayjsTime.js';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';

@@ -1,4 +1,4 @@
-import prisma from '../lib/prisma.ts';
+import prisma from '../lib/prisma.js';
 
 export const requireUser = async (req, res, next) => {
   if (req.user.role !== 'user') {

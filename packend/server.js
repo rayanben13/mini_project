@@ -16,6 +16,9 @@ import studyListRouter from './routes/studyList.route.js';
 import notificationRouter from './routes/notification.route.js';
 import searchRouter from './routes/search.route.js';
 import subjectsRouter from './routes/subjects.route.js';
+import dashboardRouter from './routes/admin/dashboard.route.js';
+import filesStatusRouter from './routes/admin/filesStatus.route.js';
+import reportedFilesRouter from './routes/admin/ReportedFiles.route.js';
 
 // config
 import Cors from './config/cors.js';
@@ -38,7 +41,9 @@ const filesSwagger = YAML.load('./swagger/user/filesSwagger.yaml');
 const studyListSwagger = YAML.load('./swagger/user/studyListSwagger.yaml');
 const searchSwagger = YAML.load('./swagger/allActurSwagger.yaml');
 const subjectsSwagger = YAML.load('./swagger/user/subjectsSwagger.yaml');
-const notificationSwagger = YAML.load('./swagger/user/notificationSwagger.yaml');
+const notificationSwagger = YAML.load(
+  './swagger/user/notificationSwagger.yaml'
+);
 
 const swaggerDocument = {
   ...authSwagger,
@@ -71,7 +76,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
 
-//Router
+//user routes
 
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
@@ -80,6 +85,11 @@ app.use('/api/studyList', studyListRouter);
 app.use('/api/notification', notificationRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/subjects', subjectsRouter);
+
+//admin routes
+app.use('/api/admin/dashboard', dashboardRouter);
+app.use('/api/admin/filesStatus', filesStatusRouter);
+app.use('/api/admin/reportedFiles', reportedFilesRouter);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
