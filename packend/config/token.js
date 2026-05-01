@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
 import 'dotenv/config';
+import jwt from 'jsonwebtoken';
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const ACCESS_TOKEN_TTL =
@@ -30,6 +30,25 @@ export const setRefreshCookie = (res, token) => {
 // 🔹 حذف الكوكيز عند تسجيل الخروج
 export const clearRefreshCookie = (res) => {
   res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV.trim() === 'production',
+    sameSite: 'lax',
+    path: '/',
+  });
+};
+export const setAccessToken = (res, token) => {
+  res.cookie('accessToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV.trim() === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
+  });
+};
+
+// 🔹 حذف الكوكيز عند تسجيل الخروج
+export const clearAccessToken = (res) => {
+  res.clearCookie('accessToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV.trim() === 'production',
     sameSite: 'lax',

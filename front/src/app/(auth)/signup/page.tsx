@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import z from "zod";
 import useAuthStore from "../../../Store/AuthStore";
 
@@ -38,12 +38,12 @@ export default function SignupPage() {
   });
 
   const onSubmit = async (values: SignupFormValues) => {
-    const result = await signup(
-      values.fullname,
-      values.username,
-      values.email,
-      values.password,
-    );
+    const result = await signup({
+      fullname: values.fullname,
+      username: values.username,
+      email: values.email,
+      password: values.password,
+    });
 
     if (result.success) {
       toast.success("Account created successfully!");

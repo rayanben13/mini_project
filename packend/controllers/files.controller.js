@@ -1,9 +1,8 @@
-import { count } from 'node:console';
+import { io } from '../config/socket.js';
 import prisma from '../lib/prisma.ts';
 import { getUniversities } from '../service/univAPI.js';
-import { io } from '../config/socket.js';
 
-import { cloudinary, uploadBufferToCloudinary } from '../config/Cloudinary.js';
+import { uploadBufferToCloudinary } from '../config/Cloudinary.js';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -115,6 +114,7 @@ ORDER BY likes_count DESC
 LIMIT ${limit}
 OFFSET ${skip};
     `;
+
 
     res.status(200).json({
       meta: {
@@ -455,18 +455,18 @@ export const UplodeNewFile = async (req, res) => {
 
         subjects: subjectExist
           ? {
-              connect: { id_subject: subjectExist.id_subject },
-            }
+            connect: { id_subject: subjectExist.id_subject },
+          }
           : {
-              create: {
-                major: infoExist.major,
-                specialization: infoExist.specialization,
-                academic_year: infoExist.academic_year,
-                course: infoExist.course,
-                university: univ,
-                course_description: infoExist.course_description,
-              },
+            create: {
+              major: infoExist.major,
+              specialization: infoExist.specialization,
+              academic_year: infoExist.academic_year,
+              course: infoExist.course,
+              university: univ,
+              course_description: infoExist.course_description,
             },
+          },
       },
     });
 

@@ -9,22 +9,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { API_CONFIG } from "@/constants/apiConfig";
 import useAuthStore from "@/Store/AuthStore";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 // --- Types ---
-type Mode = "univ" | "major" | "Specialty" | "subject";
+type Mode = "univ" | "major" | "specialty" | "subject";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const { searchMoreInformation, addedUserInformation } = useAuthStore();
 
   // البيانات التي سيتم إرسالها للـ Backend
   const [formData, setFormData] = useState({
@@ -38,73 +37,50 @@ export default function OnboardingPage() {
 
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
+  // OnboardingPage.tsx
+
   const fetchSuggestions = useCallback(
     async (mode: Mode, name: string, extra = {}) => {
-      if (name.length < 2) {
+      if (name.length < 1) {
         setSuggestions([]);
         return;
       }
 
       const cacheKey = `${mode}-${name}-${JSON.stringify(extra)}`;
-
       if (searchCache.current[cacheKey]) {
         setSuggestions(searchCache.current[cacheKey]);
         return;
       }
 
-      // 4. تطبيق الـ Debounce (انتظار 300ms قبل إرسال الطلب)
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
       debounceTimer.current = setTimeout(async () => {
-        try {
-          const query = new URLSearchParams({ mode, name, ...extra });
-          const res = await fetch(
-            `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEARCH_INFO}?${query.toString()}`,
-          );
-          const data = await res.json();
+        // استخدام الدالة من الـ Store
+        const result = await searchMoreInformation({ mode, name, ...extra });
 
+        if (result.success) {
           const results =
-            data.universities || data.majors || data.Specialty || [];
-
-          // 5. تخزين النتيجة في الكاش للاستخدام المستقبلي
+            result.data.universities ||
+            result.data.majors ||
+            result.data.specialty ||
+            [];
           searchCache.current[cacheKey] = results;
           setSuggestions(results);
-        } catch (error) {
-          console.error("Search error:", error);
         }
-      }, 300);
+      }, 400);
     },
-    [],
+    [searchMoreInformation],
   );
 
-  // دالة الحفظ النهائي (addedUserInformation)
   const handleFinish = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ADD_USER_INFO}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user?.token}`, // تأكد من إرسال التوكن
-          },
-          body: JSON.stringify(formData),
-        },
-      );
+    console.log("Submitting form data:", formData); // Debug log
+    const result = await addedUserInformation(formData);
 
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success("Profile completed!");
-        router.push("/profile");
-      } else {
-        toast.error(data.message || "Something went wrong");
-      }
-    } catch (error) {
-      toast.error("Connection error");
-    } finally {
-      setLoading(false);
+    if (result.success) {
+      toast.success("Profile completed!");
+      router.push("/dashboard");
+    } else {
+      toast.error(result.message);
     }
   };
 
@@ -114,7 +90,7 @@ export default function OnboardingPage() {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
-              Step {step} of 3
+              Step {step} of {["M1", "M2"].includes(formData.academic_year) || step < 2 ? "3" : "2"}
             </span>
           </div>
           <CardTitle className="text-2xl">Academic Information</CardTitle>
@@ -193,12 +169,20 @@ export default function OnboardingPage() {
                 >
                   Back
                 </Button>
+
                 <Button
-                  disabled={!formData.major || !formData.academic_year}
-                  onClick={() => setStep(3)}
-                  className="flex-1"
+                  disabled={!formData.major || !formData.academic_year || loading}
+                  onClick={() => {
+                    // إذا كانت السنة ماستر، انتقل للخطوة 3، غير ذلك احفظ مباشرة
+                    if (["M1", "M2"].includes(formData.academic_year)) {
+                      setStep(3);
+                    } else {
+                      handleFinish();
+                    }
+                  }}
+                  className={`flex-1 ${!["M1", "M2"].includes(formData.academic_year) ? 'bg-green-600 hover:bg-green-700' : ''}`}
                 >
-                  Next
+                  {["M1", "M2"].includes(formData.academic_year) ? "Next" : "Complete Profile"}
                 </Button>
               </div>
             </div>
@@ -212,10 +196,10 @@ export default function OnboardingPage() {
               </label>
               <Input
                 placeholder="Search specialty..."
-                value={formData.spercialty}
+                value={formData.specialty}
                 onChange={(e) => {
-                  setFormData({ ...formData, spercialty: e.target.value });
-                  fetchSuggestions("Spercialty", e.target.value, {
+                  setFormData({ ...formData, specialty: e.target.value });
+                  fetchSuggestions("specialty", e.target.value, {
                     major: formData.major,
                     year: formData.academic_year,
                   });
@@ -224,23 +208,18 @@ export default function OnboardingPage() {
               <SuggestionList
                 list={suggestions}
                 onSelect={(val) => {
-                  setFormData({ ...formData, spercialty: val });
+                  setFormData({ ...formData, specialty: val });
                   setSuggestions([]);
                 }}
               />
 
               <div className="flex gap-2 mt-6">
                 <Button
-                  variant="outline"
-                  onClick={() => setStep(2)}
-                  className="flex-1"
-                >
-                  Back
-                </Button>
-                <Button
-                  loading={loading}
-                  onClick={handleFinish}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  onClick={() => {
+
+                    handleFinish(); // حفظ البيانات مباشرة
+
+                  }}
                 >
                   Complete Profile
                 </Button>

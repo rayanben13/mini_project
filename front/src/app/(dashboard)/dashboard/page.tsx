@@ -1,5 +1,5 @@
-function UserDashboard() {
-  return <div>UserDashboard</div>;
-}
+import DashboardClient from "./dashboardClient";
 
-export default UserDashboard;
+export default function UserDashboard() {
+    return <DashboardClient />;
+}

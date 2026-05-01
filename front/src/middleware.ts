@@ -2,39 +2,44 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // 1. الحصول على التوكن من الـ Cookies
-  const token = request.cookies.get("accessToken")?.value;
-
+  const token = request.cookies.get("refreshToken")?.value;
   const { pathname } = request.nextUrl;
 
-  // 2. تحديد المسارات المحمية والمسارات الخاصة بالضيوف
   const isAuthPage =
-    pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isDashboardPage =
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/profile") ||
-    pathname.startsWith("/onboarding");
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/verify-email");
 
-  // 3. المنطق: إذا كان يحاول دخول لوحة التحكم وهو ليس مسجل دخول
+  const isDashboardPage =
+    pathname.startsWith("/dashboard") || pathname.startsWith("/profile");
+
+  const isHomePage = pathname === "/"; // ✅ أضف هذا
+
+  // ❌ غير مسجل ويحاول dashboard
   if (isDashboardPage && !token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 4. المنطق: إذا كان مسجل دخول ويحاول العودة لصفحة Login أو Register
+  // ❌ مسجل ويحاول auth pages
   if (isAuthPage && token) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // ❌ مسجل ويحاول home "/"
+  if (isHomePage && token) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
 }
-
 // 5. تحديد المسارات التي سيتم تشغيل الميدل وير عليها
 export const config = {
   matcher: [
     "/dashboard/:path*",
     "/profile/:path*",
-    "/onboarding/:path*",
     "/login",
-    "/register",
+    "/signup",
+    "/verify-email",
+    "/",
   ],
 };

@@ -1,37 +1,27 @@
-import { create } from 'zustand';
 import axios from 'axios';
+import { create } from 'zustand';
 import AuthStore from '../AuthStore.js';
 
 const API_URL = 'http://localhost:5000/api/user';
 
-const useUserStore = create((set) => ({
+const useUserStore = create((set, get) => ({
   loading: false,
+  userInfo: null,     // 1. تخزين البيانات
+  cacheExpiry: 0,     // 2. وقت انتهاء صلاحية الكاش
 
-  getMyInformation: async () => {
+  // userStore.js
+  getMyInformation: async (isDropdown = false) => {
     try {
-      set({ loading: true });
       const { token } = AuthStore.getState().user;
 
-      const response = await axios.get(`${API_URL}/MyInformation`, {
+      // إرسال الـ Query Parameter في الرابط
+      const response = await axios.get(`${API_URL}/MyInformation?ProfileDropdown=${isDropdown}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
-      console.error(
-        'Get info error:',
-        error.response?.data?.error || error.response?.data?.message
-      );
-
-      return {
-        success: false,
-        message:
-          error.response?.data?.error ||
-          error.response?.data?.message ||
-          'Server error',
-      };
-    } finally {
-      set({ loading: false });
+      throw error; // ارمِ الخطأ ليتعامل معه React Query
     }
   },
 
@@ -83,7 +73,7 @@ const useUserStore = create((set) => ({
     try {
       const { token } = AuthStore.getState().user;
       const response = await axios.put(`${API_URL}/UpdateProfile`, profileData, {
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }

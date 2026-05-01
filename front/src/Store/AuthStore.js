@@ -1,101 +1,116 @@
-import { create } from "zustand";
 import axios from "axios";
+import { create } from "zustand";
 
 const API_URL = "http://localhost:5000/api/auth";
 
 const AuthStore = create((set, get) => ({
-  user: {
-    token: null,
-  },
-
+  user: null,
   loading: false,
+
+  statusUser: { statusUS: false },
+
   isAuthenticated: false,
 
-  // ✅ init auth from localStorage (safe for Next.js)
+  isHydrated: false,
+
   initAuth: () => {
     if (typeof window === "undefined") return;
 
     const token = localStorage.getItem("token");
 
-    set({
-      user: { token },
-      isAuthenticated: !!token,
-    });
+    if (token) {
+      set({
+        user: { token }, // أو null إذا ما عندك user كامل
+        isAuthenticated: true,
+        isHydrated: true,
+      });
+    } else {
+      set({
+        user: null,
+        isAuthenticated: false,
+        isHydrated: true,
+      });
+    }
   },
 
   login: async ({ email, password }) => {
     try {
       set({ loading: true });
 
-      const response = await axios.post(`${API_URL}/login`, {
-        email,
-        password,
-      }, { withCredentials: true });
+      const response = await axios.post(
+        `${API_URL}/login`,
+        { email, password },
+        { withCredentials: true }
+      );
 
-      localStorage.setItem('token', response.data.accessToken);
+      const { accessToken, user } = response.data;
+      localStorage.setItem("token", accessToken);
 
-      set((state) => ({
-        user: {
-          token: response.data.accessToken,
-        },
-        statusUser: { statusUS: true },
-      }));
-
-      return { success: true };
-    } catch (error) {
       set({
-        statusUser: {
-          statusUS: false,
-        },
+        user: { ...user, token: accessToken },
+        statusUser: { statusUS: true },
+        isAuthenticated: true,
       });
 
-      console.error('Login error:', error.response?.data?.error);
+      return {
+        success: true,
+        user,
+      };
+    } catch (error) {
+      const serverError = error.response?.data?.error;
 
       return {
         success: false,
-        message: error.response?.data?.error || 'Server error',
+        message: serverError || "Server error",
       };
     } finally {
       set({ loading: false });
     }
   },
 
-signup: async ({ fullname, username, email, password }) => {
-  try {
-    set({ loading: true });
-
-    const res = await axios.post(`${API_URL}/register`, {
-      fullname,
-      username,
-      email,
-      password,
-    });
-
-    return {
-      success: true,
-      data: res.data,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: error.response?.data?.error || "Server error",
-    };
-  } finally {
-    set({ loading: false });
-  }
-},
-
-  verifyEmail: async ({ email, code }) => {
+  signup: async ({ fullname, username, email, password }) => {
     try {
-      console.log('Verifying email:', email, 'with code:', code);
       set({ loading: true });
 
-      const response = await axios.post(`${API_URL}/verify`, {
+      const res = await axios.post(`${API_URL}/register`, {
+        fullname,
+        username,
         email,
-        code,
-      }, { withCredentials: true });
+        password,
+      });
 
-      localStorage.setItem('token', response.data.accessToken);
+      // ملاحظة: السيرفر يرسل رسالة نجاح وإيميل، ولا يرسل توكن هنا
+      return {
+        success: true,
+        message: res.data.message,
+        email: res.data.email, // مفيد لتوجيه المستخدم لصفحة التحقق
+      };
+    } catch (error) {
+      console.error("Signup error:", error.response?.data?.error);
+
+      return {
+        success: false,
+        message: error.response?.data?.error || "خطأ في عملية التسجيل",
+      };
+    } finally {
+      set({ loading: false });
+    }
+  },
+  verifyEmail: async ({ email, code }) => {
+    try {
+      console.log("Verifying email:", email, "with code:", code);
+      set({ loading: true });
+
+      const response = await axios.post(
+        `${API_URL}/verify`,
+        {
+          email,
+          code,
+        },
+        { withCredentials: true },
+      );
+
+      localStorage.setItem("token", response.data.accessToken);
 
       set({
         user: {
@@ -105,11 +120,11 @@ signup: async ({ fullname, username, email, password }) => {
 
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error.response?.data?.error);
+      console.error("Login error:", error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || 'Server error',
+        message: error.response?.data?.error || "Server error",
       };
     } finally {
       set({ loading: false });
@@ -126,11 +141,11 @@ signup: async ({ fullname, username, email, password }) => {
 
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error.response?.data?.error);
+      console.error("Login error:", error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || 'Server error',
+        message: error.response?.data?.error || "Server error",
       };
     } finally {
       set({ loading: false });
@@ -147,11 +162,11 @@ signup: async ({ fullname, username, email, password }) => {
 
       return { success: true };
     } catch (error) {
-      console.error('Upload error:', error.response?.data?.error);
+      console.error("Upload error:", error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || 'Server error',
+        message: error.response?.data?.error || "Server error",
       };
     } finally {
       set({ loading: false });
@@ -169,11 +184,11 @@ signup: async ({ fullname, username, email, password }) => {
 
       return { success: true };
     } catch (error) {
-      console.error('Upload error:', error.response?.data?.error);
+      console.error("Upload error:", error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || 'Server error',
+        message: error.response?.data?.error || "Server error",
       };
     } finally {
       set({ loading: false });
@@ -185,7 +200,7 @@ signup: async ({ fullname, username, email, password }) => {
     name,
     year,
     major,
-    specialization,
+    specialty,
   }) => {
     try {
       set({ loading: true });
@@ -193,7 +208,7 @@ signup: async ({ fullname, username, email, password }) => {
       const params = { mode, name };
       if (year) params.year = year;
       if (major) params.major = major;
-      if (specialization) params.specialization = specialization;
+      if (specialty) params.specialty = specialty;
 
       const response = await axios.get(`${API_URL}/SharchMoreInformation`, {
         params,
@@ -202,8 +217,8 @@ signup: async ({ fullname, username, email, password }) => {
       return { success: true, data: response.data };
     } catch (error) {
       console.error(
-        'Search error:',
-        error.response?.data?.error || error.response?.data?.message
+        "Search error:",
+        error.response?.data?.error || error.response?.data?.message,
       );
 
       return {
@@ -211,37 +226,50 @@ signup: async ({ fullname, username, email, password }) => {
         message:
           error.response?.data?.error ||
           error.response?.data?.message ||
-          'Server error',
+          "Server error",
       };
     } finally {
       set({ loading: false });
     }
   },
 
-  addedUserInformation: async ({ univ, major, spercialty, academic_year }) => {
+  addedUserInformation: async ({ univ, major, specialty, academic_year }) => {
     try {
       set({ loading: true });
-      const { token } = AuthStore.getState().user;
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        return { success: false, message: "Token not found" };
+      }
+
+      const payload = {
+        univ,
+        major,
+        academic_year
+      };
+
+      // إضافة التخصص فقط في حالة الماستر
+      if (["M1", "M2"].includes(academic_year)) {
+        payload.specialty = specialty && specialty.trim().length >= 2 ? specialty : "General";
+      }
+
 
       const response = await axios.post(
         `${API_URL}/addedUserInformation`,
-        { univ, major, spercialty, academic_year },
-        { headers: { Authorization: `Bearer ${token}` } }
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       return { success: true, data: response.data };
     } catch (error) {
       console.error(
-        'Save info error:',
-        error.response?.data?.error || error.response?.data?.message
+        "Save info error:",
+        error.response?.data?.details || error.response?.data?.error || error.response?.data?.message,
       );
 
       return {
         success: false,
-        message:
-          error.response?.data?.error ||
-          error.response?.data?.message ||
-          'Server error',
+        message: error.response?.data?.details || error.response?.data?.error || error.response?.data?.message || "Server error",
       };
     } finally {
       set({ loading: false });
@@ -251,31 +279,35 @@ signup: async ({ fullname, username, email, password }) => {
   refreshToken: async () => {
     try {
       set({ loading: true });
-      const response = await axios.post(`${API_URL}/token`, {}, { withCredentials: true });
-      
-      localStorage.setItem('token', response.data.accessToken);
-      
+      const response = await axios.post(
+        `${API_URL}/token`,
+        {},
+        { withCredentials: true },
+      );
+
+      localStorage.setItem("token", response.data.accessToken);
+
       set((state) => ({
         user: {
           ...state.user,
           token: response.data.accessToken,
         },
       }));
-      
+
       return { success: true, accessToken: response.data.accessToken };
     } catch (error) {
-      console.error('Refresh token error:', error.response?.data?.error);
-      
+      console.error("Refresh token error:", error.response?.data?.error);
+
       // If refresh token fails, we should probably logout or clear state
       set({
-        user: { token: '' },
+        user: { token: "" },
         statusUser: { statusUS: false },
       });
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
 
       return {
         success: false,
-        message: error.response?.data?.error || 'Server error',
+        message: error.response?.data?.error || "Server error",
       };
     } finally {
       set({ loading: false });
@@ -283,22 +315,22 @@ signup: async ({ fullname, username, email, password }) => {
   },
 
   logout: async () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     try {
       set({ loading: true });
 
       await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
 
       set({
-        user: { id: null, token: '' },
+        user: { id: null, token: "" },
         statusUser: { statusUS: false },
       });
     } catch (error) {
-      console.error('Logout error:', error.response?.data?.error);
+      console.error("Logout error:", error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || 'Server error',
+        message: error.response?.data?.error || "Server error",
       };
     } finally {
       set({ loading: false });

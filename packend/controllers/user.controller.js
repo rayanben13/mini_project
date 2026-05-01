@@ -13,7 +13,6 @@ export const MyInformation = async (req, res) => {
 
     const isProfileDropdown = req.query.ProfileDropdown === 'true';
 
-    console.log(isProfileDropdown);
     if (isProfileDropdown) {
       const profileData = await prisma.users.findUnique({
         where: {

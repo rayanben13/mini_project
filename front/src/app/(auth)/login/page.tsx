@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import z from "zod";
 
 type LoginFormValues = z.infer<typeof authLoginSchema>;
@@ -35,20 +35,27 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      const result = await login(values.email, values.password);
-      console.log("Login result:", result);
+      const result = await login({
+        email: values.email,
+        password: values.password,
+      });
 
       if (result.success) {
         toast.success("Login successful!");
         const role = result.user?.role;
-
-        if (role === "admin") {
-          router.replace("/admin");
+        if (result.needsOnboarding) {
+          router.push("/onboarding");
         } else {
-          router.replace("/dashboard");
+          if (role === "admin") {
+            router.replace("/admin");
+          } else {
+            router.replace("/dashboard");
+          }
         }
+
+
       } else {
-        if (result.emailNotVerified) {
+        if (result.message === "Email not verified") {
           toast.error(result.message);
           router.push(
             `/verify-email?email=${encodeURIComponent(

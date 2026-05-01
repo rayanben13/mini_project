@@ -8,10 +8,12 @@ import {
   sendWelcomeEmail,
 } from "../config/Eamil.js";
 import {
+  clearAccessToken,
   clearRefreshCookie,
   generateAccessToken,
   generateRefreshToken,
-  setRefreshCookie,
+  setAccessToken,
+  setRefreshCookie
 } from "../config/token.js";
 
 import redis from "../config/redis.js";
@@ -98,8 +100,8 @@ export const resendVerificationCode = async (req, res) => {
     );
     isDevelopment
       ? console.log(
-          `🔄 New Verification code for ${email}: ${verificationCode}`,
-        )
+        `🔄 New Verification code for ${email}: ${verificationCode}`,
+      )
       : await sendVerificationEmail(email, verificationCode);
     res
       .status(200)
@@ -149,8 +151,8 @@ export const verify = async (req, res) => {
     await redis.del(`verificationCode:${email}`);
     isDevelopment
       ? console.log(
-          `🎉 Welcome email sent to ${email} and his is the your token ${accessToken}`,
-        )
+        `🎉 Welcome email sent to ${email} and his is the your token ${accessToken}`,
+      )
       : await sendWelcomeEmail(email, user.username);
 
     res.status(200).json({
@@ -189,9 +191,8 @@ export const login = async (req, res) => {
       },
     });
 
-    if (!user_informationExists && userExists.role === "user") {
-      return res.status(404).json({ error: "User information is NOT exist " });
-    }
+    const needsOnboarding =
+      !user_informationExists && userExists.role === "user";
 
     const user = userExists;
     const validPassword = await bcrypt.compare(password, user.password);
@@ -213,6 +214,7 @@ export const login = async (req, res) => {
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
     setRefreshCookie(res, refreshToken);
+    setAccessToken(res, accessToken);
 
     if (user.role === "admin") {
       console.log(
@@ -221,12 +223,21 @@ export const login = async (req, res) => {
     } else {
       isDevelopment
         ? console.log(
-            `🎉 Welcome again email : ${email} and his token ${accessToken}`,
-          )
+          `🎉 Welcome again email : ${email} and his token ${accessToken}`,
+        )
         : await sendWelcomeEmail(email, user.username);
     }
 
-    return res.status(201).json({ accessToken });
+    return res.status(201).json({
+      accessToken,
+      user: {
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        avatar: user.img_user || null,
+      },
+      needsOnboarding,
+    });
   } catch (error) {
     process.env.NODE_ENV === "development" &&
       console.log("❌ Error in login:", error);
@@ -275,8 +286,8 @@ export const forgotPassword = async (req, res) => {
 
     isDevelopment
       ? console.log(
-          `🔄 Password reset token for ${email} : ${process.env.FRONTEND_URL}/reset-password/${resetToken}?email=${email}}`,
-        )
+        `🔄 Password reset token for ${email} : ${process.env.FRONTEND_URL}/reset-password/${resetToken}?email=${email}}`,
+      )
       : await sendPasswordResetEmail(user.email, resetToken);
 
     return res.status(200).json({
@@ -320,6 +331,7 @@ export const resetPassword = async (req, res) => {
 
 export const logout = (req, res) => {
   clearRefreshCookie(res);
+  clearAccessToken(res);
   res.json({ message: "Logged out" });
 };
 
@@ -354,7 +366,7 @@ export const SharchMoreInformation = async (req, res) => {
       }
       majors = majors.map((item) => item.major);
       return res.status(200).json({ majors });
-    } else if (mode == "Spercialty") {
+    } else if (mode == "specialty") {
       const year = req.query.year?.trim();
       const major = req.query.major?.trim();
       if (!year || !major) {
@@ -379,7 +391,7 @@ export const SharchMoreInformation = async (req, res) => {
         return res.status(404).json({ message: "No results found" });
       }
       Spercialty = Spercialty.map((item) => item.specialization);
-      return res.status(200).json({ Spercialty });
+      return res.status(200).json({ specialty: Spercialty });
     } else if (mode == "subject") {
       const year = req.query.year?.trim();
       const major = req.query.major?.trim();
@@ -426,63 +438,64 @@ export const SharchMoreInformation = async (req, res) => {
 
 export const addedUserInformation = async (req, res) => {
   try {
-    const { univ, major, spercialty, academic_year } = req.body;
+    const { univ, major, specialty, academic_year } = req.body;
     const user = req.user;
 
+    // 1. التحقق من الجامعة
     const universities = await getUniversities(univ);
-
-    if (user.role !== "user") {
-      return res.status(404).json({ message: "you are not user" });
+    if (!universities || universities.length !== 1) {
+      return res
+        .status(404)
+        .json({ message: "university is not exist or invalid" });
     }
+    console.log("univvvvvvv", universities);
 
-    if (universities.length === 0) {
-      return res.status(404).json({ message: "university is not exist" });
-    }
-    if (universities.length > 1) {
-      return res.status(404).json({ message: "university is not exist" });
-    }
-
+    // 2. التحقق من وجود التخصص في قاعدة البيانات (جدول المعايير)
     const infoExist = await prisma.university_majors.findFirst({
       where: {
         major: { equals: major, mode: "insensitive" },
-        specialization: { equals: spercialty, mode: "insensitive" },
+        // إذا كانت specialty فارغة، قد تحتاج للبحث عن null أو قيمة فارغة حسب تخزينك
+        ...(specialty && {
+          specialization: { equals: specialty, mode: "insensitive" },
+        }),
         academic_year: academic_year,
       },
     });
+
     if (!infoExist) {
-      return res.status(404).json({ message: "information is not exist" });
-    }
-    const result = await prisma.user_information.findFirst({
-      where: {
-        id_user: user.id_user,
-      },
-    });
-    if (result) {
-      return res.status(404).json({ message: "information is already exist" });
+      return res
+        .status(404)
+        .json({ message: "information is not exist in our records" });
     }
 
-    const infoAdded = await prisma.users.update({
+    // 3. التحقق من أن المستخدم لم يضف بياناته مسبقاً (استخدام findUnique أفضل للـ ID)
+    const existingInfo = await prisma.user_information.findUnique({
       where: { id_user: user.id_user },
+    });
+
+    if (existingInfo) {
+      return res.status(400).json({ message: "information already exists" });
+    }
+
+    const infoAdded = await prisma.user_information.create({
       data: {
-        user_information: {
-          create: {
-            university: universities[0],
-            major: infoExist.major,
-            specialization: infoExist.specialization,
-            academic_year: infoExist.academic_year,
-          },
-        },
-      },
-      select: {
-        user_information: true,
+        id_user: user.id_user,
+        university: universities[0], // استخدم اسم الجامعة من API
+        major: infoExist.major,
+        specialization: infoExist.specialization,
+        academic_year: infoExist.academic_year, // سيقبلها إذا كانت ضمن الـ Enum
       },
     });
-    const user_information = infoAdded.user_information;
-    return res
-      .status(200)
-      .json({ message: "information is added", user_information });
+
+    return res.status(200).json({
+      message: "information is added",
+      user_information: infoAdded,
+    });
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: "Server error" });
+    // طباعة الخطأ كاملًا لمعرفة الحقل المسبب للمشكلة (مثلاً: P2002 أو P2009)
+    console.error("Prisma Validation Error Details:", err);
+    return res
+      .status(500)
+      .json({ error: "Server error", details: err.message });
   }
 };

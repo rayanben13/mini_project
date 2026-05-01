@@ -15,13 +15,20 @@ export const yourSubjects = async (req, res) => {
       where: { id_user: Me.id_user },
     });
 
+    const whereClause = {
+      academic_year: userInformation.academic_year,
+      major: userInformation.major,
+      specialization: userInformation.specialization,
+    };
+
+    // 📌 حساب العدد الكلي للمواد
+    const totalSubjects = await prisma.subjects.count({
+      where: whereClause,
+    });
+
     // 📌 جلب subjects مع count (بدون N+1 problem)
     const subjects = await prisma.subjects.findMany({
-      where: {
-        academic_year: userInformation.academic_year,
-        major: userInformation.major,
-        specialization: userInformation.specialization,
-      },
+      where: whereClause,
       select: {
         id_subject: true,
         course: true,
@@ -42,11 +49,11 @@ export const yourSubjects = async (req, res) => {
     return res.status(200).json({
       meta: {
         current_page: page,
-        last_page: Math.ceil(subjects.length / limit),
+        last_page: Math.ceil(totalSubjects / limit),
         per_page: limit,
-        total_subjects: subjects.length,
-        from: subjects.length === 0 ? 0 : (page - 1) * limit + 1,
-        to: (page - 1) * limit + subjects.length,
+        total_subjects: totalSubjects,
+        from: totalSubjects === 0 ? 0 : skip + 1,
+        to: skip + subjects.length,
       },
       data: subjects,
     });
