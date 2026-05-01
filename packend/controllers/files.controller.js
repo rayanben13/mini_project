@@ -225,17 +225,108 @@ export const showMyFiles = async (req, res) => {
     const limit = Math.min(Number(req.query.limit) || 10, 50);
     const page = Math.max(Number(req.query.page) || 1, 1);
     const skip = (page - 1) * limit;
+    let show_status = req.query.show;
+    const validStatus = ['pending', 'accepted', 'rejected', 'all'];
+
+    if (show_status && !validStatus.includes(show_status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    if (!show_status) {
+      show_status = 'all';
+    }
 
     const total_files = await prisma.files.count({
       where: {
         id_user: Me.id_user,
-        status: 'accepted',
+        ...(show_status !== 'all' && { status: show_status }),
       },
     });
 
     const files = await prisma.files.findMany({
       where: {
         id_user: Me.id_user,
+        ...(show_status !== 'all' && { status: show_status }),
+      },
+      select: {
+        id_file: true,
+        file_path: true,
+        title: true,
+        type: true,
+        status: true,
+        subjects: {
+          select: {
+            major: true,
+            specialization: true,
+            academic_year: true,
+            course: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+    });
+
+    const formatted = files.map((item) => ({
+      id_file: item.id_file,
+      file_path: item.file_path,
+      title: item.title,
+      type_file: item.type,
+
+      major: item.subjects?.major,
+      specialization: item.subjects?.specialization,
+      academic_year: item.subjects?.academic_year,
+      course: item.subjects?.course,
+      status: item.status,
+    }));
+    res.status(200).json({
+      meta: {
+        current_page: page,
+        last_page: Math.ceil(total_files / limit),
+        per_page: limit,
+        total_files,
+        from: total_files === 0 ? 0 : (page - 1) * limit + 1,
+        to: (page - 1) * limit + files.length,
+      },
+      data: formatted,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const showFilesUserById = async (req, res) => {
+  try {
+    const id_user = Number(req.params.id_user);
+
+    const limit = Math.min(Number(req.query.limit) || 10, 50);
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const skip = (page - 1) * limit;
+
+    if (!id_user) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const userExists = await prisma.users.findUnique({
+      where: {
+        id_user,
+      },
+    });
+
+    if (!userExists || userExists.role == 'admin') {
+      return res.status(404).json({ error: 'user not found' });
+    }
+
+    const total_files = await prisma.files.count({
+      where: {
+        id_user,
+        status: 'accepted',
+      },
+    });
+
+    const files = await prisma.files.findMany({
+      where: {
+        id_user,
         status: 'accepted',
       },
       select: {
@@ -288,47 +379,21 @@ export const showMyFiles = async (req, res) => {
 
 export const showDetailFile = async (req, res) => {
   try {
-    const Me = req.user;
     const id_file = Number(req.params.id_file);
-    console.log(id_file);
+    const Me = req.user;
+
     if (!id_file) {
       return res.status(400).json({ error: 'File ID is required' });
     }
 
-    const fileExist = await prisma.files.findUnique({
-      where: {
-        id_file,
-      },
-    });
+    const isAdmin = Me.role === 'admin';
 
-    if (!fileExist) {
-      return res.status(404).json({ error: 'File not found' });
-    }
-
-    const like = await prisma.files_likes.count({
-      where: {
-        id_file,
-        type: 'LIKE',
-        files: {
-          status: 'accepted',
-        },
-      },
-    });
-
-    const dislike = await prisma.files_likes.count({
-      where: {
-        id_file,
-        type: 'DISLIKE',
-        files: {
-          status: 'accepted',
-        },
-      },
-    });
+    // ✅ جلب الملف مرة واحدة فقط
     const file = await prisma.files.findUnique({
       where: {
         id_file,
+        ...(isAdmin ? {} : { status: 'accepted' }),
       },
-
       select: {
         id_file: true,
         file_path: true,
@@ -354,29 +419,56 @@ export const showDetailFile = async (req, res) => {
             img_user: true,
           },
         },
-        files_likes: {
-          where: {
-            id_user: Me.id_user,
+        ...(Me.role === 'user' && {
+          files_likes: {
+            where: {
+              id_user: Me.id_user,
+            },
+            select: {
+              type: true,
+            },
           },
-          select: {
-            type: true,
-          },
-        },
+        }),
       },
     });
+
     if (!file) {
-      return res.status(403).json({ error: 'File not found' });
+      return res.status(404).json({ error: 'File not found' });
     }
-    const { files_likes, ...rest } = file;
+
+    // ✅ likes
+    let like = 0;
+    let dislike = 0;
+
+    if (!isAdmin) {
+      [like, dislike] = await Promise.all([
+        prisma.files_likes.count({
+          where: { id_file, type: 'LIKE' },
+        }),
+        prisma.files_likes.count({
+          where: { id_file, type: 'DISLIKE' },
+        }),
+      ]);
+    }
+
+    // ✅ statusLike
     let statusLike = null;
-    if (files_likes.length > 0) {
-      statusLike = files_likes[0].type;
+    if (Me.role === 'user' && file.files_likes?.length) {
+      statusLike = file.files_likes[0].type;
     }
-    res.status(200).json({
+
+    const { files_likes, ...rest } = file;
+
+    // ✅ response
+    return res.status(200).json({
       ...rest,
-      like,
-      dislike,
-      statusLike,
+      ...(isAdmin
+        ? {}
+        : {
+            like,
+            dislike,
+            ...(Me.role === 'user' && { statusLike }),
+          }),
     });
   } catch (err) {
     console.error(err);

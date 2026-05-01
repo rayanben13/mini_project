@@ -4,12 +4,13 @@ import AuthStore from '../AuthStore.js';
 
 const SUBJECTS_API_URL = 'http://localhost:5000/api/subjects';
 
-const useSubjectsStore = create((set) => ({
+const useSubjectsStore = create((set, get) => ({
   loading: false,
 
   // دالة مساعدة للحصول على الهيدر مع التوكن
   getAuthHeader: () => {
     const { token } = AuthStore.getState().user;
+    if (!token) return {};
     return { headers: { Authorization: `Bearer ${token}` } };
   },
 
@@ -25,10 +26,13 @@ const useSubjectsStore = create((set) => ({
     }
   },
 
-  showDetailSubject: async (id_subject) => {
+  showDetailSubject: async (id_subject, queryParams = {}) => {
     set({ loading: true });
     try {
-      const response = await axios.get(`${SUBJECTS_API_URL}/subject/${id_subject}`);
+      const response = await axios.get(`${SUBJECTS_API_URL}/subject/${id_subject}`, {
+        ...get().getAuthHeader(),
+        params: queryParams,
+      });
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {

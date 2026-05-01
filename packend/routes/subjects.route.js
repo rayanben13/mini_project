@@ -8,6 +8,7 @@ import {
   showDetailSubject,
 } from '../controllers/subjects.controller.js';
 import { requireUser } from '../middleware/checkUserInformation.js';
+import { optionalAuth } from '../middleware/optionalAuth.js';
 const router = express.Router();
 
 router.get(
@@ -17,10 +18,6 @@ router.get(
   yourSubjects
 );
 
-router.get(
-  '/subject/:id_subject',
-
-  showDetailSubject
-);
+router.get('/subject/:id_subject', optionalAuth, showDetailSubject);
 
 export default router;

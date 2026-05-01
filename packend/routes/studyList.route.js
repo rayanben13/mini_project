@@ -15,7 +15,7 @@ import {
   loveStudyList,
   addSetReminder,
   deleteFileFromStudyList,
-  sharchMoreSubjects,
+  showStudyListUserById,
 } from '../controllers/studyList.controller.js';
 import validate from '../middleware/validate.js';
 import { schemaReminder } from '../schemas/auth.schema.js';
@@ -101,6 +101,6 @@ router.delete(
   deleteFileFromStudyList
 );
 
-router.get('/sharchMoreSubjects', sharchMoreSubjects);
+router.get('/showStudyListUserById/:id_user', showStudyListUserById);
 
 export default router;

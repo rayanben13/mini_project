@@ -12,6 +12,7 @@ import {
   saveFileToMyStudyList,
   deleteMeOwnfile,
   getShareLink,
+  showFilesUserById,
 } from '../controllers/files.controller.js';
 import validate from '../middleware/validate.js';
 import {
@@ -24,6 +25,7 @@ import '../config/passport.js';
 import passport from 'passport';
 import { UploadFiles } from '../config/Cloudinary.js';
 import { requireUser } from '../middleware/checkUserInformation.js';
+import { optionalAuth } from '../middleware/optionalAuth.js';
 
 const router = express.Router();
 
@@ -48,12 +50,7 @@ router.get(
   showMyFiles
 );
 
-router.get(
-  '/showDetailFile/:id_file',
-  passport.authenticate('jwt', { session: false }),
-  requireUser,
-  showDetailFile
-);
+router.get('/showDetailFile/:id_file', optionalAuth, showDetailFile);
 
 router.post(
   '/UplodeNewFile',
@@ -99,5 +96,7 @@ router.post(
 );
 
 router.get('/getShareLink/:id_file', getShareLink);
+
+router.get('/showFilesUserById/:id_user', showFilesUserById);
 
 export default router;

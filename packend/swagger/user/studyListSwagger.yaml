@@ -781,33 +781,64 @@ paths:
               example:
                 error: 'Server error'
 
-  /api/studyList/sharchMoreSubjects:
+  /api/studyList/showStudyListUserById/{id_user}:
     get:
-      summary: Search for more subjects (Autocomplete)
+      summary: Get all public study lists for a specific user
       tags: [StudyLists]
       parameters:
-        - in: query
-          name: subject
+        - in: path
+          name: id_user
           required: true
           schema:
-            type: string
-          description: Subject name search query
+            type: integer
+          description: ID of the user whose study lists to retrieve
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Limit the number of items returned
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
       responses:
         '200':
-          description: List of matching subjects
+          description: A list of public study lists for the specified user
           content:
             application/json:
               example:
-                subjects: ['Mathematics', 'Matrix Theory', 'Advanced Math']
+                meta:
+                  current_page: 1
+                  last_page: 2
+                  per_page: 10
+                  total_study_list: 15
+                  from: 1
+                  to: 10
+                data:
+                  - id_stuList: 3
+                    name: 'Algebra Fundamentals'
+                    users:
+                      id_user: 8
+                      fullname: 'Alice Smith'
+                    count_files: 5
         '400':
-          description: Bad Request - Missing subject query
+          description: Invalid User ID
           content:
             application/json:
               example:
-                error: 'Missing subject'
+                error: 'User ID is required'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                error: 'user not found'
         '500':
           description: Internal Server Error
           content:
             application/json:
               example:
-                error: 'Server error'
+                error: 'Server error'

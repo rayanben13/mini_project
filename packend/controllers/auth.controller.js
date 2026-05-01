@@ -1,27 +1,26 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-import crypto from "crypto";
+import crypto from 'crypto';
 import {
   sendPasswordResetEmail,
   sendVerificationEmail,
   sendWelcomeEmail,
-} from "../config/Eamil.js";
+} from '../config/Eamil.js';
 import {
   clearAccessToken,
   clearRefreshCookie,
   generateAccessToken,
   generateRefreshToken,
-  setAccessToken,
-  setRefreshCookie
+  setRefreshCookie,
 } from "../config/token.js";
 
-import redis from "../config/redis.js";
+import redis from '../config/redis.js';
 
-import prisma from "../lib/prisma.ts";
-import { getUniversities } from "../service/univAPI.js";
+import prisma from '../lib/prisma.ts';
+import { getUniversities } from '../service/univAPI.js';
 
-let isDevelopment = process.env.NODE_ENV?.trim() === "development";
+let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
 export const register = async (req, res) => {
   const { email, password, username, fullname } = req.body;
@@ -34,17 +33,17 @@ export const register = async (req, res) => {
     });
 
     if (userExists) {
-      return res.status(404).json({ error: "Email or user name is exist " });
+      return res.status(404).json({ error: 'Email or user name is exist ' });
     }
 
     const verificationCode = Math.floor(
-      100000 + Math.random() * 900000,
+      100000 + Math.random() * 900000
     ).toString();
     await redis.set(
       `verificationCode:${email}`,
       verificationCode,
-      "EX",
-      15 * 60,
+      'EX',
+      15 * 60
     );
 
     isDevelopment
@@ -67,11 +66,11 @@ export const register = async (req, res) => {
       },
     });
 
-    res.status(200).json({ message: "Verification code sent to email", email });
+    res.status(200).json({ message: 'Verification code sent to email', email });
   } catch (error) {
-    console.log("❌ Error in register:", error);
+    console.log('❌ Error in register:', error);
     res.status(500).json({
-      error: "Server error",
+      error: 'Server error',
     });
   }
 };
@@ -86,17 +85,17 @@ export const resendVerificationCode = async (req, res) => {
     });
 
     if (!userExists) {
-      return res.status(404).json({ error: "Email is NOT exist " });
+      return res.status(404).json({ error: 'Email is NOT exist ' });
     }
     await redis.del(`verificationCode:${email}`);
     const verificationCode = Math.floor(
-      100000 + Math.random() * 900000,
+      100000 + Math.random() * 900000
     ).toString();
     await redis.set(
       `verificationCode:${email}`,
       verificationCode,
-      "EX",
-      15 * 60,
+      'EX',
+      15 * 60
     );
     isDevelopment
       ? console.log(
@@ -105,9 +104,9 @@ export const resendVerificationCode = async (req, res) => {
       : await sendVerificationEmail(email, verificationCode);
     res
       .status(200)
-      .json({ message: "New verification code sent to your email" });
+      .json({ message: 'New verification code sent to your email' });
   } catch (error) {
-    console.log("❌ Error in resendVerificationCode:", error);
+    console.log('❌ Error in resendVerificationCode:', error);
     return res.status(500).json(error);
   }
 };
@@ -117,17 +116,17 @@ export const verify = async (req, res) => {
 
   try {
     const storedCode = await redis.get(`verificationCode:${email}`);
-    console.log("🔄 storedCode from Redis:", storedCode);
+    console.log('🔄 storedCode from Redis:', storedCode);
     if (!storedCode) {
-      return res.status(400).json({ message: "Code expired or invalid" });
+      return res.status(400).json({ message: 'Code expired or invalid' });
     }
 
     if (storedCode !== code) {
-      return res.status(400).json({ message: "Invalid code" });
+      return res.status(400).json({ message: 'Invalid code' });
     }
 
     const result = await prisma.users.update({
-      data: { is_active: true, role: "user" },
+      data: { is_active: true, role: 'user' },
       where: {
         email,
       },
@@ -137,7 +136,7 @@ export const verify = async (req, res) => {
     if (!user)
       return res
         .status(400)
-        .json({ message: "User not found or already verified" });
+        .json({ message: 'User not found or already verified' });
     const payload = {
       id: user.id_user,
       email: user.email,
@@ -156,24 +155,19 @@ export const verify = async (req, res) => {
       : await sendWelcomeEmail(email, user.username);
 
     res.status(200).json({
-      message: "Email verified successfully",
+      message: 'Email verified successfully',
+      role: user.role,
       accessToken: accessToken,
-      user: {
-        // ✅ أضف هذا الكائن
-        email: user.email,
-        username: user.username,
-        avatar: user.img_user || null, // Add avatar to response
-      },
     });
   } catch (error) {
-    console.log("❌ Error in verify:", error);
+    console.log('❌ Error in verify:', error);
     return res.status(500).json(error);
   }
 };
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
-  console.log("this is the email and password : ", email, password);
+  console.log('this is the email and password : ', email, password);
   try {
     const userExists = await prisma.users.findFirst({
       where: {
@@ -182,7 +176,7 @@ export const login = async (req, res) => {
     });
 
     if (!userExists) {
-      return res.status(404).json({ error: "Email is NOT exist " });
+      return res.status(404).json({ error: 'Email is NOT exist ' });
     }
 
     const user_informationExists = await prisma.user_information.findFirst({
@@ -191,17 +185,18 @@ export const login = async (req, res) => {
       },
     });
 
-    const needsOnboarding =
-      !user_informationExists && userExists.role === "user";
+    if (!user_informationExists && userExists.role === "user") {
+      return res.status(404).json({ error: "User information is NOT exist " });
+    }
 
     const user = userExists;
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(404).json({ error: "password or Email is not exist" });
+      return res.status(404).json({ error: 'password or Email is not exist' });
     }
     if (!user.is_active) {
       return res.status(403).json({
-        error: "Email not verified",
+        error: 'Email not verified',
         verified: false,
         email: user.email, // 🔥 IMPORTANT
       });
@@ -216,9 +211,9 @@ export const login = async (req, res) => {
     setRefreshCookie(res, refreshToken);
     setAccessToken(res, accessToken);
 
-    if (user.role === "admin") {
+    if (user.role === 'admin') {
       console.log(
-        `🎉 Welcome again Admin : ${email} and his token ${accessToken}`,
+        `🎉 Welcome again Admin : ${email} and his token ${accessToken}`
       );
     } else {
       isDevelopment
@@ -228,31 +223,22 @@ export const login = async (req, res) => {
         : await sendWelcomeEmail(email, user.username);
     }
 
-    return res.status(201).json({
-      accessToken,
-      user: {
-        email: user.email,
-        username: user.username,
-        role: user.role,
-        avatar: user.img_user || null,
-      },
-      needsOnboarding,
-    });
+    return res.status(201).json({ accessToken });
   } catch (error) {
-    process.env.NODE_ENV === "development" &&
-      console.log("❌ Error in login:", error);
+    process.env.NODE_ENV === 'development' &&
+      console.log('❌ Error in login:', error);
     res.status(500).json({
-      error: "Server error",
+      error: 'Server error',
     });
   }
 };
 
 export const token = (req, res) => {
   const token = req.cookies.refreshToken;
-  if (!token) return res.status(401).json({ error: "No refresh token" });
-  console.log("this is the refersh token : ", process.env.REFRESH_TOKEN_SECRET);
+  if (!token) return res.status(401).json({ error: 'No refresh token' });
+  console.log('this is the refersh token : ', process.env.REFRESH_TOKEN_SECRET);
   jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: "Invalid refresh token" });
+    if (err) return res.status(403).json({ error: 'Invalid refresh token' });
 
     const payload = {
       id: user.id,
@@ -263,7 +249,7 @@ export const token = (req, res) => {
     const refreshToken = generateRefreshToken(payload);
     setRefreshCookie(res, refreshToken);
 
-    res.json({ accessToken: newAccessToken });
+    res.json({ role: user.role, accessToken: newAccessToken });
   });
 };
 
@@ -278,11 +264,11 @@ export const forgotPassword = async (req, res) => {
     });
     const user = userExists;
     if (!user) {
-      return res.status(404).json({ error: "Email is NOT exist " });
+      return res.status(404).json({ error: 'Email is NOT exist ' });
     }
 
-    const resetToken = crypto.randomBytes(20).toString("hex");
-    await redis.set(`forgotPassword:${email}`, resetToken, "EX", 3600);
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    await redis.set(`forgotPassword:${email}`, resetToken, 'EX', 3600);
 
     isDevelopment
       ? console.log(
@@ -291,11 +277,11 @@ export const forgotPassword = async (req, res) => {
       : await sendPasswordResetEmail(user.email, resetToken);
 
     return res.status(200).json({
-      message: "Password reset link sent to your email",
+      message: 'Password reset link sent to your email',
     });
   } catch (err) {
-    console.log("❌ Error in forgotPassword:", err);
-    return res.status(500).json({ error: "Server error" });
+    console.log('❌ Error in forgotPassword:', err);
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -305,12 +291,12 @@ export const resetPassword = async (req, res) => {
 
   try {
     const resetToken = await redis.get(`forgotPassword:${email}`);
-    console.log("🔄 resetToken from Redis:", resetToken);
-    console.log("🔄 resetToken from params:", resetTokenURL);
+    console.log('🔄 resetToken from Redis:', resetToken);
+    console.log('🔄 resetToken from params:', resetTokenURL);
     if (resetToken !== resetTokenURL) {
       return res
         .status(400)
-        .json({ message: "Invalid or expired reset token" });
+        .json({ message: 'Invalid or expired reset token' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -323,15 +309,14 @@ export const resetPassword = async (req, res) => {
     });
     await redis.del(`forgotPassword:${email}`);
 
-    return res.status(200).json({ message: "Update password is done" });
+    return res.status(200).json({ message: 'Update password is done' });
   } catch (err) {
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
 export const logout = (req, res) => {
   clearRefreshCookie(res);
-  clearAccessToken(res);
   res.json({ message: "Logged out" });
 };
 
@@ -341,7 +326,7 @@ export const SharchMoreInformation = async (req, res) => {
     const name = req.query.name?.trim();
 
     if (!mode || !name) {
-      return res.status(400).json({ message: "choix you Mode and name" });
+      return res.status(400).json({ message: 'mode and name are required' });
     }
     if (mode == "univ") {
       let universities = await getUniversities(name);
@@ -366,7 +351,7 @@ export const SharchMoreInformation = async (req, res) => {
       }
       majors = majors.map((item) => item.major);
       return res.status(200).json({ majors });
-    } else if (mode == "specialty") {
+    } else if (mode == "Spercialty") {
       const year = req.query.year?.trim();
       const major = req.query.major?.trim();
       if (!year || !major) {
@@ -391,49 +376,52 @@ export const SharchMoreInformation = async (req, res) => {
         return res.status(404).json({ message: "No results found" });
       }
       Spercialty = Spercialty.map((item) => item.specialization);
-      return res.status(200).json({ specialty: Spercialty });
+      return res.status(200).json({ Spercialty });
     } else if (mode == "subject") {
       const year = req.query.year?.trim();
       const major = req.query.major?.trim();
 
-      const yearAllowed = ["L1", "L2", "L3"];
+      const yearAllowed = ['L1', 'L2', 'L3'];
       let specialization = null;
 
-      if (!yearAllowed.includes(year)) {
+      if (year && !yearAllowed.includes(year)) {
         specialization = req.query.specialization?.trim();
       }
 
-      if (!year || !major) {
-        return res.status(400).json({ message: "enter year and major" });
-      }
       let subject = await prisma.university_majors.findMany({
         where: {
           course: {
             contains: name,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
-          specialization: specialization,
-          academic_year: year,
-          major: major,
+          ...(specialization && {
+            specialization: { contains: specialization, mode: 'insensitive' },
+          }),
+          ...(year && { academic_year: year }),
+          ...(major && { major: { contains: major, mode: 'insensitive' } }),
         },
         select: {
           course: true,
         },
-        distinct: ["course"],
+        distinct: ['course'],
         take: 4,
       });
-      if (subject.length === 0) {
-        return res.status(404).json({ message: "No results found" });
+
+      if (!subject.length) {
+        return res.status(404).json({ message: 'No results found' });
       }
+
       subject = subject.map((item) => item.course);
       return res.status(200).json({ subject });
     }
 
-    return res.status(400).json({ message: "choix you Mode" });
+      default:
+return res.status(400).json({ message: 'choix you Mode' });
+    }
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: "Server error" });
-  }
+  console.log(err);
+  return res.status(500).json({ error: 'Server error' });
+}
 };
 
 export const addedUserInformation = async (req, res) => {
@@ -443,38 +431,36 @@ export const addedUserInformation = async (req, res) => {
 
     // 1. التحقق من الجامعة
     const universities = await getUniversities(univ);
-    if (!universities || universities.length !== 1) {
-      return res
-        .status(404)
-        .json({ message: "university is not exist or invalid" });
-    }
-    console.log("univvvvvvv", universities);
 
-    // 2. التحقق من وجود التخصص في قاعدة البيانات (جدول المعايير)
+    if (user.role !== "user") {
+      return res.status(404).json({ message: "you are not user" });
+    }
+
+    if (universities.length === 0) {
+      return res.status(404).json({ message: "university is not exist" });
+    }
+    if (universities.length > 1) {
+      return res.status(404).json({ message: "university is not exist" });
+    }
+
     const infoExist = await prisma.university_majors.findFirst({
       where: {
         major: { equals: major, mode: "insensitive" },
-        // إذا كانت specialty فارغة، قد تحتاج للبحث عن null أو قيمة فارغة حسب تخزينك
-        ...(specialty && {
-          specialization: { equals: specialty, mode: "insensitive" },
-        }),
+        specialization: { equals: spercialty, mode: "insensitive" },
         academic_year: academic_year,
       },
     });
 
     if (!infoExist) {
-      return res
-        .status(404)
-        .json({ message: "information is not exist in our records" });
+      return res.status(404).json({ message: "information is not exist" });
     }
 
     // 3. التحقق من أن المستخدم لم يضف بياناته مسبقاً (استخدام findUnique أفضل للـ ID)
     const existingInfo = await prisma.user_information.findUnique({
       where: { id_user: user.id_user },
     });
-
-    if (existingInfo) {
-      return res.status(400).json({ message: "information already exists" });
+    if (result) {
+      return res.status(404).json({ message: "information is already exist" });
     }
 
     const infoAdded = await prisma.user_information.create({
@@ -486,16 +472,12 @@ export const addedUserInformation = async (req, res) => {
         academic_year: infoExist.academic_year, // سيقبلها إذا كانت ضمن الـ Enum
       },
     });
-
-    return res.status(200).json({
-      message: "information is added",
-      user_information: infoAdded,
-    });
-  } catch (err) {
-    // طباعة الخطأ كاملًا لمعرفة الحقل المسبب للمشكلة (مثلاً: P2002 أو P2009)
-    console.error("Prisma Validation Error Details:", err);
+    const user_information = infoAdded.user_information;
     return res
-      .status(500)
-      .json({ error: "Server error", details: err.message });
+      .status(200)
+      .json({ message: "information is added", user_information });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Server error" });
   }
 };

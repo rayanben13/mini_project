@@ -107,6 +107,7 @@ export const showMyStudyList = async (req, res) => {
       select: {
         id_stuList: true,
         name: true,
+        privacy: true,
         users: {
           select: {
             id_user: true,
@@ -129,6 +130,7 @@ export const showMyStudyList = async (req, res) => {
       name: item.name,
       users: item.users,
       count_files: item._count.study_list_files,
+      privacy: item.privacy,
     }));
 
     // 📌 total count
@@ -146,6 +148,80 @@ export const showMyStudyList = async (req, res) => {
         per_page: limit,
         total_my_study_list,
         from: total_my_study_list === 0 ? 0 : (page - 1) * limit + 1,
+        to: (page - 1) * limit + formattedStudyLists.length,
+      },
+      data: formattedStudyLists,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const showStudyListUserById = async (req, res) => {
+  try {
+    const id_user = Number(req.params.id_user);
+
+    const limit = Math.min(Number(req.query.limit) || 10, 50);
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const skip = (page - 1) * limit;
+
+    if (!id_user) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const userExists = await prisma.users.findUnique({
+      where: {
+        id_user,
+      },
+    });
+
+    if (!userExists || userExists.role == 'admin') {
+      return res.status(404).json({ error: 'user not found' });
+    }
+
+    const studyLists = await prisma.study_lists.findMany({
+      where: {
+        id_user,
+        privacy: 'public',
+      },
+      select: {
+        id_stuList: true,
+        name: true,
+        users: {
+          select: {
+            id_user: true,
+            fullname: true,
+          },
+        },
+        _count: {
+          select: {
+            study_list_files: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+    });
+    const formattedStudyLists = studyLists.map((item) => ({
+      id_stuList: item.id_stuList,
+      name: item.name,
+      users: item.users,
+      count_files: item._count.study_list_files,
+    }));
+    const total_study_list = await prisma.study_lists.count({
+      where: {
+        id_user,
+        privacy: 'public',
+      },
+    });
+    return res.status(200).json({
+      meta: {
+        current_page: page,
+        last_page: Math.ceil(total_study_list / limit),
+        per_page: limit,
+        total_study_list,
+        from: total_study_list === 0 ? 0 : (page - 1) * limit + 1,
         to: (page - 1) * limit + formattedStudyLists.length,
       },
       data: formattedStudyLists,
@@ -824,40 +900,6 @@ export const deleteFileFromStudyList = async (req, res) => {
 
     return res.status(200).json({
       message: 'File deleted successfully',
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Server error' });
-  }
-};
-
-export const sharchMoreSubjects = async (req, res) => {
-  try {
-    const subject = req.query.subject?.trim();
-
-    if (!subject) {
-      return res.status(400).json({
-        error: 'Missing subject',
-      });
-    }
-
-    let subjects = await prisma.subjects.findMany({
-      where: {
-        course: {
-          contains: subject,
-          mode: 'insensitive',
-        },
-      },
-      select: {
-        course: true,
-      },
-      take: 3,
-    });
-
-    subjects = subjects.map((subject) => subject.course);
-
-    return res.status(200).json({
-      subjects,
     });
   } catch (err) {
     console.error(err);
