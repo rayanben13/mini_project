@@ -25,6 +25,11 @@ enum ReportStatus {
   reviewed
   ignored
 }
+enum ReportAction {
+  none
+  blocked
+  removed
+}
 
 model file_reports {
   id_report  Int       @id @default(autoincrement())
@@ -33,6 +38,7 @@ model file_reports {
   reason     String
   details    String?
   status     ReportStatus @default(pending)
+  action     ReportAction @default(none)
   handled_at DateTime? @db.Timestamp(6)
   created_at DateTime? @default(now()) @db.Timestamp(6)
   files      files?    @relation(fields: [id_file], references: [id_file], onDelete: Cascade, onUpdate: NoAction)

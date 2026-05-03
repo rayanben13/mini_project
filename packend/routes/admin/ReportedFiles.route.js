@@ -4,6 +4,7 @@ import {
   reportedFilesStatus,
   showFilesReported,
   showReportedDetails,
+  DeleteOrIgnoreReportedFile,
 } from '../../controllers/admin/ReportedFiles.controller.js';
 import passport from 'passport';
 import { checkAdmin } from '../../middleware/checkAdmin.js';
@@ -31,4 +32,10 @@ router.get(
   showReportedDetails
 );
 
+router.patch(
+  '/DeleteOrIgnoreReportedFile/:id_file',
+  passport.authenticate('jwt', { session: false }),
+  checkAdmin,
+  DeleteOrIgnoreReportedFile
+);
 export default router;

@@ -11,33 +11,53 @@ export const filesStatus = async (req, res) => {
     const startOFDay = now.startOf('day');
     const endOFDay = now.endOf('day');
 
-    const [pendingFiles, acceptedFiles, rejectedFiles] = await Promise.all([
-      prisma.files.count({
-        where: {
-          status: 'pending',
-        },
-      }),
-      prisma.files.count({
-        where: {
-          status: 'accepted',
-          created_at: {
-            gte: startOFDay.toDate(),
-            lte: endOFDay.toDate(),
+    const [pendingFiles, acceptedFilesToday, rejectedFilesToday] =
+      await Promise.all([
+        prisma.files.count({
+          where: {
+            status: 'pending',
+            file_reports: {
+              none: {
+                status: 'reviewed',
+              },
+            },
           },
-        },
-      }),
-      prisma.files.count({
-        where: {
-          status: 'rejected',
-          created_at: {
-            gte: startOFDay.toDate(),
-            lte: endOFDay.toDate(),
+        }),
+        prisma.files.count({
+          where: {
+            status: 'accepted',
+            file_reports: {
+              none: {
+                status: 'reviewed',
+              },
+            },
+            created_at: {
+              gte: startOFDay.toDate(),
+              lte: endOFDay.toDate(),
+            },
           },
-        },
-      }),
-    ]);
+        }),
+        prisma.files.count({
+          where: {
+            status: 'rejected',
+            file_reports: {
+              none: {
+                status: 'reviewed',
+              },
+            },
+            created_at: {
+              gte: startOFDay.toDate(),
+              lte: endOFDay.toDate(),
+            },
+          },
+        }),
+      ]);
 
-    return res.status(200).json({ pendingFiles, acceptedFiles, rejectedFiles });
+    return res.status(200).json({
+      pendingFiles,
+      acceptedFilesToday,
+      rejectedFilesToday,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -53,12 +73,22 @@ export const showFilesPanding = async (req, res) => {
     const counts = await prisma.files.count({
       where: {
         status: 'pending',
+        file_reports: {
+          none: {
+            status: 'reviewed',
+          },
+        },
       },
     });
 
     const pendingFiles = await prisma.files.findMany({
       where: {
         status: 'pending',
+        file_reports: {
+          none: {
+            status: 'reviewed',
+          },
+        },
       },
       skip,
       take: limit,
@@ -138,6 +168,11 @@ export const AproveRejectFiles = async (req, res) => {
         where: {
           id_file,
           status: 'pending',
+          file_reports: {
+            none: {
+              status: 'reviewed',
+            },
+          },
         },
         select: {
           id_file: true,

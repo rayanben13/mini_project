@@ -1,6 +1,9 @@
 import prisma from '../../lib/prisma.js';
 import dayjs from '../../config/dayjsTime.js';
 import { algeriaTime } from '../../config/dayjsTime.js';
+import { cloudinary, GetPublicId } from '../../config/Cloudinary.js';
+
+import { io } from '../../config/socket.js';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -28,8 +31,8 @@ export const reportedFilesStatus = async (req, res) => {
       prisma.file_reports.groupBy({
         by: ['id_file'],
         where: {
-          status: 'reviewed',
-          created_at: {
+          status: { in: ['reviewed', 'ignored'] },
+          handled_at: {
             gte: startOfDay.toDate(),
             lte: endOfDay.toDate(),
           },
@@ -151,6 +154,7 @@ export const showFilesReported = async (req, res) => {
 
     const section = req.query.section;
     const allowedSections = ['all', 'highRisk_Reports'];
+    const riskLevel = 2;
 
     if (!allowedSections.includes(section)) {
       return res.status(400).json({ error: 'Invalid section' });
@@ -176,8 +180,16 @@ export const showFilesReported = async (req, res) => {
         id_file: {
           in: fileIds,
         },
+        status: 'accepted',
       },
-      include: {
+      select: {
+        id_file: true,
+        id_user: true,
+        id_subject: true,
+        title: true,
+        file_path: true,
+        status: true,
+        created_at: true,
         users: {
           select: {
             id_user: true,
@@ -188,22 +200,37 @@ export const showFilesReported = async (req, res) => {
       },
     });
 
+    console.log(files);
+
     // 4️⃣ Merge data
     let result = groupedReports.map((report) => {
       const file = files.find((f) => f.id_file === report.id_file);
 
-      return {
-        id_file: report.id_file,
-        reports_count: report._count._all,
-        file: file || null,
-      };
+      if (file) {
+        return {
+          id_file: report.id_file,
+          reports_count: report._count._all,
+          file: file,
+        };
+      } else {
+        return null;
+      }
     });
 
-    // 5️⃣ High risk filter
-    if (section === 'highRisk_Reports') {
-      const riskLevel = 2;
+    // Filter out null values (files that don't exist)
+    result = result.filter((r) => r !== null);
 
-      result = result.filter((r) => r.reports_count >= riskLevel);
+    if (section === 'all') {
+      result = result.sort((a, b) => {
+        return new Date(b.file.created_at) - new Date(a.file.created_at);
+      });
+    }
+
+    // 5️⃣ High risk filter
+    if (section === 'highRisk_Reports' && result !== null) {
+      result = result
+        .filter((r) => r.reports_count >= riskLevel)
+        .sort((a, b) => b.reports_count - a.reports_count);
     }
 
     // 6️⃣ Pagination
@@ -232,15 +259,17 @@ export const showFilesReported = async (req, res) => {
 export const showReportedDetails = async (req, res) => {
   try {
     const id_file = Number(req.params.id_file);
+
     if (!id_file) {
       return res.status(400).json({
-        error: 'File not found',
+        error: 'enter the file id',
       });
     }
 
     const fileExists = await prisma.files.findUnique({
       where: {
         id_file: id_file,
+        status: 'accepted',
       },
     });
 
@@ -269,6 +298,11 @@ export const showReportedDetails = async (req, res) => {
         created_at: true,
       },
     });
+    if (file.length === 0) {
+      return res.status(404).json({
+        error: 'This file has no reports or already reviewed',
+      });
+    }
 
     const mappedFiles = file.map((file) => ({
       ...file,
@@ -278,6 +312,161 @@ export const showReportedDetails = async (req, res) => {
     return res.status(200).json({
       data: mappedFiles,
     });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      error: 'Internal server error',
+    });
+  }
+};
+
+export const DeleteOrIgnoreReportedFile = async (req, res) => {
+  try {
+    const id_file = Number(req.params.id_file);
+    const action = req.query.action;
+    const allowedActions = ['delete', 'ignore'];
+    const reason = req.body?.reason || null;
+
+    //validate reason only when delete action
+    if (action === 'delete') {
+      if (!reason) {
+        return res.status(400).json({
+          error: 'Reason is required',
+        });
+      }
+      if (reason.length < 3 || reason.length > 500) {
+        return res.status(400).json({
+          error: 'Reason must be between 3 and 500 characters',
+        });
+      }
+    }
+    if (!allowedActions.includes(action)) {
+      return res.status(400).json({
+        error: 'Invalid action',
+      });
+    }
+    if (!id_file) {
+      return res.status(400).json({
+        error: 'File not found',
+      });
+    }
+
+    const fileExists = await prisma.files.findFirst({
+      where: {
+        id_file: id_file,
+        status: 'accepted',
+      },
+      select: {
+        file_path: true,
+        title: true,
+        users: {
+          select: {
+            id_user: true,
+            username: true,
+          },
+        },
+        file_reports: {
+          select: {
+            status: true,
+          },
+        },
+      },
+    });
+    if (
+      !fileExists ||
+      fileExists.file_path === '/deleted' ||
+      fileExists.file_path === null ||
+      fileExists.file_reports[0].status !== 'pending'
+    ) {
+      return res.status(404).json({
+        error: 'File not found or already deleted or no pending reports',
+      });
+    }
+
+    if (action === 'ignore') {
+      const file = await prisma.file_reports.updateMany({
+        where: {
+          id_file: id_file,
+          status: 'pending',
+        },
+        data: {
+          status: 'ignored',
+          handled_at: new Date(),
+        },
+      });
+      return res.status(200).json({
+        message: 'file ignored successfully',
+      });
+    }
+
+    if (action === 'delete') {
+      // 1️⃣ حذف من Cloud
+      if (!isDevelopment) {
+        const publicId = GetPublicId(fileExists.file_path);
+        console.log(publicId);
+
+        const result = await cloudinary.uploader.destroy(publicId, {
+          resource_type: 'image',
+        });
+
+        console.log(result);
+
+        if (result.result !== 'ok' && result.result !== 'not found') {
+          throw new Error('Cloudinary delete failed');
+        }
+      } else {
+        console.log('delete file in cloduinary');
+      }
+      // 2️⃣ تحديث DB
+      await prisma.$transaction([
+        prisma.file_reports.updateMany({
+          where: {
+            id_file,
+            status: 'pending',
+          },
+          data: {
+            status: 'reviewed',
+            action: 'removed',
+            handled_at: new Date(),
+          },
+        }),
+
+        prisma.files.update({
+          where: { id_file },
+          data: {
+            file_path: '/deleted',
+          },
+        }),
+      ]);
+
+      const message = `Your file "${fileExists.title ?? ''}" has been deleted becouse ${reason}`;
+
+      io.to(String(fileExists.users.id_user)).emit('notification', {
+        message,
+        related_id: id_file,
+        related_type: 'file',
+      });
+
+      await prisma.notifications.create({
+        data: {
+          id_user: fileExists.users.id_user,
+          message,
+          related_id: id_file,
+          related_type: 'file',
+        },
+      });
+
+      console.log({
+        'send notification to user': fileExists.users.id_user,
+        message,
+        related_id: id_file,
+        related_type: 'file',
+      });
+
+      return res.status(200).json({
+        message: 'file deleted successfully',
+      });
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({

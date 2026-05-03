@@ -14,7 +14,15 @@ export const dashboardStatis = async (req, res) => {
         },
       },
     });
-    const totalFiles = await prisma.files.count();
+    const totalFiles = await prisma.files.count({
+      where: {
+        file_reports: {
+          none: {
+            status: 'reviewed',
+          },
+        },
+      },
+    });
     const totalStudyLists = await prisma.study_lists.count();
 
     return res.status(200).json({ totalUsers, totalFiles, totalStudyLists });
@@ -77,6 +85,11 @@ export const top10Contributors = async (req, res) => {
             where: {
               id_user: user.id_user,
               status: 'accepted',
+              file_reports: {
+                none: {
+                  status: 'reviewed',
+                },
+              },
             },
           }),
 
@@ -98,6 +111,11 @@ export const top10Contributors = async (req, res) => {
               files: {
                 id_user: user.id_user,
                 status: 'accepted',
+                file_reports: {
+                  none: {
+                    status: 'reviewed',
+                  },
+                },
               },
             },
           }),

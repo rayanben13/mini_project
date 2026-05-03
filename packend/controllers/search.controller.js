@@ -31,6 +31,11 @@ export const searchFiles = async (req, res) => {
     const total_files = await prisma.files.count({
       where: {
         status: 'accepted',
+        file_reports: {
+          none: {
+            status: 'reviewed',
+          },
+        },
         title: title
           ? {
               contains: title,
@@ -60,7 +65,11 @@ export const searchFiles = async (req, res) => {
     const files = await prisma.files.findMany({
       where: {
         status: 'accepted',
-
+        file_reports: {
+          none: {
+            status: 'reviewed',
+          },
+        },
         title: title
           ? {
               contains: title,

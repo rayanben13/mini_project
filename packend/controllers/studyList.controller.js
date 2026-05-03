@@ -354,6 +354,11 @@ export const showDetailStudyList = async (req, res) => {
               where: {
                 files: {
                   status: 'accepted',
+                  file_reports: {
+                    none: {
+                      status: 'reviewed',
+                    },
+                  },
                 },
               },
             },
