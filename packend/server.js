@@ -44,6 +44,9 @@ const subjectsSwagger = YAML.load('./swagger/user/subjectsSwagger.yaml');
 const notificationSwagger = YAML.load(
   './swagger/user/notificationSwagger.yaml'
 );
+const adminDashboardSwagger = YAML.load('./swagger/admin/dashboardSwagger.yaml');
+const adminFilesStatusSwagger = YAML.load('./swagger/admin/filesStatusSwagger.yaml');
+const adminReportedFilesSwagger = YAML.load('./swagger/admin/reportedFilesSwagger.yaml');
 
 const swaggerDocument = {
   ...authSwagger,
@@ -55,6 +58,9 @@ const swaggerDocument = {
     ...(searchSwagger?.tags || []),
     ...(subjectsSwagger?.tags || []),
     ...(notificationSwagger?.tags || []),
+    ...(adminDashboardSwagger?.tags || []),
+    ...(adminFilesStatusSwagger?.tags || []),
+    ...(adminReportedFilesSwagger?.tags || []),
   ],
   paths: {
     ...(authSwagger?.paths || {}),
@@ -64,6 +70,9 @@ const swaggerDocument = {
     ...(searchSwagger?.paths || {}),
     ...(subjectsSwagger?.paths || {}),
     ...(notificationSwagger?.paths || {}),
+    ...(adminDashboardSwagger?.paths || {}),
+    ...(adminFilesStatusSwagger?.paths || {}),
+    ...(adminReportedFilesSwagger?.paths || {}),
   },
 };
 
