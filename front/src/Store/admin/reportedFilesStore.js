@@ -28,19 +28,19 @@ const useReportedFilesStore = create((set, get) => ({
     }
   },
 
-  fetchFilesReported: async (page = 1, limit = 10) => {
+  fetchFilesReported: async (page = 1, limit = 10, section = "all") => {
     try {
       set({ loading: true, error: null });
       const token = localStorage.getItem("token");
       const response = await axios.get(`${API_URL}/showFilesReported`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { page, limit }
+        params: { page, limit, section }
       });
       
       set({ 
-        reportedFiles: response.data.reportedFiles || response.data || [], 
-        totalPages: response.data.totalPages || 1,
-        currentPage: response.data.currentPage || page,
+        reportedFiles: response.data.data || [], 
+        totalPages: response.data.meta.last_page || 1,
+        currentPage: response.data.meta.current_page || page,
         loading: false 
       });
       return { success: true, data: response.data };
@@ -58,7 +58,7 @@ const useReportedFilesStore = create((set, get) => ({
       const response = await axios.get(`${API_URL}/showReportedDetails/${id_file}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      set({ reportedDetails: response.data, loading: false });
+      set({ reportedDetails: response.data.data || response.data, loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";

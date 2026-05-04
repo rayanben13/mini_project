@@ -54,6 +54,11 @@ paths:
             default: 10
             maximum: 50
           description: Number of items per page
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search term to filter files by title or username
       responses:
         '200':
           description: Successful response

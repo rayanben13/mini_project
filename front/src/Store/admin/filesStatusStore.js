@@ -41,9 +41,9 @@ const useFilesStatusStore = create((set, get) => ({
       });
       
       set({ 
-        pendingFiles: response.data.files || response.data || [], 
-        totalPages: response.data.totalPages || 1,
-        currentPage: response.data.currentPage || page,
+        pendingFiles: response.data.mappedFiles || [], 
+        totalPages: response.data.meta.last_page || 1,
+        currentPage: response.data.meta.current_page || page,
         loading: false 
       });
       return { success: true, data: response.data };
@@ -60,10 +60,10 @@ const useFilesStatusStore = create((set, get) => ({
       const token = localStorage.getItem("token");
       
       const response = await axios.put(`${API_URL}/aproveRejectFiles/${id_file}`, {
-        status,
-        rejectReason
+        reason: rejectReason
       }, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        params: { status }
       });
       
       return { success: true, message: response.data.message || response.data.succes };

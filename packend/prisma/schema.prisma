@@ -78,6 +78,7 @@ model files {
   file_hash        String?             @db.VarChar
   type             FileType
   status           FileStatus         @default(pending)
+  reason_rejected  String?            @db.VarChar
   approved_at      DateTime?          @db.Timestamp(6)
   created_at       DateTime?          @default(now()) @db.Timestamp(6)
   file_reports     file_reports[]

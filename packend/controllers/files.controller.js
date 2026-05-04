@@ -296,6 +296,7 @@ export const showMyFiles = async (req, res) => {
         title: true,
         type: true,
         status: true,
+        reason_rejected: true,
         subjects: {
           select: {
             major: true,
@@ -314,7 +315,7 @@ export const showMyFiles = async (req, res) => {
       file_path: item.file_path,
       title: item.title,
       type_file: item.type,
-
+      reason_rejected: item.reason_rejected,
       major: item.subjects?.major,
       specialization: item.subjects?.specialization,
       academic_year: item.subjects?.academic_year,

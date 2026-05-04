@@ -186,6 +186,17 @@ paths:
                     academic_year: 'L3'
                     course: 'Plant Biology'
                     status: 'accepted'
+                    reason_rejected: null
+                  - id_file: 21
+                    file_path: 'https://...'
+                    title: 'Incomplete Summary'
+                    type_file: 'COURS'
+                    major: 'Physics'
+                    specialization: null
+                    academic_year: 'L2'
+                    course: 'Mechanics'
+                    status: 'rejected'
+                    reason_rejected: 'File content is not readable'
         '401':
           description: Unauthorized
           content:
@@ -211,7 +222,7 @@ paths:
               example:
                 error: 'Server error'
 
- 
+  /api/files/details/{id_file}:
     get:
       summary: Get details of a specific file
       tags: [Files]
@@ -235,6 +246,7 @@ paths:
                 creation_year: '2023'
                 type: 'TP'
                 status: 'accepted'
+                reason_rejected: null
                 approved_at: '2023-11-01T12:00:00Z'
                 subjects:
                   major: 'Computer Science'

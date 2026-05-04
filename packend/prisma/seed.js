@@ -122,7 +122,11 @@ async function main() {
   for (let i = 0; i < 30; i++) {
     const randomUser = faker.helpers.arrayElement(users);
     const randomSubject = faker.helpers.arrayElement(subjects);
-    const status = faker.helpers.arrayElement(['pending', 'accepted', 'rejected']);
+    const status = faker.helpers.arrayElement([
+      'pending',
+      'accepted',
+      'rejected',
+    ]);
     const file = await prisma.files.create({
       data: {
         id_user: randomUser.id_user,
@@ -152,7 +156,11 @@ async function main() {
           'OTHER',
         ]),
         status: status,
-        approved_at: (status === 'accepted' || status === 'rejected') ? new Date() : null,
+        ...(status === 'rejected' && {
+          reason_rejected: faker.lorem.sentence(),
+        }),
+        approved_at:
+          status === 'accepted' || status === 'rejected' ? new Date() : null,
       },
     });
     files.push(file);

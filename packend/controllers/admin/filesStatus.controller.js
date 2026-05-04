@@ -70,26 +70,30 @@ export const showFilesPanding = async (req, res) => {
     const page = Math.max(Number(req.query.page) || 1, 1);
     const skip = (page - 1) * limit;
 
-    const counts = await prisma.files.count({
-      where: {
-        status: 'pending',
-        file_reports: {
-          none: {
-            status: 'reviewed',
-          },
+    const search = req.query.search || '';
+
+    const whereCondition = {
+      status: 'pending',
+      file_reports: {
+        none: {
+          status: 'reviewed',
         },
       },
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { users: { username: { contains: search, mode: 'insensitive' } } },
+          { users: { fullname: { contains: search, mode: 'insensitive' } } },
+        ],
+      }),
+    };
+
+    const counts = await prisma.files.count({
+      where: whereCondition,
     });
 
     const pendingFiles = await prisma.files.findMany({
-      where: {
-        status: 'pending',
-        file_reports: {
-          none: {
-            status: 'reviewed',
-          },
-        },
-      },
+      where: whereCondition,
       skip,
       take: limit,
       select: {
@@ -199,6 +203,7 @@ export const AproveRejectFiles = async (req, res) => {
           id_file,
         },
         data: {
+          reason_rejected: status === 'reject' ? reason : null,
           status: newStatus,
           approved_at: new Date(),
         },

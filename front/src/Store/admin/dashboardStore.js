@@ -33,7 +33,7 @@ const useDashboardStore = create((set) => ({
       const response = await axios.get(`${API_URL}/uplodesOfFilesGraphe`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      set({ uploadsGraphData: response.data, loading: false });
+      set({ uploadsGraphData: response.data.stats || response.data, loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";
@@ -49,7 +49,7 @@ const useDashboardStore = create((set) => ({
       const response = await axios.get(`${API_URL}/top10Contributors`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      set({ topContributors: response.data, loading: false });
+      set({ topContributors: response.data.top10 || response.data, loading: false });
       return { success: true, data: response.data };
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";
