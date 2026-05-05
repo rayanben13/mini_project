@@ -135,6 +135,18 @@ export const schemaReminder = Joi.object({
   time,
 });
 
+//DeleteOrIgnoreReportedFile
+
+// const adminReason = Joi.string().min(3).max(500).trim().when('$action', {
+//   is: 'delete',
+//   then: Joi.required(),
+//   otherwise: Joi.optional(),
+// });
+
+// export const schemaAdminReason = Joi.object({
+//   reason: adminReason,
+// });
+
 //search file
 
 // const year_creation = Joi.number().min(2000).max(2025).required();

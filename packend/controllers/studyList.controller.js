@@ -1,5 +1,5 @@
 import { count } from 'node:console';
-import prisma from '../lib/prisma.ts';
+import prisma from '../lib/prisma.js';
 import { getUniversities } from '../service/univAPI.js';
 import { io } from '../config/socket.js';
 import {
@@ -354,6 +354,11 @@ export const showDetailStudyList = async (req, res) => {
               where: {
                 files: {
                   status: 'accepted',
+                  file_reports: {
+                    none: {
+                      status: 'reviewed',
+                    },
+                  },
                 },
               },
             },

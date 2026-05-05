@@ -1,4 +1,4 @@
-import prisma from '../lib/prisma.ts';
+import prisma from '../lib/prisma.js';
 
 import { v2 as cloudinary } from 'cloudinary';
 import { GetPublicId } from '../config/Cloudinary.js';

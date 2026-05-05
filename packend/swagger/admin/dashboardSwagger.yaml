@@ -1,0 +1,110 @@
+openapi: 3.0.0
+info:
+  title: Admin Dashboard API
+  version: 1.0.0
+tags:
+  - name: Admin Dashboard
+    description: Admin dashboard statistics and graphics
+
+paths:
+  /api/admin/dashboard/dashboardStatis:
+    get:
+      summary: Get general dashboard statistics
+      tags: [Admin Dashboard]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalUsers:
+                    type: integer
+                  totalFiles:
+                    type: integer
+                  totalStudyLists:
+                    type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '500':
+          description: Internal server error
+
+  /api/admin/dashboard/uplodesOfFilesGraphe:
+    get:
+      summary: Get files upload statistics for the last 7 days
+      tags: [Admin Dashboard]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        day:
+                          type: string
+                        date:
+                          type: string
+                          format: date
+                        totalUplodesOfDate:
+                          type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '500':
+          description: Internal server error
+
+  /api/admin/dashboard/top10Contributors:
+    get:
+      summary: Get top 10 contributors
+      tags: [Admin Dashboard]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  top10:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        username:
+                          type: string
+                        fullname:
+                          type: string
+                        files:
+                          type: integer
+                        followers:
+                          type: integer
+                        studyLists:
+                          type: integer
+                        likes:
+                          type: integer
+                        score:
+                          type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '500':
+          description: Internal server error

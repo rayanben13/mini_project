@@ -1,0 +1,238 @@
+openapi: 3.0.0
+info:
+  title: Admin Reported Files API
+  version: 1.0.0
+tags:
+  - name: Admin Reported Files
+    description: Manage reported files and actions
+
+paths:
+  /api/admin/reportedFiles/ReportedFilesStatus:
+    get:
+      summary: Get overview of reported files status
+      tags: [Admin Reported Files]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalPendingReportedFiles:
+                    type: integer
+                  totalResolvedReportedFilesToday:
+                    type: integer
+                  higheRisqueReportedFilesCount:
+                    type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '500':
+          description: Internal server error
+
+  /api/admin/reportedFiles/showFilesReported:
+    get:
+      summary: Get a paginated list of reported files
+      tags: [Admin Reported Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+            maximum: 50
+        - in: query
+          name: section
+          required: true
+          schema:
+            type: string
+            enum: [all, highRisk_Reports]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total_files:
+                        type: integer
+                      last_page:
+                        type: integer
+                      from:
+                        type: integer
+                      to:
+                        type: integer
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id_file:
+                          type: integer
+                        reports_count:
+                          type: integer
+                        file:
+                          type: object
+                          properties:
+                            id_file:
+                              type: integer
+                            id_user:
+                              type: integer
+                            id_subject:
+                              type: integer
+                            title:
+                              type: string
+                            file_path:
+                              type: string
+                            status:
+                              type: string
+                            created_at:
+                              type: string
+                              format: date-time
+                            users:
+                              type: object
+                              properties:
+                                id_user:
+                                  type: integer
+                                username:
+                                  type: string
+                                fullname:
+                                  type: string
+        '400':
+          description: Invalid section
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '500':
+          description: Internal server error
+
+  /api/admin/reportedFiles/showReportedDetails/{id_file}:
+    get:
+      summary: Get details of reports for a specific file
+      tags: [Admin Reported Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id_file:
+                          type: integer
+                        users:
+                          type: object
+                          properties:
+                            id_user:
+                              type: integer
+                            username:
+                              type: string
+                            fullname:
+                              type: string
+                        reason:
+                          type: string
+                        details:
+                          type: string
+                        created_at:
+                          type: string
+        '400':
+          description: Bad request (missing file ID)
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '404':
+          description: File not found or no reports
+        '500':
+          description: Internal server error
+
+  /api/admin/reportedFiles/DeleteOrIgnoreReportedFile/{id_file}:
+    patch:
+      summary: Delete or ignore a reported file
+      tags: [Admin Reported Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: action
+          required: true
+          schema:
+            type: string
+            enum: [delete, ignore]
+      requestBody:
+        description: Reason for deletion (required if action is 'delete')
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                delete_file:
+                  summary: File deleted successfully
+                  value:
+                    message: "file deleted successfully"
+                ignore_file:
+                  summary: File ignored successfully
+                  value:
+                    message: "file ignored successfully"
+        '400':
+          description: Bad request (invalid action, missing reason, etc.)
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '404':
+          description: File not found or no pending reports
+        '500':
+          description: Internal server error

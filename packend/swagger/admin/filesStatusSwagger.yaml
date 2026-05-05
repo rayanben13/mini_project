@@ -1,0 +1,185 @@
+openapi: 3.0.0
+info:
+  title: Admin Files Status API
+  version: 1.0.0
+tags:
+  - name: Admin Files Status
+    description: Manage file statuses (pending, accepted, rejected)
+
+paths:
+  /api/admin/filesStatus/filesStatus:
+    get:
+      summary: Get overview of files status
+      tags: [Admin Files Status]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pendingFiles:
+                    type: integer
+                  acceptedFilesToday:
+                    type: integer
+                  rejectedFilesToday:
+                    type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '500':
+          description: Internal server error
+
+  /api/admin/filesStatus/pendingFiles:
+    get:
+      summary: Get a paginated list of pending files
+      tags: [Admin Files Status]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+            maximum: 50
+          description: Number of items per page
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search term to filter files by title or username
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total_files:
+                        type: integer
+                      from:
+                        type: integer
+                      to:
+                        type: integer
+                  mappedFiles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id_file:
+                          type: integer
+                        title:
+                          type: string
+                        type:
+                          type: string
+                        status:
+                          type: string
+                        users:
+                          type: object
+                          properties:
+                            id_user:
+                              type: integer
+                            fullname:
+                              type: string
+                            username:
+                              type: string
+                        subjects:
+                          type: object
+                          properties:
+                            id_subject:
+                              type: integer
+                            course:
+                              type: string
+                        created_at:
+                          type: string
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '500':
+          description: Internal server error
+
+  /api/admin/filesStatus/aproveRejectFiles/{id_file}:
+    put:
+      summary: Approve or reject a specific file, or all files
+      tags: [Admin Files Status]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+          description: ID of the file (required if status is 'approve' or 'reject', pass 0 if 'approveAll')
+        - in: query
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: [approve, reject, approveAll]
+          description: Action to perform
+      requestBody:
+        description: Reason for rejection (required if status is 'reject')
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                approve_file:
+                  summary: File approved successfully
+                  value:
+                    message: "File approved successfully"
+                reject_file:
+                  summary: File rejected successfully
+                  value:
+                    message: "File rejected successfully"
+                approve_all:
+                  summary: All pending files approved
+                  value:
+                    message: "All pending files approved successfully"
+        '400':
+          description: Bad request (invalid status, invalid id, reason required)
+        '401':
+          description: Unauthorized
+        '403':
+          description: You are not admin
+        '404':
+          description: File not found or no pending files
+        '500':
+          description: Internal server error

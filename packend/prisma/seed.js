@@ -122,6 +122,11 @@ async function main() {
   for (let i = 0; i < 30; i++) {
     const randomUser = faker.helpers.arrayElement(users);
     const randomSubject = faker.helpers.arrayElement(subjects);
+    const status = faker.helpers.arrayElement([
+      'pending',
+      'accepted',
+      'rejected',
+    ]);
     const file = await prisma.files.create({
       data: {
         id_user: randomUser.id_user,
@@ -129,12 +134,17 @@ async function main() {
         title: faker.commerce.productName() + ' Lecture Notes',
         creation_year: faker.date.past({ years: 3 }).getFullYear().toString(),
         file_path: faker.helpers.arrayElement([
-          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991003/files/tta3wdi9ip4pqdokivnp.pdf',
-          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991046/files/i7uqi1iwktbjg0slf97m.pdf',
-          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991110/files/fbhuacw2h0gjbvbheyec.pdf',
-          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991132/files/uspfb72n19dfddgk3lnj.pdf',
-          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991178/files/lnkiryedncbhwhqyeelf.pdf',
-          'https://res.cloudinary.com/dtgvaabon/image/upload/v1776991199/files/gj6aq4ochc8du50wt3b8.pdf',
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1777764469/files/poawxknvn41vkjozb2rm.pdf',
+
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1777764590/files/foa4sa8z11jcm5rkhfj9.pdf',
+
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1777764664/files/rd4t47f4cxtu3nqvkcbq.pdf',
+
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1777764702/files/ga0qklhciswqewefborb.pdf',
+
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1777764763/files/mpcg0zwdcvbhqsferptm.pdf',
+
+          'https://res.cloudinary.com/dtgvaabon/image/upload/v1777764792/files/ebh8nvmvrnpp1b9rreis.pdf',
         ]),
         type: faker.helpers.arrayElement([
           'TD',
@@ -145,7 +155,12 @@ async function main() {
           'RESUME',
           'OTHER',
         ]),
-        status: faker.helpers.arrayElement(['pending', 'accepted', 'rejected']),
+        status: status,
+        ...(status === 'rejected' && {
+          reason_rejected: faker.lorem.sentence(),
+        }),
+        approved_at:
+          status === 'accepted' || status === 'rejected' ? new Date() : null,
       },
     });
     files.push(file);
@@ -254,7 +269,7 @@ async function main() {
           'Other',
         ]),
         details: faker.lorem.sentence(),
-        status: faker.helpers.arrayElement(['pending', 'reviewed', 'ignored']),
+        status: 'pending',
       },
     });
   }

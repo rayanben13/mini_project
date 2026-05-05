@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import prisma from '../lib/prisma.ts';
+import prisma from '../lib/prisma.js';
 import { io } from '../config/socket.js';
 import { sendReminderEmail } from '../config/Eamil.js';
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';

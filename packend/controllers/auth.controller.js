@@ -18,7 +18,7 @@ import {
 
 import redis from '../config/redis.js';
 
-import prisma from '../lib/prisma.ts';
+import prisma from '../lib/prisma.js';
 import { getUniversities } from '../service/univAPI.js';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';

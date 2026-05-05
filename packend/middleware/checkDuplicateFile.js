@@ -1,5 +1,5 @@
 import { generateFileHash } from '../service/hash.js';
-import prisma from '../lib/prisma.ts';
+import prisma from '../lib/prisma.js';
 
 export const checkDuplicateFile = async (req, res, next) => {
   try {
