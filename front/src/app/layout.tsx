@@ -1,8 +1,9 @@
+import AuthGate from "@/components/authGate";
 import MainHeader from "@/components/MainHeader";
 import { Toaster } from "@/components/ui/sonner";
 import Providers from "@/providers/providers";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
-import type { Metadata } from "next";
+import { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -18,13 +19,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
     <html lang="en">
       <body className={inter.className}>
         <ReactQueryProvider>
           <Providers>
-            <MainHeader />
-            <main>{children}</main>
+            <AuthGate>
+              <MainHeader />
+              <main>{children}</main>
+            </AuthGate>
           </Providers>
         </ReactQueryProvider>
 

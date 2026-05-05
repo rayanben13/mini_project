@@ -12,7 +12,7 @@ const useUserStore = create((set, get) => ({
   // userStore.js
   getMyInformation: async (isDropdown = false) => {
     try {
-      const { token } = AuthStore.getState().user;
+      const { token } = AuthStore.getState();
 
       // إرسال الـ Query Parameter في الرابط
       const response = await axios.get(`${API_URL}/MyInformation?ProfileDropdown=${isDropdown}`, {
@@ -27,7 +27,7 @@ const useUserStore = create((set, get) => ({
 
   // دالة مساعدة للحصول على الهيدر مع التوكن
   getAuthHeader: () => {
-    const { token } = AuthStore.getState().user;
+    const { token } = AuthStore.getState();
     return { headers: { Authorization: `Bearer ${token}` } };
   },
 
@@ -35,8 +35,9 @@ const useUserStore = create((set, get) => ({
     set({ loading: true });
     try {
       const response = await axios.get(`${API_URL}/ShowUserByid/${id_user}`, useUserStore.getState().getAuthHeader());
+      console.log("response", response);
       set({ loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       set({ loading: false });
       return { success: false, message: error.response?.data?.error || 'Server error' };
@@ -47,6 +48,7 @@ const useUserStore = create((set, get) => ({
     set({ loading: true });
     try {
       const response = await axios.post(`${API_URL}/addFollow/${id_user}`, {}, useUserStore.getState().getAuthHeader());
+      console.log("add follow", response);
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
@@ -59,6 +61,8 @@ const useUserStore = create((set, get) => ({
     set({ loading: true });
     try {
       const response = await axios.delete(`${API_URL}/removeFollow/${id_user}`, useUserStore.getState().getAuthHeader());
+      console.log("remove follow", response);
+
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
@@ -68,10 +72,11 @@ const useUserStore = create((set, get) => ({
   },
 
   UpdateProfile: async (profileData) => {
+    console.log("profileData", profileData)
     // profileData should be FormData since it uses Upload.single('img_user')
     set({ loading: true });
     try {
-      const { token } = AuthStore.getState().user;
+      const { token } = AuthStore.getState();
       const response = await axios.put(`${API_URL}/UpdateProfile`, profileData, {
         headers: {
           Authorization: `Bearer ${token}`,

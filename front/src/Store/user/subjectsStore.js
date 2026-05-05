@@ -9,7 +9,7 @@ const useSubjectsStore = create((set, get) => ({
 
   // دالة مساعدة للحصول على الهيدر مع التوكن
   getAuthHeader: () => {
-    const { token } = AuthStore.getState().user;
+    const token = AuthStore.getState().token;
     if (!token) return {};
     return { headers: { Authorization: `Bearer ${token}` } };
   },

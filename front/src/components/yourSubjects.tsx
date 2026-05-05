@@ -84,7 +84,7 @@ const SubjectCard = memo(({ subject, index }: { subject: any; index: number }) =
             {/* Footer */}
             <div className="pt-5 mt-4 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-1 text-xs text-slate-400 font-medium">
-                    {subject.files_count ?? 0} {subject.files_count === 1 ? 'File' : 'Files'}
+                    {subject._count?.files ?? 0} {subject._count?.files === 1 ? 'File' : 'Files'}
                 </div>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 dark:bg-slate-800 group-hover:bg-[#0975e6] transition-colors duration-300">
                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />

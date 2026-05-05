@@ -9,7 +9,7 @@ const useNotificationStore = create((set) => ({
 
   // دالة مساعدة للحصول على الهيدر مع التوكن
   getAuthHeader: () => {
-    const { token } = AuthStore.getState().user;
+    const token = AuthStore.getState().token;
     return { headers: { Authorization: `Bearer ${token}` } };
   },
 

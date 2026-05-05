@@ -9,7 +9,7 @@ const useFilesStore = create((set, get) => ({
 
   // دالة مساعدة للحصول على الهيدر مع التوكن
   getAuthHeader: () => {
-    const { token } = AuthStore.getState().user;
+    const token = AuthStore.getState().token;
     return { headers: { Authorization: `Bearer ${token}` } };
   },
 
@@ -77,7 +77,7 @@ const useFilesStore = create((set, get) => ({
         get().getAuthHeader()
       );
       set({ loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       set({ loading: false });
       console.error('Error fetching file details:', error);
@@ -93,7 +93,7 @@ const useFilesStore = create((set, get) => ({
     // fileData should be FormData
     set({ loading: true });
     try {
-      const { token } = AuthStore.getState().user;
+      const token = AuthStore.getState().token;
       const response = await axios.post(
         `${FILES_API_URL}/UplodeNewFile`,
         fileData,
@@ -158,13 +158,13 @@ const useFilesStore = create((set, get) => ({
   },
 
   // الإعجاب أو إلغاء الإعجاب بملف
-  likeOrDislikeFile: async (id_file, action) => {
+  likeOrDislikeFile: async (id_file, type) => {
     // action: 'LIKE' or 'DISLIKE'
     set({ loading: true });
     try {
       const response = await axios.post(
         `${FILES_API_URL}/likeOrDislikeFile/${id_file}`,
-        { action },
+        { type },
         get().getAuthHeader()
       );
       set({ loading: false });

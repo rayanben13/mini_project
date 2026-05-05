@@ -104,7 +104,7 @@ export const userInformationSchema = z.object({
     .max(30, "Major must be less than 30 characters")
     .trim(),
 
-  spercialty: z
+  specialty: z
     .string()
     .min(1, "Specialty is required")
     .min(2, "Specialty must be at least 2 characters long")

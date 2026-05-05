@@ -14,16 +14,18 @@ export default function TopFilesSlider({
     hasMore,
     isLoadingMore = false,
     itemKey = "id_file",
-    renderItem, // ✅ دالة Render مخصصة اختيارية
+    renderItem,
+    onFileClick, // ✅ جديد: دالة عند النقر (اختيارية)
 }: {
-    data: any[],
-    title: string,
-    icon: any,
-    onLoadMore?: () => void,
-    hasMore?: boolean,
-    isLoadingMore?: boolean,
-    itemKey?: string,
-    renderItem?: (item: any, index: number) => React.ReactNode, // ✅ جديد
+    readonly data: any[],
+    readonly title: string,
+    readonly icon: any,
+    readonly onLoadMore?: () => void,
+    readonly hasMore?: boolean,
+    readonly isLoadingMore?: boolean,
+    readonly itemKey?: string,
+    readonly renderItem?: (item: any, index: number) => React.ReactNode,
+    readonly onFileClick?: (fileId: string | number) => void, // ✅ جديد
 }) {
     const [emblaRef, emblaApi] = useEmblaCarousel({
         align: "start",
@@ -114,10 +116,11 @@ export default function TopFilesSlider({
                             key={item[itemKey]}
                             className="flex-[0_0_85%] md:flex-[0_0_50%] lg:flex-[0_0_25%] pl-4"
                         >
-                            {/* ✅ استخدم renderItem إذا موجود، وإلا استخدم FileCard */}
+                            {/* ✅ تمرير dunction للنقر */}
                             {renderItem
                                 ? renderItem(item, index)
-                                : <FileCard file={item} />
+                                : <FileCard file={item} onNavigate={() => onFileClick?.(item[itemKey])}
+                                />
                             }
                         </div>
                     ))}
@@ -127,13 +130,13 @@ export default function TopFilesSlider({
     );
 }
 
-const FileCard = memo(({ file }: { file: any }) => {
-    console.log(`Rendering card for: ${file.title}`); // للتجربة فقط
+const FileCard = memo(({ file, onNavigate }: { file: any, onNavigate: () => void }) => {
 
-    return (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group cursor-pointer h-full">
+    // ✅ إما نستخدم Link مباشر (للتنقل)، أو onclick للحاوية
+    const cardContent = (
+        <>
             {/* الجزء العلوي - معاينة */}
-            <div className="h-32 bg-slate-50 dark:bg-slate-800/50 relative overflow-hidden rounded-t-2xl">
+            <div onClick={(e) => { e.stopPropagation(); onNavigate(); }} className="h-32 bg-slate-50 dark:bg-slate-800/50 relative overflow-hidden rounded-t-2xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent"></div>
                 <div className="absolute inset-x-4 top-4 bottom-0 bg-white dark:bg-slate-800 rounded-t-xl shadow-sm p-3 translate-y-4 group-hover:translate-y-2 transition-transform duration-300">
                     <p className="text-[10px] text-slate-400 line-clamp-2">
@@ -145,7 +148,7 @@ const FileCard = memo(({ file }: { file: any }) => {
             {/* المحتوى */}
             <div className="p-5">
                 <span className="text-[10px] font-bold uppercase text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">
-                    {file.major || "عام"}
+                    {file.major || "general"}
                 </span>
 
                 <h3 className="mt-3 text-md font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
@@ -162,11 +165,36 @@ const FileCard = memo(({ file }: { file: any }) => {
                     <p className="text-xs text-slate-400 flex items-center gap-1">
                         ❤️ <span className="font-semibold text-slate-600 dark:text-slate-300">{file.likes_count || 0}</span>
                     </p>
-                    <Button variant="ghost" size="sm" className="h-8 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                        show
-                    </Button>
+
+                    {/* زر Show أصبح جزءاً من الرابط */}
+                    {/* {onNavigate && (
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); onNavigate(); }} // منع التفاعل المزدوج
+                            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                        >
+                            View Details →
+                        </button>
+                    )} */}
                 </div>
+            </div>
+        </>
+    );
+
+    return (
+        <div
+            onClick={onNavigate}
+            className="block h-full"
+        >
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group h-full relative">
+
+                {/* Hover Overlay (اختياري: إظهار تفاصيل إضافية عند الوقوف) */}
+                <div className="absolute inset-0 bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none" />
+
+                {cardContent}
             </div>
         </div>
     );
 });
+
+FileCard.displayName = "FileCard";

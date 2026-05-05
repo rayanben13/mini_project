@@ -40,32 +40,29 @@ export default function LoginPage() {
         password: values.password,
       });
 
-      if (result.success) {
-        toast.success("Login successful!");
-        const role = result.user?.role;
-        if (result.needsOnboarding) {
-          router.push("/onboarding");
-        } else {
-          if (role === "admin") {
-            router.replace("/admin");
-          } else {
-            router.replace("/dashboard");
-          }
-        }
-
-
-      } else {
+      if (!result.success) {
         if (result.message === "Email not verified") {
           toast.error(result.message);
           router.push(
             `/verify-email?email=${encodeURIComponent(
-              result.email || values.email,
-            )}&from=login`,
+              result.email || values.email
+            )}&from=login`
           );
-        } else {
-          toast.error("Invalid email or password");
         }
+        else if (result.message === "User information is NOT exist ") {
+          toast.error("fill your information");
+          router.push("/onboarding");
+
+        } else {
+          toast.error(result.message || "Invalid email or password");
+        }
+        return;
       }
+
+      toast.success("Login successful!");
+
+      // ✅ IMPORTANT: wait for user data to load (React Query will handle it)
+      router.replace("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       toast.error("An unexpected error occurred. Please try again.");

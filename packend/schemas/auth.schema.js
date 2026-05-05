@@ -23,8 +23,8 @@ export const authSchema = Joi.object({
 export const shemaUsername = Joi.object({ username: username.optional() });
 export const schemaEmail = Joi.object({ email });
 
-const univ = Joi.string().min(5).max(50).trim().required();
-const major = Joi.string().min(3).max(30).trim().required();
+const univ = Joi.string().min(2).max(100).trim().required();
+const major = Joi.string().min(2).max(100).trim().required();
 
 const years = ["L1", "L2", "L3", "M1", "M2"];
 const type_file = ["TD", "TP", "COURS", "EF", "CC", "RESUME", "OTHER"];
@@ -35,7 +35,7 @@ const academic_year = Joi.string()
 
 const specialty = Joi.string()
   .min(2)
-  .max(30)
+  .max(100)
   .trim()
   .when("academic_year", {
     is: Joi.valid("M1", "M2"),

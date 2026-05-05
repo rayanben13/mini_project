@@ -5,34 +5,26 @@ const API_URL = "http://localhost:5000/api/auth";
 
 const AuthStore = create((set, get) => ({
   user: null,
+  token: null,
   loading: false,
 
-  statusUser: { statusUS: false },
-
   isAuthenticated: false,
-
   isHydrated: false,
 
+  // 🔥 INIT AUTH (runs on app start)
   initAuth: () => {
     if (typeof window === "undefined") return;
 
     const token = localStorage.getItem("token");
 
-    if (token) {
-      set({
-        user: { token }, // أو null إذا ما عندك user كامل
-        isAuthenticated: true,
-        isHydrated: true,
-      });
-    } else {
-      set({
-        user: null,
-        isAuthenticated: false,
-        isHydrated: true,
-      });
-    }
+    set({
+      token,
+      isAuthenticated: !!token,
+      isHydrated: true,
+    });
   },
 
+  // 🔥 LOGIN
   login: async ({ email, password }) => {
     try {
       set({ loading: true });
@@ -43,18 +35,18 @@ const AuthStore = create((set, get) => ({
         { withCredentials: true }
       );
 
-      const { accessToken, user } = response.data;
+      const { accessToken } = response.data;
+
       localStorage.setItem("token", accessToken);
 
       set({
-        user: { ...user, token: accessToken },
-        statusUser: { statusUS: true },
+        token: accessToken,
         isAuthenticated: true,
       });
 
       return {
         success: true,
-        user,
+        accessToken,
       };
     } catch (error) {
       const serverError = error.response?.data?.error;
@@ -67,7 +59,6 @@ const AuthStore = create((set, get) => ({
       set({ loading: false });
     }
   },
-
   signup: async ({ fullname, username, email, password }) => {
     try {
       set({ loading: true });
@@ -198,6 +189,7 @@ const AuthStore = create((set, get) => ({
   searchMoreInformation: async ({
     mode,
     name,
+    univ,
     year,
     major,
     specialty,
@@ -206,6 +198,7 @@ const AuthStore = create((set, get) => ({
       set({ loading: true });
 
       const params = { mode, name };
+      if (univ) params.univ = univ;
       if (year) params.year = year;
       if (major) params.major = major;
       if (specialty) params.specialty = specialty;

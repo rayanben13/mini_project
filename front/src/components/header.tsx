@@ -9,7 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { MobileSidebar } from "./MobileSidebar";
+import { MobileSidebar } from "./sideBar/MobileSidebar";
 import { Input } from "./ui/input";
 
 export default function Header() {
@@ -48,7 +48,6 @@ export default function Header() {
     ...user,
     ...info
   };
-  console.log("dataaa", displayUser)
 
   // --- Render ---
 

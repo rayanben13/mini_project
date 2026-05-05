@@ -1,11 +1,14 @@
 "use client";
 
+import RenderState from "@/components/renderState";
 import SliderSkeleton from "@/components/sliderSkeleton";
 import TopFilesSlider from "@/components/topFiles";
 import SubjectCard from "@/components/yourSubjects";
 import { showTopFilesForUser, useFilesLikes } from "@/hooks/useFilesInformations";
+import { useRecommendedStudyList } from "@/hooks/useStudyList";
 import { useYourSubjects } from "@/hooks/useSubjectsInfo";
-import { Heart, Shapes, Sparkles } from "lucide-react";
+import { Book, Heart, Shapes, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 // ✅ حد أقصى لكل سلايدر
@@ -21,6 +24,8 @@ export default function DashboardClient() {
   const [filesPage, setFilesPage] = useState(1);
   const [likesPage, setLikesPage] = useState(1);
   const [subjectsPage, setSubjectsPage] = useState(1);
+
+  const router = useRouter();
 
   // ✅ كل hook له isFetching خاص به
   const {
@@ -40,6 +45,8 @@ export default function DashboardClient() {
     isLoading: subjectsLoading,
     isFetching: isFetchingSubjects
   } = useYourSubjects(subjectsPage, 10);
+
+  const { data: recommendedStudyListData, isLoading: recommendedStudyListLoading, isFetching: isFetchingRecommendedStudyList } = useRecommendedStudyList(1, 10);
 
   // ✅ useEffect منفصل لكل سلايدر
   useEffect(() => {
@@ -75,6 +82,7 @@ export default function DashboardClient() {
     }
   }, [subjectsData]);
 
+
   return (
     <div className="space-y-12 w-full">
 
@@ -93,7 +101,10 @@ export default function DashboardClient() {
               && filesPage < MAX_PAGES                         // ✅ حد أقصى
             }
             onLoadMore={() => setFilesPage(prev => prev + 1)} // ✅ filesPage
-            isLoadingMore={isFetchingFiles}                    // ✅ isFetching صحيح
+            isLoadingMore={isFetchingFiles}
+            onFileClick={(fileId) => {
+              router.push(`/dashboard/${fileId}`);
+            }}
           />
         )}
       </section>
@@ -113,7 +124,10 @@ export default function DashboardClient() {
               && likesPage < MAX_PAGES                          // ✅ حد أقصى
             }
             onLoadMore={() => setLikesPage(prev => prev + 1)}  // ✅ likesPage
-            isLoadingMore={isFetchingLikes}                     // ✅ isFetching صحيح
+            isLoadingMore={isFetchingLikes}
+            onFileClick={(fileId) => {
+              router.push(`/dashboard/${fileId}`);
+            }}
           />
         )}
       </section>
@@ -139,6 +153,16 @@ export default function DashboardClient() {
             )}
           />
         )}
+      </section>
+
+      <section>
+        <h2 className="text-xl font-bold flex items-center gap-2 pl-3 mb-6">
+          <Book className="w-5 h-5 text-[#0975e6]" />
+          Recommended Study Lists
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-6">
+          <RenderState isLoading={recommendedStudyListLoading} data={recommendedStudyListData} />
+        </div>
       </section>
 
     </div>
