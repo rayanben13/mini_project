@@ -1,12 +1,15 @@
 const validate = (schema) => (req, res, next) => {
-  const { error, value } = schema.validate(req.body, { abortEarly: false });
+  const { error, value } = schema.validate(req.body || {}, { abortEarly: false });
   if (error) {
     return res.status(400).json({
       error: 'Validation error',
       details: error.details.map((d) => d.message),
     });
   }
-  req.body = value;
+  // Only overwrite if value is defined, otherwise keep req.body as is
+  if (value !== undefined) {
+    req.body = value;
+  }
   next();
 };
 export default validate;

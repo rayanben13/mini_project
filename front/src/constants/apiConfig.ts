@@ -10,5 +10,6 @@ export const API_CONFIG = {
     SEARCH_INFO: "/api/auth/SharchMoreInformation",
     ADD_USER_INFO: "/api/auth/addedUserInformation",
     LOGOUT: "/api/auth/logout",
+    SEND_AI: "/api/ai/sendAi",
   },
 };

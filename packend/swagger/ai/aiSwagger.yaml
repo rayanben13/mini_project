@@ -1,0 +1,87 @@
+tags:
+  - name: AI Interaction
+    description: AI-powered PDF interaction endpoints
+
+paths:
+  /api/ai/sendAi:
+    post:
+      summary: Send a message to AI with a direct PDF upload (RAM)
+      tags: [AI Interaction]
+      parameters:
+        - in: query
+          name: lang
+          schema:
+            type: string
+            enum: [en, ar, fr]
+            default: en
+          description: Response language
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF file to process (max 10MB)
+                message:
+                  type: string
+                  description: Your question for the AI
+              required:
+                - file
+                - message
+      responses:
+        '200':
+          description: AI response generated successfully
+          content:
+            application/json:
+              example:
+                message: "This is the AI response based on the uploaded file."
+        '400':
+          description: Bad Request (Invalid file, missing message, etc.)
+        '500':
+          description: Internal Server Error
+
+  /api/ai/sendAi/{id_file}:
+    post:
+      summary: Send a message to AI using an existing file ID from database
+      tags: [AI Interaction]
+      parameters:
+        - in: path
+          name: id_file
+          required: true
+          schema:
+            type: integer
+          description: The ID of the file in the database
+        - in: query
+          name: lang
+          schema:
+            type: string
+            enum: [en, ar, fr]
+            default: en
+          description: Response language
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: Your question for the AI
+              required:
+                - message
+      responses:
+        '200':
+          description: AI response generated successfully
+          content:
+            application/json:
+              example:
+                message: "This is the AI response based on the database file."
+        '404':
+          description: File not found or not accepted
+        '500':
+          description: Internal Server Error
