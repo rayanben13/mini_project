@@ -184,6 +184,9 @@ async function main() {
     // Add some files to the study list
     const randomFiles = faker.helpers.arrayElements(files, { min: 2, max: 5 });
     for (const file of randomFiles) {
+      if (file.status !== 'accepted') {
+        continue;
+      }
       await prisma.study_list_files.create({
         data: {
           id_stuList: studyList.id_stuList,

@@ -45,7 +45,18 @@ export const showRecommendedStudyList = async (req, res) => {
         },
         _count: {
           select: {
-            study_list_files: true,
+            study_list_files: {
+              where: {
+                files: {
+                  status: 'accepted',
+                  file_reports: {
+                    none: {
+                      status: 'reviewed',
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -125,8 +136,23 @@ export const showMyStudyList = async (req, res) => {
         },
         _count: {
           select: {
+<<<<<<< HEAD
             study_list_files: true,
             studyList_likes: true,
+=======
+            study_list_files: {
+              where: {
+                files: {
+                  status: 'accepted',
+                  file_reports: {
+                    none: {
+                      status: 'reviewed',
+                    },
+                  },
+                },
+              },
+            },
+>>>>>>> 431450f5522f4069c692f2030437a2df7d4296f4
           },
         },
       },
@@ -208,7 +234,18 @@ export const showStudyListUserById = async (req, res) => {
         },
         _count: {
           select: {
-            study_list_files: true,
+            study_list_files: {
+              where: {
+                files: {
+                  status: 'accepted',
+                  file_reports: {
+                    none: {
+                      status: 'reviewed',
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -271,7 +308,18 @@ export const showAddedStudyList = async (req, res) => {
             },
             _count: {
               select: {
-                study_list_files: true,
+                study_list_files: {
+                  where: {
+                    files: {
+                      status: 'accepted',
+                      file_reports: {
+                        none: {
+                          status: 'reviewed',
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -743,28 +791,30 @@ export const loveStudyList = async (req, res) => {
       },
     });
 
-    const message = `${Me.username} loved your study list ${ownerFile.name}`;
+    if (ownerFile.id_user !== Me.id_user) {
+      const message = `${Me.username} loved your study list ${ownerFile.name}`;
 
-    await prisma.notifications.create({
-      data: {
-        id_user: ownerFile.id_user,
+      await prisma.notifications.create({
+        data: {
+          id_user: ownerFile.id_user,
+          message,
+          related_id: Me.id_user,
+          related_type: 'user',
+        },
+      });
+
+      io.to(String(ownerFile.id_user)).emit('notification', {
         message,
         related_id: Me.id_user,
         related_type: 'user',
-      },
-    });
+      });
 
-    io.to(String(ownerFile.id_user)).emit('notification', {
-      message,
-      related_id: Me.id_user,
-      related_type: 'user',
-    });
-
-    console.log('SOCKET DATA:', {
-      message,
-      related_id: Me.id_user,
-      related_type: 'user',
-    });
+      console.log('SOCKET DATA:', {
+        message,
+        related_id: Me.id_user,
+        related_type: 'user',
+      });
+    }
 
     return res.status(200).json({
       message: 'Study list loved',

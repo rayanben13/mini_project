@@ -157,25 +157,23 @@ export const AproveRejectFiles = async (req, res) => {
     }
 
     // =========================
-    // approve one / reject one
+    // approve / reject ONE
     // =========================
     if (status === 'approve' || status === 'reject') {
       if (isNaN(id_file)) {
-        return res.status(400).json({ error: 'invalid file id' });
+        return res.status(400).json({ error: 'Invalid file id' });
       }
 
       if (status === 'reject' && !reason) {
-        return res.status(400).json({ error: 'reason is required' });
+        return res.status(400).json({ error: 'Reason is required' });
       }
 
-      const fileExist = await prisma.files.findFirst({
+      const file = await prisma.files.findFirst({
         where: {
           id_file,
           status: 'pending',
           file_reports: {
-            none: {
-              status: 'reviewed',
-            },
+            none: { status: 'reviewed' },
           },
         },
         select: {
@@ -190,49 +188,77 @@ export const AproveRejectFiles = async (req, res) => {
         },
       });
 
-      if (!fileExist) {
-        return res
-          .status(404)
-          .json({ error: 'File not found or already updated' });
+      if (!file) {
+        return res.status(404).json({
+          error: 'File not found or already processed',
+        });
       }
 
       const newStatus = status === 'approve' ? 'accepted' : 'rejected';
 
-      await prisma.files.update({
-        where: {
-          id_file,
-        },
-        data: {
-          reason_rejected: status === 'reject' ? reason : null,
-          status: newStatus,
-          approved_at: new Date(),
-        },
-      });
+      await prisma.$transaction(async (tx) => {
+        await tx.files.update({
+          where: { id_file },
+          data: {
+            status: newStatus,
+            reason_rejected: status === 'reject' ? reason : null,
+            approved_at: new Date(),
+          },
+        });
 
-      const message = `The admin ${status}ed your file: ${fileExist.title}${
-        status === 'reject' && reason ? ` with reason: ${reason}` : ''
-      }`;
+        const ownerMessage = `Admin ${status}ed your file: ${file.title}${
+          status === 'reject' && reason ? ` (reason: ${reason})` : ''
+        }`;
 
-      await prisma.notifications.create({
-        data: {
-          id_user: fileExist.users.id_user,
-          message,
-          related_id: fileExist.id_file,
+        await tx.notifications.create({
+          data: {
+            id_user: file.users.id_user,
+            message: ownerMessage,
+            related_id: file.id_file,
+            related_type: 'file',
+          },
+        });
+
+        io.to(String(file.users.id_user)).emit('notification', {
+          message: ownerMessage,
+          related_id: file.id_file,
           related_type: 'file',
-        },
-      });
+        });
 
-      io.to(String(fileExist.users.id_user)).emit('notification', {
-        message,
-        related_id: fileExist.id_file,
-        related_type: 'file',
-      });
+        // =========================
+        // 🔥 If approved → notify followers
+        // =========================
+        if (status === 'approve') {
+          const followers = await tx.follows.findMany({
+            where: {
+              following_id: file.users.id_user,
+            },
+            select: {
+              follower_id: true,
+            },
+          });
 
-      console.log({
-        'send notification to user': fileExist.users.id_user,
-        message,
-        related_id: fileExist.id_file,
-        related_type: 'file',
+          if (followers.length > 0) {
+            const notifData = followers.map((f) => ({
+              id_user: f.follower_id,
+              message: `${file.users.username} uploaded a new file: ${file.title}`,
+              related_id: file.id_file,
+              related_type: 'file',
+            }));
+
+            await tx.notifications.createMany({
+              data: notifData,
+            });
+
+            followers.forEach((f) => {
+              io.to(String(f.follower_id)).emit('notification', {
+                message: `${file.users.username} uploaded a new file: ${file.title}`,
+                related_id: file.id_file,
+                related_type: 'file',
+              });
+            });
+          }
+        }
       });
 
       return res.status(200).json({
@@ -241,13 +267,11 @@ export const AproveRejectFiles = async (req, res) => {
     }
 
     // =========================
-    // approve all pending files
+    // approve ALL
     // =========================
     if (status === 'approveAll') {
       const pendingFiles = await prisma.files.findMany({
-        where: {
-          status: 'pending',
-        },
+        where: { status: 'pending' },
         select: {
           id_file: true,
           title: true,
@@ -260,47 +284,51 @@ export const AproveRejectFiles = async (req, res) => {
         },
       });
 
-      if (pendingFiles.length === 0) {
+      if (!pendingFiles.length) {
         return res.status(404).json({
           error: 'No pending files found',
         });
       }
 
-      await prisma.files.updateMany({
-        where: {
-          status: 'pending',
-        },
-        data: {
-          status: 'accepted',
-          approved_at: new Date(),
-        },
-      });
-
-      for (const file of pendingFiles) {
-        const message = `The admin approved your file: ${file.title}`;
-
-        await prisma.notifications.create({
+      await prisma.$transaction(async (tx) => {
+        // 1. Update all
+        await tx.files.updateMany({
+          where: { status: 'pending' },
           data: {
-            id_user: file.users.id_user,
-            message,
-            related_id: file.id_file,
-            related_type: 'file',
+            status: 'accepted',
+            approved_at: new Date(),
           },
         });
 
-        io.to(String(file.users.id_user)).emit('notification', {
-          message,
+        // 2. Prepare notifications
+        const notifications = pendingFiles.map((file) => ({
+          id_user: file.users.id_user,
+          message: `Admin approved your file: ${file.title}`,
           related_id: file.id_file,
           related_type: 'file',
+        }));
+
+        // 🔥 BULK INSERT
+        await tx.notifications.createMany({
+          data: notifications,
         });
-      }
+
+        // 🔥 SOCKET
+        pendingFiles.forEach((file) => {
+          io.to(String(file.users.id_user)).emit('notification', {
+            message: `Admin approved your file: ${file.title}`,
+            related_id: file.id_file,
+            related_type: 'file',
+          });
+        });
+      });
 
       return res.status(200).json({
         message: 'All pending files approved successfully',
       });
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
       error: 'Internal server error',
     });
