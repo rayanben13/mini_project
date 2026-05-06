@@ -138,7 +138,6 @@ LIMIT ${limit}
 OFFSET ${skip};
 `;
 
-
     res.status(200).json({
       meta: {
         current_page: page,
@@ -504,7 +503,9 @@ export const showDetailFile = async (req, res) => {
 
     const isOwner = file.users.id_user === Me.id_user;
     if (file.status !== 'accepted' && !isAdmin && !isOwner) {
-      return res.status(403).json({ error: 'Access denied: File is not accepted yet' });
+      return res
+        .status(403)
+        .json({ error: 'Access denied: File is not accepted yet' });
     }
 
     // ✅ likes
@@ -536,10 +537,10 @@ export const showDetailFile = async (req, res) => {
       ...(isAdmin
         ? {}
         : {
-          like,
-          dislike,
-          ...(Me.role === 'user' && { statusLike }),
-        }),
+            like,
+            dislike,
+            ...(Me.role === 'user' && { statusLike }),
+          }),
     });
   } catch (err) {
     console.error(err);
@@ -618,18 +619,18 @@ export const UplodeNewFile = async (req, res) => {
 
         subjects: subjectExist
           ? {
-            connect: { id_subject: subjectExist.id_subject },
-          }
+              connect: { id_subject: subjectExist.id_subject },
+            }
           : {
-            create: {
-              major: infoExist.major,
-              specialization: infoExist.specialization,
-              academic_year: infoExist.academic_year,
-              course: infoExist.course,
-              university: univ,
-              course_description: infoExist.course_description,
+              create: {
+                major: infoExist.major,
+                specialization: infoExist.specialization,
+                academic_year: infoExist.academic_year,
+                course: infoExist.course,
+                university: univ,
+                course_description: infoExist.course_description,
+              },
             },
-          },
       },
     });
 
@@ -939,7 +940,7 @@ export const addLikeOrDislike = async (req, res) => {
     });
 
     // 🔥 notification فقط لل LIKE
-    if (type === 'LIKE') {
+    if (type === 'LIKE' && ownerFile.id_user !== Me.id_user) {
       await prisma.notifications.create({
         data: {
           id_user: ownerFile.id_user,
