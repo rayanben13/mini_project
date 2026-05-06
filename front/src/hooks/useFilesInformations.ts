@@ -41,12 +41,14 @@ export const useMyFiles = (page: number = 1, limit: number = 10, status: string 
   });
 };
 
-export const useFileDetails = (id_file: number) => {
+export const useFileDetails = (id_file: any) => {
   const { showDetailFile } = useFilesStore();
+  const { token } = AuthStore();
 
   return useQuery({
     queryKey: ["file-details", id_file],
-    queryFn: () => showDetailFile(id_file),
-    enabled: !!id_file, // only run if id exists
+    queryFn: () => showDetailFile(Number(id_file)),
+    enabled: !!id_file && !!token,
+    staleTime: 2 * 60 * 1000,
   });
 };

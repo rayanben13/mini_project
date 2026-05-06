@@ -224,7 +224,7 @@ export const login = async (req, res) => {
         : await sendWelcomeEmail(email, user.username);
     }
 
-    return res.status(201).json({ accessToken });
+    return res.status(201).json({ accessToken, role: user.role });
   } catch (error) {
     console.log("Error : ", error);
     process.env.NODE_ENV === 'development' &&

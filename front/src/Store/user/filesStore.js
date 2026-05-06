@@ -9,7 +9,7 @@ const useFilesStore = create((set, get) => ({
 
   // دالة مساعدة للحصول على الهيدر مع التوكن
   getAuthHeader: () => {
-    const token = AuthStore.getState().token;
+    const token = AuthStore.getState().token || localStorage.getItem('token');
     return { headers: { Authorization: `Bearer ${token}` } };
   },
 
@@ -81,10 +81,7 @@ const useFilesStore = create((set, get) => ({
     } catch (error) {
       set({ loading: false });
       console.error('Error fetching file details:', error);
-      return {
-        success: false,
-        message: error.response?.data?.error || 'Server error',
-      };
+      throw error; // Let react-query handle the error state
     }
   },
 

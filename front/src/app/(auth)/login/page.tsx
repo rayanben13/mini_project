@@ -59,10 +59,15 @@ export default function LoginPage() {
         return;
       }
 
+      if (result.role === "admin") {
+        router.replace("/admin");
+      } else {
+        router.replace("/dashboard");
+      }
       toast.success("Login successful!");
 
+
       // ✅ IMPORTANT: wait for user data to load (React Query will handle it)
-      router.replace("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       toast.error("An unexpected error occurred. Please try again.");

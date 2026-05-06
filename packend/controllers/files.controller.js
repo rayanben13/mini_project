@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-import dayjs from '../config/dayjsTime.js';
-import { io } from '../config/socket.js';
-=======
->>>>>>> 12017be3f1f695c245d8df7f477b3076b90b8704
 import prisma from '../lib/prisma.js';
 import { getUniversities } from '../service/univAPI.js';
 

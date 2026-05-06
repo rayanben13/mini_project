@@ -76,6 +76,7 @@ export default function TopFilesSlider({
             onLoadMore();
         }
     }, [emblaApi, hasMore, onLoadMore, isLoadingMore]);
+    console.log("dd", data)
 
     return (
         <section className="mb-12 px-2">
@@ -166,16 +167,6 @@ export const FileCard = memo(({ file, onNavigate }: { file: any, onNavigate: () 
                         ❤️ <span className="font-semibold text-slate-600 dark:text-slate-300">{file.likes_count || 0}</span>
                     </p>
 
-                    {/* زر Show أصبح جزءاً من الرابط */}
-                    {/* {onNavigate && (
-                        <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); onNavigate(); }} // منع التفاعل المزدوج
-                            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-                        >
-                            View Details →
-                        </button>
-                    )} */}
                 </div>
             </div>
         </>

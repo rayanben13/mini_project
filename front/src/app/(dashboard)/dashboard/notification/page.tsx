@@ -5,6 +5,7 @@ import useNotificationStore from "@/Store/user/notificationStore";
 import { Bell, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 function NotificationsPage() {
     const [page, setPage] = useState(1);
@@ -17,12 +18,26 @@ function NotificationsPage() {
         error,
     } = useMyNotificationsList(page);
     const router = useRouter();
-    console.log(data)
 
     const notifications = data?.data || [];
     const meta = data?.meta;
 
-    const { markNotificationAsRead } = useNotificationStore();
+    const { markNotificationAsRead, deleteAllMyNotifications } = useNotificationStore();
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
+
+    const handleDeleteAll = async () => {
+        if (!allNotifications.length) return;
+        setIsDeletingAll(true);
+        // Optimistic clear
+        setAllNotifications([]);
+        const res = await deleteAllMyNotifications();
+        setIsDeletingAll(false);
+        if (res.success) {
+            toast.success("All notifications deleted");
+        } else {
+            toast.error(res.message || "Failed to delete notifications");
+        }
+    };
 
     // 🔥 دمج البيانات (pagination)
     useEffect(() => {
@@ -73,8 +88,15 @@ function NotificationsPage() {
                         </h1>
                     </div>
 
-                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-red-600 hover:border-red-200 rounded-xl font-semibold text-sm transition-all shadow-sm">
-                        <Trash2 className="w-4 h-4 text-red-500" />
+                    <button
+                        onClick={handleDeleteAll}
+                        disabled={isDeletingAll || allNotifications.length === 0}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-red-600 hover:border-red-200 rounded-xl font-semibold text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        {isDeletingAll
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <Trash2 className="w-4 h-4 text-red-500" />
+                        }
                         DELETE ALL
                     </button>
                 </div>

@@ -35,18 +35,20 @@ const AuthStore = create((set, get) => ({
         { withCredentials: true }
       );
 
-      const { accessToken } = response.data;
+      const { accessToken, role } = response.data;
 
       localStorage.setItem("token", accessToken);
 
       set({
         token: accessToken,
         isAuthenticated: true,
+        role,
       });
 
       return {
         success: true,
         accessToken,
+        role,
       };
     } catch (error) {
       const serverError = error.response?.data?.error;
@@ -312,24 +314,25 @@ const AuthStore = create((set, get) => ({
 
   logout: async () => {
     localStorage.removeItem("token");
+
     try {
-      set({ loading: true });
-
       await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
-
-      set({
-        user: { id: null, token: "" },
-        statusUser: { statusUS: false },
-      });
     } catch (error) {
       console.error("Logout error:", error.response?.data?.error);
-
-      return {
-        success: false,
-        message: error.response?.data?.error || "Server error",
-      };
+      // Even if the server call fails, we still log the user out locally
     } finally {
-      set({ loading: false });
+      // Always clear all auth state
+      set({
+        token: null,
+        user: null,
+        isAuthenticated: false,
+        loading: false,
+      });
+
+      // Force a full page reload to /login so the middleware re-evaluates cookies
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
   },
 }));
