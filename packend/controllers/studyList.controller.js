@@ -1,13 +1,10 @@
-import { count } from 'node:console';
-import prisma from '../lib/prisma.js';
-import { getUniversities } from '../service/univAPI.js';
-import { io } from '../config/socket.js';
 import {
   reminder_time_input,
   reminder_time_output,
 } from '../config/dayjsTime.js';
+import { io } from '../config/socket.js';
+import prisma from '../lib/prisma.js';
 
-import { cloudinary, uploadBufferToCloudinary } from '../config/Cloudinary.js';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -136,10 +133,6 @@ export const showMyStudyList = async (req, res) => {
         },
         _count: {
           select: {
-<<<<<<< HEAD
-            study_list_files: true,
-            studyList_likes: true,
-=======
             study_list_files: {
               where: {
                 files: {
@@ -152,7 +145,6 @@ export const showMyStudyList = async (req, res) => {
                 },
               },
             },
->>>>>>> 431450f5522f4069c692f2030437a2df7d4296f4
           },
         },
       },

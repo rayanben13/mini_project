@@ -4,25 +4,17 @@ import {
   Bell,
   BookOpen,
   LayoutDashboard,
+  Link, // أيقونة للأدمن
+  Settings,
+  ShieldCheck,
+  Sidebar,
   UserCircle
 } from "lucide-react";
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
-
-import useAuthStore from "@/Store/AuthStore";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import UploadFileBtn from "../profile/uploadFileBtn";
+import { SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "../ui/sidebar";
+
+// ... باقي الاستيرادات
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -31,20 +23,25 @@ const items = [
   { title: "Notifications", url: "/dashboard/notification", icon: Bell },
 ];
 
+// روابط الأدمن
+const adminItems = [
+  { title: "Admin Panel", url: "/admin", icon: ShieldCheck },
+  { title: "Settings", url: "/admin/settings", icon: Settings },
+];
+
 export function AppSidebar() {
-  const { logout } = useAuthStore();
   const { state } = useSidebar();
   const pathname = usePathname();
 
+  // تحديد أي قائمة نعرض بناءً على المسار الحالي
+  const currentItems = pathname.startsWith("/admin") ? adminItems : items;
+
   return (
-    <Sidebar
-      collapsible="icon"
-      className="bg-sidebar border-r border-sidebar-border"
-    >
+    <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
       <SidebarHeader className="flex items-center justify-between px-4 py-5">
         {state === "expanded" && (
           <span className="text-lg font-semibold text-primary dark:text-blue-400">
-            My App
+            {pathname.startsWith("/admin") ? "Admin Console" : "My App"}
           </span>
         )}
         <SidebarTrigger className="hover:bg-sidebar-accent rounded-md transition-colors" />
@@ -52,10 +49,9 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2">
         <SidebarMenu className="space-y-2">
-          {items.map((item) => {
-            const isActive = item.url === "/dashboard"
-              ? pathname === "/dashboard" || (pathname.startsWith("/dashboard/") && !items.some(other => other.url !== "/dashboard" && pathname.startsWith(other.url)))
-              : pathname.startsWith(item.url);
+          {currentItems.map((item) => {
+            // منطق isActive مبسط وفعال
+            const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
 
             return (
               <SidebarMenuItem key={item.title}>
@@ -85,21 +81,14 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 border-t border-sidebar-border">
-        <SidebarMenuButton
-          asChild
-          tooltip="Upload File"
-          className="
-            rounded-xl px-3 py-2
-            bg-primary text-primary-foreground
-            hover:opacity-90
-            transition
-            dark:bg-blue-600 dark:hover:bg-blue-700
-          "
-        >
-          <UploadFileBtn variant="sidebar" />
-        </SidebarMenuButton>
-      </SidebarFooter>
+      {/* إخفاء زر الرفع في صفحات الأدمن إذا أردت */}
+      {!pathname.startsWith("/admin") && (
+        <SidebarFooter className="p-3 border-t border-sidebar-border">
+          <SidebarMenuButton asChild tooltip="Upload File" className="rounded-xl px-3 py-2 bg-primary text-primary-foreground hover:opacity-90 transition dark:bg-blue-600">
+            <UploadFileBtn variant="sidebar" />
+          </SidebarMenuButton>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }
