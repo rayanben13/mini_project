@@ -222,7 +222,7 @@ paths:
               example:
                 error: 'Server error'
 
-  /api/files/details/{id_file}:
+  /api/files/showDetailFile/{id_file}:
     get:
       summary: Get details of a specific file
       tags: [Files]
@@ -651,9 +651,6 @@ paths:
             application/json:
               example:
                 error: 'Failed to save file to study list'
-
- 
-
 
   /api/files/showFilesUserById/{id_user}:
     get:
