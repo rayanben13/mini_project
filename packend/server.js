@@ -1,9 +1,8 @@
+import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 
 // Load env first
-dotenv.config();
 
 // Then load services that depend on env
 import './service/reminder.js';
@@ -19,7 +18,7 @@ import subjectsRouter from './routes/subjects.route.js';
 import dashboardRouter from './routes/admin/dashboard.route.js';
 import filesStatusRouter from './routes/admin/filesStatus.route.js';
 import reportedFilesRouter from './routes/admin/ReportedFiles.route.js';
-
+import sendAiRouter from './routes/ai/sendAi.route.js';
 // config
 import Cors from './config/cors.js';
 import httpsRedirect from './middleware/httpsRedirect.js';
@@ -44,9 +43,16 @@ const subjectsSwagger = YAML.load('./swagger/user/subjectsSwagger.yaml');
 const notificationSwagger = YAML.load(
   './swagger/user/notificationSwagger.yaml'
 );
-const adminDashboardSwagger = YAML.load('./swagger/admin/dashboardSwagger.yaml');
-const adminFilesStatusSwagger = YAML.load('./swagger/admin/filesStatusSwagger.yaml');
-const adminReportedFilesSwagger = YAML.load('./swagger/admin/reportedFilesSwagger.yaml');
+const adminDashboardSwagger = YAML.load(
+  './swagger/admin/dashboardSwagger.yaml'
+);
+const adminFilesStatusSwagger = YAML.load(
+  './swagger/admin/filesStatusSwagger.yaml'
+);
+const adminReportedFilesSwagger = YAML.load(
+  './swagger/admin/reportedFilesSwagger.yaml'
+);
+const aiSwagger = YAML.load('./swagger/ai/aiSwagger.yaml');
 
 const swaggerDocument = {
   ...authSwagger,
@@ -61,6 +67,7 @@ const swaggerDocument = {
     ...(adminDashboardSwagger?.tags || []),
     ...(adminFilesStatusSwagger?.tags || []),
     ...(adminReportedFilesSwagger?.tags || []),
+    ...(aiSwagger?.tags || []),
   ],
   paths: {
     ...(authSwagger?.paths || {}),
@@ -73,6 +80,7 @@ const swaggerDocument = {
     ...(adminDashboardSwagger?.paths || {}),
     ...(adminFilesStatusSwagger?.paths || {}),
     ...(adminReportedFilesSwagger?.paths || {}),
+    ...(aiSwagger?.paths || {}),
   },
 };
 
@@ -100,6 +108,10 @@ app.use('/api/admin/dashboard', dashboardRouter);
 app.use('/api/admin/filesStatus', filesStatusRouter);
 app.use('/api/admin/reportedFiles', reportedFilesRouter);
 
+//ai routes
+app.use('/api/ai', sendAiRouter);
+
+//swagger docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const port = process.env.PORT;
