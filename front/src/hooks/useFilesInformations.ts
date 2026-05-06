@@ -1,3 +1,4 @@
+import allActurStore from "@/Store/allActurStore";
 import AuthStore from "@/Store/AuthStore";
 import useFilesStore from "@/Store/user/filesStore";
 import { useQuery } from "@tanstack/react-query";
@@ -41,8 +42,8 @@ export const useMyFiles = (page: number = 1, limit: number = 10, status: string 
   });
 };
 
-export const useFileDetails = (id_file: any) => {
-  const { showDetailFile } = useFilesStore();
+export const useFileDetails = (id_file: number) => {
+  const { showDetailFile } = allActurStore();
   const { token } = AuthStore();
 
   return useQuery({

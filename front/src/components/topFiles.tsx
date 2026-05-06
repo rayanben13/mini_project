@@ -76,7 +76,6 @@ export default function TopFilesSlider({
             onLoadMore();
         }
     }, [emblaApi, hasMore, onLoadMore, isLoadingMore]);
-    console.log("dd", data)
 
     return (
         <section className="mb-12 px-2">

@@ -12,7 +12,7 @@ export default function StudyListDetailPage() {
     const { id } = useParams();
     const router = useRouter();
 
-    const { showDetailStudyList, loveStudyList, deleteFileFromStudyList, addSetReminder } =
+    const { showDetailStudyList, loveStudyList, deleteFileFromStudyList, addSetReminder, addStudylistToAddedSection } =
         useStudyListStore();
 
     const [details, setDetails] = useState<any>(null);
@@ -20,6 +20,8 @@ export default function StudyListDetailPage() {
 
     // ✅ optimistic
     const [isLoved, setIsLoved] = useState<boolean | null>(null);
+    const [isSaved, setIsSaved] = useState<boolean | null>(null);
+    const [saving, setSaving] = useState(false);
     const [likes, setLikes] = useState(0);
     const [initialized, setInitialized] = useState(false);
 
@@ -51,10 +53,28 @@ export default function StudyListDetailPage() {
     useEffect(() => {
         if (details?.studyListCard && !initialized) {
             setIsLoved(details.studyListCard.isLoved);
+            setIsSaved(details.studyListCard.isSaved);
             setLikes(details.studyListCard.count_loved || 0);
             setInitialized(true);
         }
     }, [details, initialized]);
+
+    // 💾 save
+    const handleSave = async () => {
+        if (isSaved || saving) return;
+        setSaving(true);
+        try {
+            const res = await addStudylistToAddedSection(id as string);
+            if (res.success) {
+                toast.success("Saved to library");
+                setIsSaved(true);
+            } else {
+                toast.error(res.message);
+            }
+        } finally {
+            setSaving(false);
+        }
+    };
 
     // ❤️ optimistic like
     const handleLove = async () => {
@@ -145,6 +165,27 @@ export default function StudyListDetailPage() {
                             loading={loadingReminder}
                             onSave={handleReminder}
                         />
+
+                        {/* 💾 SAVE */}
+                        {!details.studyListCard.isOwner && (
+                            <Button
+                                onClick={handleSave}
+                                disabled={saving || isSaved === true}
+                                className={`rounded-full px-4 py-2 font-bold transition-all ${
+                                    isSaved
+                                        ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400 cursor-default"
+                                        : "bg-[#f1f3fd] text-[#0975e6] hover:bg-[#0975e6] hover:text-white dark:bg-slate-800 dark:text-blue-400 dark:hover:bg-blue-600"
+                                }`}
+                            >
+                                {saving ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : isSaved ? (
+                                    "Saved"
+                                ) : (
+                                    "Save"
+                                )}
+                            </Button>
+                        )}
                     </div>
                 </div>
 

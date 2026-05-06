@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import axios from 'axios';
+import { create } from 'zustand';
 import AuthStore from './AuthStore.js';
 
 const SEARCH_API_URL = 'http://localhost:5000/api/search';
@@ -114,7 +114,7 @@ const allActurStore = create((set, get) => ({
         get().getAuthHeader()
       );
       set({ loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       set({ loading: false });
       console.error('Error fetching file details:', error);

@@ -7,7 +7,6 @@ import { useEffect } from "react";
 export default function AuthGate({ children }) {
   const router = useRouter();
   const { data: user, isLoading } = useFullUserData();
-  console.log(user, "user")
 
   useEffect(() => {
     if (isLoading) return;

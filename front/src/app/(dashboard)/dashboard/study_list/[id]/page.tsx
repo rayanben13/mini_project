@@ -3,6 +3,7 @@
 import SetReminder from "@/components/studyList/SetReminder";
 import { Button } from "@/components/ui/button";
 import useStudyListStore from "@/Store/user/studyListStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell, FileText, Heart, Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,12 +12,15 @@ import { toast } from "sonner";
 export default function StudyListForDashboard() {
     const { id } = useParams();
     const router = useRouter();
+    const queryClient = useQueryClient()
 
-    const { showDetailStudyList, loveStudyList, addSetReminder } =
+    const { showDetailStudyList, loveStudyList, addSetReminder, addStudylistToAddedSection } =
         useStudyListStore();
 
     const [data, setData] = useState<any>(null);
     const [isLoved, setIsLoved] = useState<boolean | null>(null);
+    const [isSaved, setIsSaved] = useState<boolean | null>(null);
+    const [saving, setSaving] = useState(false);
     const [likes, setLikes] = useState(0);
     const [loadingReminder, setLoadingReminder] = useState(false);
     const [initialized, setInitialized] = useState(false);
@@ -35,6 +39,7 @@ export default function StudyListForDashboard() {
     useEffect(() => {
         if (data?.studyListCard && !initialized) {
             setIsLoved(data.studyListCard.isLoved);
+            setIsSaved(data.studyListCard.isSaved);
             setLikes(data.studyListCard.count_loved || 0);
             setInitialized(true);
         }
@@ -70,6 +75,25 @@ export default function StudyListForDashboard() {
             toast.success("Reminder set successfully!");
         } else {
             toast.error(res.message || "Failed to set reminder");
+        }
+    };
+
+    // 💾 save
+    const handleSave = async () => {
+        if (isSaved || saving) return;
+        setSaving(true);
+        try {
+            const res = await addStudylistToAddedSection(id);
+            if (res.success) {
+                toast.success("Saved to library");
+                setIsSaved(true);
+                queryClient.invalidateQueries({ queryKey: ["addedStudyList"] });
+                queryClient.invalidateQueries({ queryKey: ["recommendedStudyList"] });
+            } else {
+                toast.error(res.message);
+            }
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -116,6 +140,26 @@ export default function StudyListForDashboard() {
                             <Heart className={`w-5 h-5 ${isLoved ? "fill-current" : ""}`} />
                             {likes}
                         </Button>
+
+                        {/* SAVE */}
+                        {!data.studyListCard.isOwner && (
+                            <Button
+                                onClick={handleSave}
+                                disabled={saving || isSaved === true}
+                                className={`rounded-full px-4 py-2 font-bold transition-all ${isSaved
+                                        ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400 cursor-default"
+                                        : "bg-[#f1f3fd] text-[#0975e6] hover:bg-[#0975e6] hover:text-white dark:bg-slate-800 dark:text-blue-400 dark:hover:bg-blue-600"
+                                    }`}
+                            >
+                                {saving ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : isSaved ? (
+                                    "Saved"
+                                ) : (
+                                    "Save"
+                                )}
+                            </Button>
+                        )}
                     </div>
                 </div>
 

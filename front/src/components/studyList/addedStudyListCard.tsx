@@ -1,11 +1,6 @@
 "use client";
 
-import useStudyListStore from "@/Store/user/studyListStore";
-import { useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, FileText, Folder, Plus, User } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "../ui/button";
+import { ChevronRight, FileText, Folder, User } from "lucide-react";
 
 interface AddedStudyListCardProps {
     readonly id: number;
@@ -22,30 +17,10 @@ export default function AddedStudyListCard({
     title,
     files,
     userName,
-    likes = 0,
-    showSave = false,
-    isAlreadySaved = false,
-}: AddedStudyListCardProps) {
-    const { addStudylistToAddedSection, loveStudyList } = useStudyListStore();
-    const [loading, setLoading] = useState(false);
-    const queryClient = useQueryClient();
 
-    const handleSave = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setLoading(true);
-        try {
-            const res = await addStudylistToAddedSection(id);
-            if (res.success) {
-                toast.success("Saved to library");
-                queryClient.invalidateQueries({ queryKey: ["addedStudyList"] });
-                queryClient.invalidateQueries({ queryKey: ["recommendedStudyList"] });
-            } else {
-                toast.error(res.message);
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+}: AddedStudyListCardProps) {
+
+
 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-[24px] p-6 flex items-center justify-between border border-[#e0e2ec] dark:border-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer group min-h-[104px] relative">
@@ -61,28 +36,6 @@ export default function AddedStudyListCard({
                             {title}
                         </h4>
 
-                        <div className="flex items-center gap-2">
-
-
-                            {showSave && !isAlreadySaved && (
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    disabled={loading}
-                                    onClick={handleSave}
-                                    className="h-8 gap-1.5 rounded-full bg-[#f1f3fd] dark:bg-slate-800 text-[#0975e6] dark:text-blue-400 hover:bg-[#0975e6] hover:text-white dark:hover:bg-blue-600 transition-all font-bold text-xs"
-                                >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    Save
-                                </Button>
-                            )}
-
-                            {showSave && isAlreadySaved && (
-                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-full">
-                                    Saved
-                                </span>
-                            )}
-                        </div>
                     </div>
 
                     {/* المعلومات الفرعية */}
