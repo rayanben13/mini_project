@@ -13,7 +13,7 @@ export const MyInformation = async (req, res) => {
 
     const isProfileDropdown = req.query.ProfileDropdown === 'true';
 
-    if (isProfileDropdown) {
+    if (isProfileDropdown || user.role === 'admin') {
       const profileData = await prisma.users.findUnique({
         where: {
           id_user: user.id_user,
