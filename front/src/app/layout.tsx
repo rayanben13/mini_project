@@ -1,9 +1,10 @@
-import Header from "@/components/header";
-import Providers from "@/components/providers";
-import type { Metadata } from "next";
+import AuthGate from "@/components/authGate";
+import MainHeader from "@/components/MainHeader";
+import { Toaster } from "@/components/ui/sonner";
+import Providers from "@/providers/providers";
+import ReactQueryProvider from "@/providers/ReactQueryProvider";
+import { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Toaster } from "react-hot-toast";
-
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -18,13 +19,18 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>
-          <Header />
-          <main>{children}</main>
-        </Providers>
+        <ReactQueryProvider>
+          <Providers>
+            <AuthGate>
+              <MainHeader />
+              <main>{children}</main>
+            </AuthGate>
+          </Providers>
+        </ReactQueryProvider>
 
         <Toaster
           position="top-right"

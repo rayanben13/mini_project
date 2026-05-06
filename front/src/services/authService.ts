@@ -83,11 +83,11 @@ export const authService = {
     return response.data;
   },
 
-  addUserInformation: async (univ, major, spercialty, academic_year) => {
+  addUserInformation: async (univ, major, specialty, academic_year) => {
     const response = await apiClient.post(API_CONFIG.ENDPOINTS.ADD_USER_INFO, {
       univ,
       major,
-      spercialty,
+      specialty,
       academic_year,
     });
     return response.data;

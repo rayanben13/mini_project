@@ -11,7 +11,7 @@ const allActurStore = create((set, get) => ({
 
   // دالة مساعدة للحصول على الهيدر مع التوكن (اختياري هنا لأنها للجميع ولكن قد تزيد من المعلومات المعروضة للمستخدمين المسجلين)
   getAuthHeader: () => {
-    const { token } = AuthStore.getState().user;
+    const token = AuthStore.getState().token;
     if (!token) return {};
     return { headers: { Authorization: `Bearer ${token}` } };
   },

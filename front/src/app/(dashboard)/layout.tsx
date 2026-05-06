@@ -1,6 +1,7 @@
 "use client";
 
-import { AppSidebar } from "@/components/AppSidebar";
+import Header from "@/components/header";
+import { AppSidebar } from "@/components/sideBar/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -9,15 +10,28 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
     <TooltipProvider delayDuration={100}>
-      <SidebarProvider>
+      <SidebarProvider style={
+        {
+          "--sidebar-width": "15rem",       // ≈ w-56
+          "--sidebar-width-icon": "3rem",   // collapsed
+        } as React.CSSProperties
+      }>
+
         <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-16 items-center border-b px-4">
-            {/* يمكنك وضع زر البحث أو التنبيهات هنا */}
-          </header>
-          <main className="p-4 flex-1">{children}</main>
+
+        <SidebarInset className="flex flex-col min-w-0">
+          <Header />
+          {/* استخدام min-w-0 هنا ضروري جداً لكي تسمح للمحتوى بالتقلص 
+              داخل الـ Flexbox بدلاً من دفع الحواف للخارج.
+          */}
+          <main className="flex-1 p-4 md:p-6 w-full max-w-full overflow-x-hidden">
+            <div className="mx-auto max-w-full lg:max-w-7xl">
+              {children}
+            </div>
+          </main>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

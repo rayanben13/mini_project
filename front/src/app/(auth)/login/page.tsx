@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import z from "zod";
 
 type LoginFormValues = z.infer<typeof authLoginSchema>;
@@ -35,30 +35,34 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      const result = await login(values.email, values.password);
-      console.log("Login result:", result);
+      const result = await login({
+        email: values.email,
+        password: values.password,
+      });
 
-      if (result.success) {
-        toast.success("Login successful!");
-        const role = result.user?.role;
-
-        if (role === "admin") {
-          router.replace("/admin");
-        } else {
-          router.replace("/dashboard");
-        }
-      } else {
-        if (result.emailNotVerified) {
+      if (!result.success) {
+        if (result.message === "Email not verified") {
           toast.error(result.message);
           router.push(
             `/verify-email?email=${encodeURIComponent(
-              result.email || values.email,
-            )}&from=login`,
+              result.email || values.email
+            )}&from=login`
           );
-        } else {
-          toast.error("Invalid email or password");
         }
+        else if (result.message === "User information is NOT exist ") {
+          toast.error("fill your information");
+          router.push("/onboarding");
+
+        } else {
+          toast.error(result.message || "Invalid email or password");
+        }
+        return;
       }
+
+      toast.success("Login successful!");
+
+      // ✅ IMPORTANT: wait for user data to load (React Query will handle it)
+      router.replace("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       toast.error("An unexpected error occurred. Please try again.");

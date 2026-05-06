@@ -1,0 +1,14 @@
+version = 1
+
+[[analyzers]]
+name = "javascript"
+enabled = true
+
+  [analyzers.meta]
+  environment = ["browser", "nodejs"]
+  # إذا كنت تستخدم TypeScript، أضف هذا:
+  module_system = "es6"
+
+[[analyzers]]
+name = "test-coverage"
+enabled = true

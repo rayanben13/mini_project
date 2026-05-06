@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+import { io } from '../config/socket.js';
+import prisma from '../lib/prisma.ts';
+import { getUniversities } from '../service/univAPI.js';
+
+import { uploadBufferToCloudinary } from '../config/Cloudinary.js';
+=======
 import { count } from 'node:console';
 import prisma from '../lib/prisma.js';
 import { getUniversities } from '../service/univAPI.js';
@@ -9,6 +16,7 @@ import {
   GetPublicId,
   uploadBufferToCloudinary,
 } from '../config/Cloudinary.js';
+>>>>>>> 4bc7fb730f647cf59404cb5c67dfa31036eb0493
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -138,6 +146,7 @@ ORDER BY likes_count DESC
 LIMIT ${limit}
 OFFSET ${skip};
 `;
+
 
     res.status(200).json({
       meta: {
@@ -447,6 +456,12 @@ export const showDetailFile = async (req, res) => {
 
     const isAdmin = Me.role === 'admin';
 
+<<<<<<< HEAD
+    // ✅ جلب الملف
+    const file = await prisma.files.findUnique({
+      where: {
+        id_file,
+=======
     // ✅ جلب الملف مرة واحدة فقط
     let file = await prisma.files.findUnique({
       where: {
@@ -457,6 +472,7 @@ export const showDetailFile = async (req, res) => {
             status: 'reviewed',
           },
         },
+>>>>>>> 4bc7fb730f647cf59404cb5c67dfa31036eb0493
       },
       select: {
         id_file: true,
@@ -481,6 +497,7 @@ export const showDetailFile = async (req, res) => {
             fullname: true,
             username: true,
             img_user: true,
+            role: true,
           },
         },
         ...(Me.role === 'user' && {
@@ -500,6 +517,11 @@ export const showDetailFile = async (req, res) => {
       return res.status(404).json({ error: 'File not found' });
     }
     file.approved_at = dayjs(file.approved_at).fromNow();
+
+    const isOwner = file.users.id_user === Me.id_user;
+    if (file.status !== 'accepted' && !isAdmin && !isOwner) {
+      return res.status(403).json({ error: 'Access denied: File is not accepted yet' });
+    }
 
     // ✅ likes
     let like = 0;
@@ -530,10 +552,10 @@ export const showDetailFile = async (req, res) => {
       ...(isAdmin
         ? {}
         : {
-            like,
-            dislike,
-            ...(Me.role === 'user' && { statusLike }),
-          }),
+          like,
+          dislike,
+          ...(Me.role === 'user' && { statusLike }),
+        }),
     });
   } catch (err) {
     console.error(err);
@@ -550,7 +572,7 @@ export const UplodeNewFile = async (req, res) => {
       univ,
       major,
       academic_year,
-      spercialty,
+      specialty,
       subject,
       type,
       creation_year,
@@ -569,7 +591,7 @@ export const UplodeNewFile = async (req, res) => {
     const infoExist = await prisma.university_majors.findFirst({
       where: {
         major: { equals: major, mode: 'insensitive' },
-        specialization: { equals: spercialty || null, mode: 'insensitive' },
+        specialization: { equals: specialty || null, mode: 'insensitive' },
         academic_year,
         course: { equals: subject || null, mode: 'insensitive' },
       },
@@ -612,18 +634,18 @@ export const UplodeNewFile = async (req, res) => {
 
         subjects: subjectExist
           ? {
-              connect: { id_subject: subjectExist.id_subject },
-            }
+            connect: { id_subject: subjectExist.id_subject },
+          }
           : {
-              create: {
-                major: infoExist.major,
-                specialization: infoExist.specialization,
-                academic_year: infoExist.academic_year,
-                course: infoExist.course,
-                university: univ,
-                course_description: infoExist.course_description,
-              },
+            create: {
+              major: infoExist.major,
+              specialization: infoExist.specialization,
+              academic_year: infoExist.academic_year,
+              course: infoExist.course,
+              university: univ,
+              course_description: infoExist.course_description,
             },
+          },
       },
     });
 
@@ -892,11 +914,22 @@ export const addLikeOrDislike = async (req, res) => {
         },
       });
 
-      return res.status(201).json({ message: 'Reaction removed' });
+      // Get updated counts
+      const [likeCount, dislikeCount] = await Promise.all([
+        prisma.files_likes.count({ where: { id_file, type: 'LIKE' } }),
+        prisma.files_likes.count({ where: { id_file, type: 'DISLIKE' } }),
+      ]);
+
+      return res.status(200).json({
+        message: 'Reaction removed',
+        likes: likeCount,
+        dislikes: dislikeCount,
+        status: null,
+      });
     }
 
     // 🟢 إنشاء أو تحديث
-    const like = await prisma.files_likes.upsert({
+    await prisma.files_likes.upsert({
       where: {
         id_user_id_file: {
           id_user: Me.id_user,
@@ -937,16 +970,20 @@ export const addLikeOrDislike = async (req, res) => {
         related_id: Me.id_user,
         related_type: 'user',
       });
-
-      console.log({
-        'send notification to user': ownerFile.id_user,
-        message: `${Me.username} liked your file: ${ownerFile.title}`,
-        related_id: Me.id_user,
-        related_type: 'user',
-      });
     }
 
-    return res.status(200).json({ message: 'processed successfully', like });
+    // Get updated counts
+    const [likeCount, dislikeCount] = await Promise.all([
+      prisma.files_likes.count({ where: { id_file, type: 'LIKE' } }),
+      prisma.files_likes.count({ where: { id_file, type: 'DISLIKE' } }),
+    ]);
+
+    return res.status(200).json({
+      message: 'processed successfully',
+      likes: likeCount,
+      dislikes: dislikeCount,
+      status: type,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to process like' });

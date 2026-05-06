@@ -1,9 +1,9 @@
 import prisma from '../lib/prisma.js';
 
-import { GetPublicId } from '../config/Cloudinary.js';
 import { v2 as cloudinary } from 'cloudinary';
-import { getUniversities } from '../service/univAPI.js';
+import { GetPublicId } from '../config/Cloudinary.js';
 import { io } from '../config/socket.js';
+import { getUniversities } from '../service/univAPI.js';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -13,7 +13,6 @@ export const MyInformation = async (req, res) => {
 
     const isProfileDropdown = req.query.ProfileDropdown === 'true';
 
-    console.log(isProfileDropdown);
     if (isProfileDropdown) {
       const profileData = await prisma.users.findUnique({
         where: {
@@ -346,7 +345,7 @@ export const removeFollow = async (req, res) => {
 export const UpdateProfile = async (req, res) => {
   try {
     const img_user = req.file?.path || null;
-    const { univ, major, spercialty, academic_year, fullname } = req.body;
+    const { univ, major, specialty, academic_year, fullname } = req.body;
     const userID = req.user.id_user;
 
     const universities = await getUniversities(univ);
@@ -357,7 +356,7 @@ export const UpdateProfile = async (req, res) => {
     const infoExist = await prisma.university_majors.findFirst({
       where: {
         major: { equals: major, mode: 'insensitive' },
-        specialization: { equals: spercialty, mode: 'insensitive' },
+        specialization: { equals: specialty, mode: 'insensitive' },
         academic_year,
       },
     });

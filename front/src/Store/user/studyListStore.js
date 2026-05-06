@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import axios from 'axios';
+import { create } from 'zustand';
 import AuthStore from '../AuthStore.js';
 
 const STUDYLIST_API_URL = 'http://localhost:5000/api/studyList';
@@ -9,19 +9,19 @@ const useStudyListStore = create((set) => ({
 
   // دالة مساعدة للحصول على الهيدر مع التوكن
   getAuthHeader: () => {
-    const { token } = AuthStore.getState().user;
+    const token = AuthStore.getState().token;
     return { headers: { Authorization: `Bearer ${token}` } };
   },
 
-  showRecommendedStudyList: async () => {
+  showRecommendedStudyList: async (page = 1, limit = 10) => {
     set({ loading: true });
     try {
       const response = await axios.get(
-        `${STUDYLIST_API_URL}/showRecommendedStudyList`,
+        `${STUDYLIST_API_URL}/showRecommendedStudyList?page=${page}&limit=${limit}`,
         useStudyListStore.getState().getAuthHeader()
       );
       set({ loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       set({ loading: false });
       return {
@@ -31,15 +31,15 @@ const useStudyListStore = create((set) => ({
     }
   },
 
-  showMyStudyList: async () => {
+  showMyStudyList: async (page = 1, limit = 10) => {
     set({ loading: true });
     try {
       const response = await axios.get(
-        `${STUDYLIST_API_URL}/showMyStudyList`,
+        `${STUDYLIST_API_URL}/showMyStudyList?page=${page}&limit=${limit}`,
         useStudyListStore.getState().getAuthHeader()
       );
       set({ loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       set({ loading: false });
       return {
@@ -49,15 +49,15 @@ const useStudyListStore = create((set) => ({
     }
   },
 
-  showAddedStudyList: async () => {
+  showAddedStudyList: async (page = 1, limit = 10) => {
     set({ loading: true });
     try {
       const response = await axios.get(
-        `${STUDYLIST_API_URL}/showAddedStudyList`,
+        `${STUDYLIST_API_URL}/showAddedStudyList?page=${page}&limit=${limit}`,
         useStudyListStore.getState().getAuthHeader()
       );
       set({ loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       set({ loading: false });
       return {

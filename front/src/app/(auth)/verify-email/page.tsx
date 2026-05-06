@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
@@ -21,12 +21,26 @@ export default function VerifyEmailPage() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
-  // ❌ REMOVE AUTO SEND COMPLETELY (IMPORTANT)
-  // useEffect(() => { ... })  <-- DELETE THIS
+  // 2. تحديث الـ useEffect لاستعادة الوقت عند التحميل (Reload)
+  // useEffect(() => {
+  //   const savedExpiry = localStorage.getItem("cooldown_expiry");
 
-  // cooldown timer
+  //   if (savedExpiry) {
+  //     const remaining = Math.ceil((parseInt(savedExpiry) - Date.now()) / 1000);
+  //     if (remaining > 0) {
+  //       setCooldown(remaining);
+  //     } else {
+  //       localStorage.removeItem("cooldown_expiry");
+  //     }
+  //   }
+  // }, []);
+
+  // 3. مؤقت العد التنازلي العادي (الذي تملكه بالفعل)
   useEffect(() => {
-    if (cooldown <= 0) return;
+    if (cooldown <= 0) {
+      localStorage.removeItem("cooldown_expiry");
+      return;
+    }
 
     const timer = setInterval(() => {
       setCooldown((prev) => prev - 1);
@@ -41,7 +55,7 @@ export default function VerifyEmailPage() {
 
     setLoading(true);
 
-    const result = await verifyEmail(email, code);
+    const result = await verifyEmail({ email, code });
     console.log("Verification result:", result); // Debug log
 
     setLoading(false);
@@ -59,7 +73,7 @@ export default function VerifyEmailPage() {
 
     setResending(true);
 
-    const result = await resendVerificationCode(email);
+    const result = await resendVerificationCode({ email });
 
     setResending(false);
 
@@ -70,6 +84,25 @@ export default function VerifyEmailPage() {
       toast.error(result.message);
     }
   };
+
+  useEffect(() => {
+    if (email && from === "login") {
+      // تحقق مما إذا كنا قد أرسلنا الكود لهذا البريد في هذه الجلسة (حتى مع Reload)
+      const sessionKey = `sent_code_${email}`;
+      const alreadySentInSession = sessionStorage.getItem(sessionKey);
+
+      if (!alreadySentInSession) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        handleResend();
+        // تخزين الحالة في جلسة المتصفح
+        sessionStorage.setItem(sessionKey, "true");
+      } else {
+        toast.success(
+          "Code already sent for this email. Please check your inbox.",
+        );
+      }
+    }
+  }, [email, from]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">

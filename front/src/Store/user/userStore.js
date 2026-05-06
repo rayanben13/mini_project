@@ -1,43 +1,33 @@
-import { create } from 'zustand';
 import axios from 'axios';
+import { create } from 'zustand';
 import AuthStore from '../AuthStore.js';
 
 const API_URL = 'http://localhost:5000/api/user';
 
-const useUserStore = create((set) => ({
+const useUserStore = create((set, get) => ({
   loading: false,
+  userInfo: null,     // 1. تخزين البيانات
+  cacheExpiry: 0,     // 2. وقت انتهاء صلاحية الكاش
 
-  getMyInformation: async () => {
+  // userStore.js
+  getMyInformation: async (isDropdown = false) => {
     try {
-      set({ loading: true });
-      const { token } = AuthStore.getState().user;
+      const { token } = AuthStore.getState();
 
-      const response = await axios.get(`${API_URL}/MyInformation`, {
+      // إرسال الـ Query Parameter في الرابط
+      const response = await axios.get(`${API_URL}/MyInformation?ProfileDropdown=${isDropdown}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
-      console.error(
-        'Get info error:',
-        error.response?.data?.error || error.response?.data?.message
-      );
-
-      return {
-        success: false,
-        message:
-          error.response?.data?.error ||
-          error.response?.data?.message ||
-          'Server error',
-      };
-    } finally {
-      set({ loading: false });
+      throw error; // ارمِ الخطأ ليتعامل معه React Query
     }
   },
 
   // دالة مساعدة للحصول على الهيدر مع التوكن
   getAuthHeader: () => {
-    const { token } = AuthStore.getState().user;
+    const { token } = AuthStore.getState();
     return { headers: { Authorization: `Bearer ${token}` } };
   },
 
@@ -45,8 +35,9 @@ const useUserStore = create((set) => ({
     set({ loading: true });
     try {
       const response = await axios.get(`${API_URL}/ShowUserByid/${id_user}`, useUserStore.getState().getAuthHeader());
+      console.log("response", response);
       set({ loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       set({ loading: false });
       return { success: false, message: error.response?.data?.error || 'Server error' };
@@ -57,6 +48,7 @@ const useUserStore = create((set) => ({
     set({ loading: true });
     try {
       const response = await axios.post(`${API_URL}/addFollow/${id_user}`, {}, useUserStore.getState().getAuthHeader());
+      console.log("add follow", response);
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
@@ -69,6 +61,8 @@ const useUserStore = create((set) => ({
     set({ loading: true });
     try {
       const response = await axios.delete(`${API_URL}/removeFollow/${id_user}`, useUserStore.getState().getAuthHeader());
+      console.log("remove follow", response);
+
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
@@ -78,12 +72,13 @@ const useUserStore = create((set) => ({
   },
 
   UpdateProfile: async (profileData) => {
+    console.log("profileData", profileData)
     // profileData should be FormData since it uses Upload.single('img_user')
     set({ loading: true });
     try {
-      const { token } = AuthStore.getState().user;
+      const { token } = AuthStore.getState();
       const response = await axios.put(`${API_URL}/UpdateProfile`, profileData, {
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
