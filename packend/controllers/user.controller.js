@@ -244,7 +244,20 @@ export const addFollow = async (req, res) => {
         .json({ message: 'You are not authorized to follow this user' });
     }
 
-    const existing = await prisma.follows.upsert({
+    const existing = await prisma.follows.findUnique({
+      where: {
+        follower_id_following_id: {
+          follower_id: Me.id_user,
+          following_id: userId,
+        },
+      },
+    });
+
+    if (existing) {
+      return res.status(200).json({ message: 'Already following' });
+    }
+
+    await prisma.follows.upsert({
       where: {
         follower_id_following_id: {
           follower_id: Me.id_user,
@@ -258,16 +271,6 @@ export const addFollow = async (req, res) => {
       },
     });
 
-    if (existing) {
-      return res.status(200).json({ message: 'Already following' });
-    }
-
-    await prisma.follows.create({
-      data: {
-        follower_id: Me.id_user,
-        following_id: userId,
-      },
-    });
     await prisma.notifications.create({
       data: {
         id_user: userId,
