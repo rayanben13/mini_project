@@ -20,7 +20,6 @@ const router = express.Router();
 router.get(
   '/MyInformation',
   passport.authenticate('jwt', { session: false }),
-  requireUser,
   MyInformation
 );
 
