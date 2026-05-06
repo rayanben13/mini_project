@@ -7,7 +7,7 @@ export const getUniversities = async (name) => {
     return response.data.map((item) => item.name);
   } catch (error) {
     console.error("Error fetching universities:", error);
-   
+
   }
 };
 

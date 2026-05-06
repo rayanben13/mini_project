@@ -34,7 +34,7 @@ const useSubjectsStore = create((set, get) => ({
         params: queryParams,
       });
       set({ loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       set({ loading: false });
       return { success: false, message: error.response?.data?.error || 'Server error' };

@@ -163,7 +163,6 @@ const useStudyListStore = create((set) => ({
   },
 
   loveStudyList: async (id_stuList) => {
-    set({ loading: true });
     try {
       const response = await axios.post(
         `${STUDYLIST_API_URL}/loveStudyList/${id_stuList}`,
@@ -181,12 +180,12 @@ const useStudyListStore = create((set) => ({
     }
   },
 
-  addSetReminder: async (id_stuList, reminder_time) => {
+  addSetReminder: async (id_stuList, date, time) => {
     set({ loading: true });
     try {
       const response = await axios.post(
         `${STUDYLIST_API_URL}/addSetReminder/${id_stuList}`,
-        { reminder_time },
+        { date, time },
         useStudyListStore.getState().getAuthHeader()
       );
       set({ loading: false });

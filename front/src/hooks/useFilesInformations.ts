@@ -25,17 +25,18 @@ export function useFilesLikes(page: number, limit: number) {
   });
 }
 
-export const showMyFiles = (page: number = 1, limit: number = 10) => {
+export const useMyFiles = (page: number = 1, limit: number = 10, status: string = 'all') => {
+  const { token } = AuthStore();
   return useQuery({
-    queryKey: ['myFiles', page, limit],
+    queryKey: ['myFiles', page, limit, status],
     queryFn: async () => {
-      const token = AuthStore.getState().token;
       const response = await axios.get(`${API_URL}/files/showMyFiles`, {
-        params: { page, limit },
+        params: { page, limit, show: status },
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
     },
+    enabled: !!token,
     staleTime: 5 * 60 * 1000,
   });
 };

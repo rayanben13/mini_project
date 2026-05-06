@@ -57,7 +57,7 @@ const useFilesStore = create((set, get) => ({
         params: queryParams,
       });
       set({ loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       set({ loading: false });
       console.error('Error fetching my files:', error);
@@ -137,12 +137,12 @@ const useFilesStore = create((set, get) => ({
   },
 
   // الإبلاغ عن ملف
-  reportFile: async (id_file, reason) => {
+  reportFile: async (id_file, reason, details) => {
     set({ loading: true });
     try {
       const response = await axios.post(
         `${FILES_API_URL}/reportFile/${id_file}`,
-        { reason_report: reason },
+        { reason, details },
         get().getAuthHeader()
       );
       set({ loading: false });

@@ -6,9 +6,10 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 // أضفنا initialFollowing هنا
-function FollowButton({ id_user, initialFollowing }: { id_user: number, initialFollowing: boolean }) {
+function FollowButton({ id_user, status, onActionSuccess }: { id_user: number, status: string, onActionSuccess: (following: boolean) => void }) {
     const router = useRouter()
     const { addFollow, removeFollow } = useUserStore()
+    const initialFollowing = status === "FOLLOWING" ? true : false
 
     // نضع القيمة المبدئية القادمة من السيرفر/الأب
     const [following, setFollowing] = useState(initialFollowing)
@@ -28,6 +29,7 @@ function FollowButton({ id_user, initialFollowing }: { id_user: number, initialF
                     setFollowing(false)
                     toast.success('Unfollowed successfully')
                     router.refresh() // لتحديث العدادات في الصفحة
+                    onActionSuccess(false)
                 }
             } else {
                 const res = await addFollow(id_user)
@@ -35,6 +37,7 @@ function FollowButton({ id_user, initialFollowing }: { id_user: number, initialF
                     setFollowing(true)
                     toast.success('Followed successfully')
                     router.refresh() // لتحديث العدادات في الصفحة
+                    onActionSuccess(true)
                 }
             }
         } catch (error) {

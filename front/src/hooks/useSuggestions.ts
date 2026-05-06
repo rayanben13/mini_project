@@ -42,6 +42,8 @@ export function useSuggestions() {
               result.data.majors ||
               result.data.specialties ||
               result.data.specialty ||
+              result.data.specializations ||
+              result.data.specialization ||
               result.data.subjects ||
               [];
             searchCache.current[cacheKey] = results;

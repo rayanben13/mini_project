@@ -44,13 +44,22 @@ export default function StudyList() {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {myStudyList.data.map((item: any) => (
         <div
+
           key={item.id_stuList}
-          onClick={() => router.push(`/dashboard/study-list/${item.id_stuList}`)}
+
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest("[data-stop]")) return;
+            router.push(`/dashboard/study-list/${item.id_stuList}`)
+          }}
         >
           <StudyListCard
+            id={item.id_stuList}
             title={item.name}
+            description={item.description}
+            privacy={item.privacy}
             files={item.count_files}
-            likes={item.count_likes}
+            likes={item.count_likes || 0}
+            isLoved={item.isLoved || false}
           />
         </div>
       ))}

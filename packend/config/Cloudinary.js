@@ -1,8 +1,8 @@
-import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
+import multer from 'multer';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import filterImg from '../middleware/filterImg.js';
 import filterFiles from '../middleware/filterFiles.js';
+import filterImg from '../middleware/filterImg.js';
 
 export { cloudinary };
 
@@ -53,7 +53,6 @@ export const uploadBufferToCloudinary = (buffer) => {
       {
         folder: 'files',
         resource_type: 'auto',
-        format: 'pdf',
       },
       (error, result) => {
         if (result) resolve(result);

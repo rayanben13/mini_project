@@ -130,7 +130,7 @@ export default function TopFilesSlider({
     );
 }
 
-const FileCard = memo(({ file, onNavigate }: { file: any, onNavigate: () => void }) => {
+export const FileCard = memo(({ file, onNavigate }: { file: any, onNavigate: () => void }) => {
 
     // ✅ إما نستخدم Link مباشر (للتنقل)، أو onclick للحاوية
     const cardContent = (

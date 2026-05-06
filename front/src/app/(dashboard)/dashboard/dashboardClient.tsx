@@ -47,7 +47,6 @@ export default function DashboardClient() {
   } = useYourSubjects(subjectsPage, 10);
 
   const { data: recommendedStudyListData, isLoading: recommendedStudyListLoading, isFetching: isFetchingRecommendedStudyList } = useRecommendedStudyList(1, 10);
-
   // ✅ useEffect منفصل لكل سلايدر
   useEffect(() => {
     if (filesData?.data) {
@@ -161,7 +160,11 @@ export default function DashboardClient() {
           Recommended Study Lists
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-6">
-          <RenderState isLoading={recommendedStudyListLoading} data={recommendedStudyListData} />
+          <RenderState
+            isLoading={recommendedStudyListLoading}
+            data={recommendedStudyListData}
+            showSave={true}
+          />
         </div>
       </section>
 

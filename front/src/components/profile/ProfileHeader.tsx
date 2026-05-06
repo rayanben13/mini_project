@@ -3,25 +3,42 @@
 import { Button } from "@/components/ui/button";
 import { BadgeCheck, Edit2, GraduationCap, Share } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import FollowButton from "./FollowButton";
 
 // تعريف الـ Props لتكون مرنة
 interface ProfileHeaderProps {
     user: any;
     stats: any;
+    status?: string;
     isOwnProfile?: boolean; // هل هذا بروفايلي الشخصي؟
     onEditClick?: () => void; // دالة تفتح المودال عند الضغط
 }
 
 export default function ProfileHeader({
     user,
-    stats,
+    stats: initialStats,
+    status,
     isOwnProfile = false,
     onEditClick
 }: ProfileHeaderProps) {
 
     const userDetails = user?.user_information;
-    console.log("user", user)
+
+    const [currentStats, setCurrentStats] = useState(initialStats);
+
+    // للتأكد من مزامنة الأرقام إذا تغيرت من الخارج
+    useEffect(() => {
+        setCurrentStats(initialStats);
+    }, [initialStats]);
+
+    // دالة لتحديث العداد محلياً عند المتابعة/إلغاء المتابعة
+    const handleStatsUpdate = (isFollowing: boolean) => {
+        setCurrentStats((prev: any) => ({
+            ...prev,
+            followers: isFollowing ? (prev.followers + 1) : (prev.followers - 1)
+        }));
+    };
 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 md:p-10 border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden">
@@ -72,9 +89,9 @@ export default function ProfileHeader({
                         {/* Stats Section */}
                         <div className="flex items-center justify-center md:justify-start gap-8 mt-6 pt-4">
                             {[
-                                { label: "Uploads", value: stats?.upload ?? 0 },
-                                { label: "Followers", value: stats?.followers ?? 0 },
-                                { label: "Following", value: stats?.following ?? 0 },
+                                { label: "Uploads", value: currentStats?.upload ?? 0 },
+                                { label: "Followers", value: currentStats?.followers ?? 0 },
+                                { label: "Following", value: currentStats?.following ?? 0 },
                             ].map((stat, i) => (
                                 <div
                                     key={stat.label}
@@ -107,7 +124,7 @@ export default function ProfileHeader({
                             <Edit2 className="w-5 h-5" />
                         </Button>
                     ) : (
-                        <FollowButton id_user={user?.id_user} />
+                        <FollowButton id_user={user?.id_user} status={status ?? ""} onActionSuccess={handleStatsUpdate} />
                     )}
                 </div>
             </div>

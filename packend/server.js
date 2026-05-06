@@ -102,6 +102,14 @@ app.use('/api/admin/reportedFiles', reportedFilesRouter);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+app.use((err, req, res, next) => {
+  console.error('❌ Global Error:', err);
+  const status = err.status || 500;
+  res.status(status).json({
+    error: err.message || 'Server error',
+  });
+});
+
 const port = process.env.PORT;
 
 app.listen(port, () => {

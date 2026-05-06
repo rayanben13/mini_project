@@ -49,7 +49,7 @@ const SubjectCard = memo(({ subject, index }: { subject: any; index: number }) =
 
     return (
         <Link
-            href={`/subjects/${subject.id_subject}`}
+            href={`/dashboard/subject/${subject.id_subject}`}
             className="group p-6 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] transition-all duration-300 flex flex-col gap-4 focus:outline-none focus:ring-2 focus:ring-[#0975e6]/50 h-full"
         >
             {/* الأيقونة والـ Level */}

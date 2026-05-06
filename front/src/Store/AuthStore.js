@@ -102,13 +102,13 @@ const AuthStore = create((set, get) => ({
       );
 
       localStorage.setItem("token", response.data.accessToken);
-
       set({
+        token: response.data.accessToken,
+        isAuthenticated: true,
         user: {
           token: response.data.accessToken,
         },
       });
-
       return { success: true };
     } catch (error) {
       console.error("Login error:", error.response?.data?.error);
@@ -201,7 +201,10 @@ const AuthStore = create((set, get) => ({
       if (univ) params.univ = univ;
       if (year) params.year = year;
       if (major) params.major = major;
-      if (specialty) params.specialty = specialty;
+      if (specialty) {
+        params.specialty = specialty;
+        params.specialization = specialty;
+      }
 
       const response = await axios.get(`${API_URL}/SharchMoreInformation`, {
         params,

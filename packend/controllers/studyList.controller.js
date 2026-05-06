@@ -53,12 +53,20 @@ export const showRecommendedStudyList = async (req, res) => {
       take: limit,
     });
 
-    // 📌 تحويل count
+    // 📌 جلب القوائم التي حفظها المستخدم مسبقاً
+    const savedLists = await prisma.saved_study_lists.findMany({
+      where: { id_user: Me.id_user },
+      select: { id_stuList: true },
+    });
+    const savedIds = new Set(savedLists.map((s) => s.id_stuList));
+
+    // 📌 تحويل count وإضافة حالة الحفظ
     const formattedStudyLists = studyLists.map((item) => ({
       id_stuList: item.id_stuList,
       name: item.name,
       users: item.users,
       count_files: item._count.study_list_files,
+      isSaved: savedIds.has(item.id_stuList),
     }));
 
     // 📌 total count
@@ -107,6 +115,7 @@ export const showMyStudyList = async (req, res) => {
       select: {
         id_stuList: true,
         name: true,
+        description: true,
         privacy: true,
         users: {
           select: {
@@ -117,6 +126,7 @@ export const showMyStudyList = async (req, res) => {
         _count: {
           select: {
             study_list_files: true,
+            studyList_likes: true,
           },
         },
       },
@@ -130,6 +140,8 @@ export const showMyStudyList = async (req, res) => {
       name: item.name,
       users: item.users,
       count_files: item._count.study_list_files,
+      count_likes: item._count.studyList_likes,
+      description: item.description,
       privacy: item.privacy,
     }));
 
@@ -653,10 +665,9 @@ export const addStudylistToAddedSection = async (req, res) => {
       },
     });
 
-    if (!isOwner) {
-      return res.status(403).json({
-        error:
-          "You are not the owner of this study list you can't add it to added section",
+    if (isOwner) {
+      return res.status(400).json({
+        error: "You are the owner of this study list, it's already in your library",
       });
     }
 
@@ -669,7 +680,7 @@ export const addStudylistToAddedSection = async (req, res) => {
 
     if (isAdded) {
       return res.status(400).json({
-        error: 'This study list is already added to added section',
+        error: 'This study list is already in your library',
       });
     }
 

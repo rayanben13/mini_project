@@ -1,11 +1,10 @@
 "use client";
 
 import {
+  Bell,
   BookOpen,
   LayoutDashboard,
-  LogOut,
-  Settings,
-  UserCircle,
+  UserCircle
 } from "lucide-react";
 
 import {
@@ -23,12 +22,13 @@ import {
 import useAuthStore from "@/Store/AuthStore";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import UploadFileBtn from "../profile/uploadFileBtn";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "My Library", url: "/dashboard/study-list", icon: BookOpen },
   { title: "My Profile", url: "/dashboard/profile", icon: UserCircle },
-  { title: "Settings", url: "/dashboard/settings", icon: Settings },
+  { title: "Notifications", url: "/dashboard/notification", icon: Bell },
 ];
 
 export function AppSidebar() {
@@ -87,8 +87,8 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-3 border-t border-sidebar-border">
         <SidebarMenuButton
-          onClick={logout}
-          tooltip="Logout"
+          asChild
+          tooltip="Upload File"
           className="
             rounded-xl px-3 py-2
             bg-primary text-primary-foreground
@@ -97,10 +97,7 @@ export function AppSidebar() {
             dark:bg-blue-600 dark:hover:bg-blue-700
           "
         >
-          <LogOut className="w-5 h-5" />
-          {state === "expanded" && (
-            <span className="font-medium">Logout</span>
-          )}
+          <UploadFileBtn variant="sidebar" />
         </SidebarMenuButton>
       </SidebarFooter>
     </Sidebar>

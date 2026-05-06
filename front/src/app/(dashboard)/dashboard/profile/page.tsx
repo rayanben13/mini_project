@@ -3,44 +3,20 @@
 import FilesSection from "@/components/profile/FilesSection";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import StudyList from "@/components/studyList/studyList";
-import { showMyFiles } from "@/hooks/useFilesInformations";
+import { useMyFiles } from "@/hooks/useFilesInformations";
 import { useFullUserData } from "@/hooks/useUserInformation";
 import { BookOpen, Loader2, Upload } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import EditProfileModal from "./EditProfileModal";
 
 type TabType = "files" | "studylists";
-
-const MAX_PAGES = 5;
 
 export default function UserProfile() {
   const { data, isLoading } = useFullUserData();
 
   // ✅ Tab State
   const [activeTab, setActiveTab] = useState<TabType>("files");
-
-  // ✅ Pagination State
-  const [myFiles, setMyFiles] = useState<any[]>([]);
-  const [filesPage, setFilesPage] = useState(1);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-
-  const {
-    data: filesData,
-  } = showMyFiles(filesPage, 10);
-
-  useEffect(() => {
-    if (!filesData?.data) return;
-
-    setMyFiles((prev) => {
-      const existingIds = new Set(prev.map((f) => f.id_file));
-
-      const newFiles = filesData.data.filter(
-        (file: any) => !existingIds.has(file.id_file)
-      );
-
-      return [...prev, ...newFiles];
-    });
-  }, [filesData]);
 
   const user = data?.result?.information;
   const stats = data?.result?.stats;
@@ -111,6 +87,11 @@ export default function UserProfile() {
           )}
 
         </div>
+        <EditProfileModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          currentData={editData}
+        />
       </div>
     </div >
   );

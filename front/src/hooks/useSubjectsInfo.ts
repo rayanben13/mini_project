@@ -10,3 +10,12 @@ export function useYourSubjects(page: number, limit: number) {
     staleTime: 5 * 60 * 1000,
   });
 }
+export function useSubjectDetails(id: number) {
+  const { showDetailSubject } = useSubjectsStore();
+
+  return useQuery({
+    queryKey: ["subjectDetails", id],
+    queryFn: () => showDetailSubject(id),
+    staleTime: 5 * 60 * 1000,
+  });
+}

@@ -1,14 +1,35 @@
 "use client";
 
+import allActurStore from "@/Store/allActurStore";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import FileActions from "./fileAction";
 
+import ReportDialog from "./reportingDialog";
+
+
+
 export default function FilePreviewModal({ file }: { file: any }) {
+    const { getShareLink } = allActurStore();
+
+
     if (!file) return <p>Loading...</p>;
 
     const subject = file.subjects;
+
+
+    const handleShare = async () => {
+        const res = await getShareLink(file.id_file);
+        if (res.success) {
+            const shareUrl = res.data.link || res.data; // Handle both direct string and object
+            navigator.clipboard.writeText(shareUrl);
+            toast.success("Share link copied to clipboard!");
+        } else {
+            toast.error(res.message || "Failed to get share link");
+        }
+    };
+
 
     return (
         <main className="flex flex-1 flex-col lg:flex-row min-h-screen bg-background text-foreground">
@@ -59,13 +80,14 @@ export default function FilePreviewModal({ file }: { file: any }) {
                             Download
                         </Link>
 
-                        <button className="p-2 border border-border rounded-xl hover:bg-muted transition">
+                        <button
+                            onClick={handleShare}
+                            className="p-2 border border-border rounded-xl hover:bg-muted transition"
+                        >
                             Share
                         </button>
 
-                        <button className="p-2 border border-border rounded-xl text-red-500 hover:bg-red-500/10 transition">
-                            Report
-                        </button>
+                        <ReportDialog file={file} />
                     </div>
                 </div>
 

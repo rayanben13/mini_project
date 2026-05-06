@@ -602,6 +602,9 @@ export const UplodeNewFile = async (req, res) => {
     // 4. Upload file to cloud
     const cloudinaryResult = await uploadBufferToCloudinary(req.file.buffer);
 
+    if (!cloudinaryResult?.secure_url) {
+      throw new Error("Upload failed");
+    }
     const file_path = cloudinaryResult.secure_url;
 
     // 5. Create file

@@ -188,6 +188,8 @@ export default function EditProfileModal({
                 queryClient.invalidateQueries({ queryKey: ["topFilesForUser"] });
                 queryClient.invalidateQueries({ queryKey: ["myFiles"] });
                 queryClient.invalidateQueries({ queryKey: ["filesLikes"] });
+                queryClient.invalidateQueries({ queryKey: ["yourSubjects"] });
+                queryClient.invalidateQueries({ queryKey: ["recommendedStudyList"] });
                 onClose();
             } else {
                 toast.error(result.message || "Update failed");
