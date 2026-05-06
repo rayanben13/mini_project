@@ -5,9 +5,12 @@ import { extractText } from '../../config/pdf-parse.js';
 
 export const sendMessageToAi = async (req, res) => {
   try {
+    if (!req.body) {
+      return res.status(400).json({ error: 'Request body is missing' });
+    }
     const { message } = req.body;
     const lang = req.query.lang || 'en';
-    const id_file = Number(req.params.id_file);
+    const id_file = req.params.id_file ? Number(req.params.id_file) : null;
     const file_upload = req.file;
 
     const langChoices = ['en', 'ar', 'fr'];

@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import { io } from '../config/socket.js';
-import prisma from '../lib/prisma.ts';
-import { getUniversities } from '../service/univAPI.js';
-
-import { uploadBufferToCloudinary } from '../config/Cloudinary.js';
-=======
-import { count } from 'node:console';
 import prisma from '../lib/prisma.js';
 import { getUniversities } from '../service/univAPI.js';
 import { io } from '../config/socket.js';
@@ -16,7 +8,6 @@ import {
   GetPublicId,
   uploadBufferToCloudinary,
 } from '../config/Cloudinary.js';
->>>>>>> 4bc7fb730f647cf59404cb5c67dfa31036eb0493
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -456,12 +447,6 @@ export const showDetailFile = async (req, res) => {
 
     const isAdmin = Me.role === 'admin';
 
-<<<<<<< HEAD
-    // ✅ جلب الملف
-    const file = await prisma.files.findUnique({
-      where: {
-        id_file,
-=======
     // ✅ جلب الملف مرة واحدة فقط
     let file = await prisma.files.findUnique({
       where: {
@@ -472,7 +457,6 @@ export const showDetailFile = async (req, res) => {
             status: 'reviewed',
           },
         },
->>>>>>> 4bc7fb730f647cf59404cb5c67dfa31036eb0493
       },
       select: {
         id_file: true,
