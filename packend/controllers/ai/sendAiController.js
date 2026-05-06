@@ -76,6 +76,7 @@ OUTPUT RULES
 - Structured with headings and bullet points
 -don't answer  outside the pdf content,if you don't know the answer say that you don't know the answer or that the answer is not in the pdf content
 - NEVER use: tables, <table>, <tbody>, <tr>, <td>, <th>, <header>, <tfoot> - ONLY use headings, bold, and bullet points
+-Never use tables in any format (neither HTML <table> nor Markdown tables using | --- |). Use only paragraphs or bullet points.
 ========================
 LANGUAGE ENFORCEMENT
 ========================

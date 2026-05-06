@@ -134,6 +134,11 @@ export const schemaReminder = Joi.object({
   date,
   time,
 });
+//chat ai
+const message = Joi.string().min(1).max(10000).required();
+export const schemaChatAi = Joi.object({
+  message,
+});
 
 //DeleteOrIgnoreReportedFile
 
