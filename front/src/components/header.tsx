@@ -2,137 +2,425 @@
 
 import { Button } from "@/components/ui/button";
 import { useProfileDropdownData } from "@/hooks/useUserInformation";
+
 import useAuthStore from "@/Store/AuthStore";
 import DarkModeStore from "@/Store/darkModSroe";
-import { Moon, Search, Sun } from "lucide-react";
+
+import {
+  LogOut,
+  Moon,
+  Search,
+  Sun,
+  X,
+} from "lucide-react";
+
 import Image from "next/image";
 import Link from "next/link";
+
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import SearchBar from "./SearchBar";
 import { MobileSidebar } from "./sideBar/MobileSidebar";
-import { Input } from "./ui/input";
 
 export default function Header() {
+
   const router = useRouter();
-  const { user, logout, initAuth, isAuthenticated, isHydrated } = useAuthStore();
-  const { Mod, HandlDarkMode } = DarkModeStore();
-  const { data: extraInfo, isFetching } = useProfileDropdownData();
+
+  const {
+    user,
+    logout,
+    initAuth,
+    isAuthenticated,
+    isHydrated,
+  } = useAuthStore();
+
+  const {
+    Mod,
+    HandlDarkMode,
+  } = DarkModeStore();
+
+  const {
+    data: extraInfo,
+    isFetching,
+  } = useProfileDropdownData();
 
   const [open, setOpen] = useState(false);
-  const dropdownRef = useRef(null);
 
-  useEffect(() => { initAuth(); }, [initAuth]);
+  const [mobileSearchOpen, setMobileSearchOpen] =
+    useState(false);
 
+  const dropdownRef =
+    useRef<HTMLDivElement>(null);
+
+  // Init auth
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+    initAuth();
+  }, [initAuth]);
+
+  // Close dropdown outside
+  useEffect(() => {
+
+    const handleClickOutside = (
+      e: MouseEvent
+    ) => {
+
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(
+          e.target as Node
+        )
+      ) {
         setOpen(false);
       }
+
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+
+    return () =>
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+
   }, []);
 
+  // Escape close
+  useEffect(() => {
+
+    const handleEsc = (
+      e: KeyboardEvent
+    ) => {
+
+      if (e.key === "Escape") {
+        setOpen(false);
+        setMobileSearchOpen(false);
+      }
+
+    };
+
+    document.addEventListener(
+      "keydown",
+      handleEsc
+    );
+
+    return () =>
+      document.removeEventListener(
+        "keydown",
+        handleEsc
+      );
+
+  }, []);
+
+  // Logout
   const handleLogout = () => {
+
     setOpen(false);
-    localStorage.removeItem("token")
-    router.push("/login");
+
+    localStorage.removeItem("token");
+
     logout();
-    window.location.reload();
+
+    router.push("/login");
+
   };
 
-
+  // Merge user info
   const info = extraInfo?.profileData;
 
   const displayUser = {
     ...user,
-    ...info
+    ...info,
   };
 
-  // --- Render ---
-
+  // Loading skeleton
   if (!isHydrated) {
-    return ( /* ... Skeleton Code ... */
-      <header className="border-b bg-white dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto flex justify-between items-center h-16 px-4">
-          <div className="h-6 w-24 bg-gray-200 animate-pulse rounded" />
+
+    return (
+
+      <header className="sticky top-0 z-50 border-b bg-white dark:bg-gray-900 h-16">
+
+        <div className="max-w-7xl mx-auto flex justify-between items-center h-full px-4">
+
+          <div className="flex items-center gap-3">
+
+            <div className="h-8 w-8 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse" />
+
+            <div className="hidden sm:block h-9 w-48 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse" />
+
+          </div>
+
+          <div className="flex items-center gap-2">
+
+            <div className="h-9 w-9 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+
+            <div className="h-9 w-9 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+
+          </div>
+
         </div>
+
       </header>
+
     );
+
   }
 
   return (
-    <header className="border-b bg-white dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto flex justify-between items-center h-16 px-4">
 
-        <div className="flex items-center gap-3 w-full max-w-md">
-          {isAuthenticated && <MobileSidebar />}
-          {!isAuthenticated ? (
-            <Link href="/" className="font-bold text-xl shrink-0">
+    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-slate-200 dark:border-slate-800">
+
+      {/* Main Header */}
+      <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between gap-3">
+
+        {/* LEFT */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+
+          {/* Mobile Sidebar */}
+          {isAuthenticated && (
+            <MobileSidebar />
+          )}
+
+          {/* Logo */}
+          {!isAuthenticated && (
+
+            <Link
+              href="/"
+              className="font-bold text-lg sm:text-xl shrink-0"
+            >
               AuthSystem
             </Link>
-          ) : (
-            <div className="relative w-full transition-all duration-300">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                type="search"
-                placeholder="Search anything..."
-                className="pl-9 bg-gray-50 dark:bg-gray-800 border-none focus-visible:ring-1"
-              />
-            </div>
+
           )}
+
+          {/* Desktop Search */}
+          {isAuthenticated && (
+
+            <div className="hidden md:block w-full max-w-md">
+
+              <SearchBar />
+
+            </div>
+
+          )}
+
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={HandlDarkMode}>
-            {Mod ? <Moon /> : <Sun />}
+
+        {/* RIGHT */}
+        <div className="flex items-center gap-2 shrink-0">
+
+          {/* Mobile Search Button */}
+          {isAuthenticated && (
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() =>
+                setMobileSearchOpen(
+                  !mobileSearchOpen
+                )
+              }
+            >
+
+              {mobileSearchOpen ? (
+
+                <X className="w-5 h-5" />
+
+              ) : (
+
+                <Search className="w-5 h-5" />
+
+              )}
+
+            </Button>
+
+          )}
+
+          {/* Dark Mode */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={HandlDarkMode}
+          >
+
+            {Mod ? (
+              <Moon className="w-5 h-5" />
+            ) : (
+              <Sun className="w-5 h-5" />
+            )}
+
           </Button>
 
+          {/* Authenticated */}
           {isAuthenticated ? (
-            <div className="relative" ref={dropdownRef}>
+
+            <div
+              className="relative"
+              ref={dropdownRef}
+            >
 
               {/* Avatar */}
-              <div onClick={() => setOpen(!open)} className="cursor-pointer">
+              <button
+                onClick={() =>
+                  setOpen(!open)
+                }
+                className="rounded-full hover:ring-2 hover:ring-primary/30 transition-all"
+              >
+
                 {displayUser?.img_user ? (
+
                   <Image
                     src={displayUser.img_user}
                     alt="avatar"
                     width={36}
                     height={36}
-                    className="rounded-full border"
+                    className="rounded-full border-2 border-slate-200 dark:border-slate-700 object-cover"
                   />
+
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-bold relative">
-                    {displayUser?.username?.charAt(0).toUpperCase()}
+
+                  <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm relative">
+
+                    {displayUser?.username
+                      ?.charAt(0)
+                      .toUpperCase()}
+
                     {isFetching && (
-                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse" />
+
+                      <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse border-2 border-white dark:border-gray-900" />
+
                     )}
+
                   </div>
+
                 )}
-              </div>
+
+              </button>
 
               {/* Dropdown */}
               {open && (
-                <div className="absolute right-0 mt-2 z-50 w-48 bg-white dark:bg-gray-800 border rounded-xl shadow-lg p-2 animate-in fade-in">
-                  <div className="px-3 py-2 text-sm text-gray-700 dark:text-gray-200 border-b">
-                    {displayUser?.fullname || displayUser?.username}
+
+                <div className="
+                  absolute right-0 mt-2 z-50
+                  w-56
+                  bg-white dark:bg-gray-800
+                  border border-slate-200 dark:border-slate-700
+                  rounded-2xl shadow-xl
+                  p-1.5
+                ">
+
+                  {/* User Info */}
+                  <div className="px-3 py-2.5 border-b border-slate-100 dark:border-slate-700">
+
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+
+                      {displayUser?.fullname ||
+                        displayUser?.username}
+
+                    </p>
+
+                    <p className="text-xs text-gray-400 truncate mt-0.5">
+
+                      {displayUser?.email || ""}
+
+                    </p>
+
                   </div>
+
+                  {/* Logout */}
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
+                    className="
+                      mt-1
+                      w-full flex items-center gap-2.5
+                      px-3 py-2
+                      text-sm text-red-500
+                      hover:bg-red-50
+                      dark:hover:bg-red-900/20
+                      rounded-xl
+                      transition-colors
+                    "
                   >
+
+                    <LogOut className="w-4 h-4" />
+
                     Logout
+
                   </button>
+
                 </div>
+
               )}
+
             </div>
+
           ) : (
-            <div className="flex gap-2">
-              <Link href="/login"><Button variant="ghost">Login</Button></Link>
-              <Link href="/signup"><Button>Sign Up</Button></Link>
+
+            /* Guest */
+            <div className="flex items-center gap-2">
+
+              <Link href="/login">
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hidden sm:flex"
+                >
+                  Login
+                </Button>
+
+              </Link>
+
+              <Link href="/signup">
+
+                <Button
+                  size="sm"
+                  className="rounded-xl"
+                >
+                  Sign Up
+                </Button>
+
+              </Link>
+
             </div>
+
           )}
+
         </div>
+
       </div>
+
+      {/* Mobile Search */}
+      {isAuthenticated &&
+        mobileSearchOpen && (
+
+          <div className="md:hidden px-4 pb-3">
+
+            <SearchBar
+              mobile
+              onClose={() =>
+                setMobileSearchOpen(
+                  false
+                )
+              }
+            />
+
+          </div>
+
+        )}
+
     </header>
+
   );
+
 }

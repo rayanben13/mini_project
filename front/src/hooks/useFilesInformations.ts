@@ -53,3 +53,16 @@ export const useFileDetails = (id_file: number) => {
     staleTime: 2 * 60 * 1000,
   });
 };
+
+export const useSearchFiles = (id_file: number) => {
+  const { showDetailFile } = allActurStore();
+  const { token } = AuthStore();
+
+  return useQuery({
+    queryKey: ["file-details", id_file],
+    queryFn: () => showDetailFile(Number(id_file)),
+    enabled: !!id_file && !!token,
+    staleTime: 2 * 60 * 1000,
+  });
+};
+

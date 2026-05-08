@@ -6,12 +6,14 @@ import Link from "next/link";
 import { toast } from "sonner";
 import FileActions from "./fileAction";
 
+import { useFullUserData } from "@/hooks/useUserInformation";
 import ReportDialog from "./reportingDialog";
 
 
 
 export default function FilePreviewModal({ file }: { file: any }) {
     const { getShareLink } = allActurStore();
+    const { data: userInfo } = useFullUserData()
 
 
     if (!file) return <p>Loading...</p>;
@@ -87,7 +89,9 @@ export default function FilePreviewModal({ file }: { file: any }) {
                             Share
                         </button>
 
-                        <ReportDialog file={file} />
+                        {userInfo?.profileData?.role === "user" && <ReportDialog file={file} />}
+
+
                     </div>
                 </div>
 
@@ -101,6 +105,7 @@ export default function FilePreviewModal({ file }: { file: any }) {
 
                 {/* Interaction */}
                 <FileActions
+                    userRole={userInfo?.profileData?.role || ""}
                     fileId={file.id_file}
                     initialLikes={file.like || 0}
                     initialDislikes={file.dislike || 0}

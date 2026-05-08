@@ -1,13 +1,14 @@
 "use client"
+
 import FilePreviewModal from "@/components/FilePreviewModal";
 import { useFileDetails } from "@/hooks/useFilesInformations";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 
-export default function FilePage() {
-    const params = useParams();
-    const fileId = Number(params.fileId);
-    const { data: fileDetails, isLoading, error } = useFileDetails(fileId);
+function FileDetails() {
+    const param = useParams()
+    const id = Number(param.id)
+    const { data: fileDetails, isLoading, error } = useFileDetails(id);
 
     if (isLoading) {
         return (
@@ -34,3 +35,5 @@ export default function FilePage() {
         </div>
     );
 }
+
+export default FileDetails

@@ -4,6 +4,7 @@ import {
   Bell,
   BookOpen,
   File,
+  FileWarning,
   LayoutDashboard,
   ShieldCheck,
   UserCircle
@@ -35,9 +36,8 @@ const items = [
 const adminItems = [
   { title: "Admin Panel", url: "/admin", icon: ShieldCheck },
   { title: "Files", url: "/admin/files", icon: File },
-  { title: "Reports", url: "/admin/reports", icon: File },
-  { title: "Universities", url: "/admin/universities", icon: File },
-  { title: "Subjects", url: "/admin/subjects", icon: File },
+  { title: "Reports", url: "/admin/reports", icon: FileWarning },
+
 ];
 
 export function AppSidebar() {

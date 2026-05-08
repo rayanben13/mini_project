@@ -17,25 +17,38 @@ const allActurStore = create((set, get) => ({
   },
 
   // البحث عن الملفات
+  // في allActurStore.js
   getSearchFiles: async (queryParams) => {
     set({ loading: true });
     try {
+      console.log("API URL:", `${SEARCH_API_URL}/searchFiles`); // ← URL
+      console.log("Params:", queryParams); // ← Params
+      console.log("Headers:", get().getAuthHeader()); // ← Headers
+
       const response = await axios.get(`${SEARCH_API_URL}/searchFiles`, {
         ...get().getAuthHeader(),
         params: queryParams,
       });
+
+      console.log("Response:", response.data); // ← Response
       set({ loading: false });
       return { success: true, data: response.data };
     } catch (error) {
+      // ✅ أضف تفاصيل أكثر للخطأ
+      console.error('Full error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        url: error.config?.url,
+        params: error.config?.params,
+      });
+
       set({ loading: false });
-      console.error('Error searching files:', error);
       return {
         success: false,
         message: error.response?.data?.error || 'Server error',
       };
     }
   },
-
   // البحث عن المواد (Subjects)
   getSearchSubject: async (queryParams) => {
     set({ loading: true });

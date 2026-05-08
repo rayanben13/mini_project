@@ -300,7 +300,7 @@ export default function AdminPage() {
                         </thead>
 
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {contributorsData?.data.top10.map(
+                            {contributorsData?.data?.top10.map(
                                 (contributor: any, index: number) => (
                                     <tr
                                         key={contributor.id || index}

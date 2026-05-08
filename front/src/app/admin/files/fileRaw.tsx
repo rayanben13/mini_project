@@ -1,6 +1,7 @@
 // components/admin/FileRow.tsx
 import { useAdminApproveRejectFile } from "@/hooks/useAdminFiles";
 import { Check, Eye, File, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function FileRow({
@@ -8,6 +9,7 @@ export default function FileRow({
 }: {
     file: any;
 }) {
+    const router = useRouter();
     const [isRejectOpen, setIsRejectOpen] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
 
@@ -57,7 +59,7 @@ export default function FileRow({
 
                     {/* View */}
                     <button
-                        onClick={() => window.open(`/files/${file.id_file}`, '_blank')}
+                        onClick={() => router.push(`/admin/files/${file.id_file}`)}
                         className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-[#ae1ce9] transition-all"
                         title="View file"
                     >
