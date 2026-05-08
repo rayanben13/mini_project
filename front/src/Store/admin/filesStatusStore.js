@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import axios from "axios";
+import { create } from "zustand";
 
 const API_URL = "http://localhost:5000/api/admin/filesStatus";
 
@@ -19,7 +19,7 @@ const useFilesStatusStore = create((set, get) => ({
         headers: { Authorization: `Bearer ${token}` }
       });
       set({ filesStatusData: response.data, loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";
       set({ error: message, loading: false });
@@ -31,7 +31,7 @@ const useFilesStatusStore = create((set, get) => ({
     try {
       set({ loading: true, error: null });
       const token = localStorage.getItem("token");
-      
+
       const params = { page, limit };
       if (search) params.search = search;
 
@@ -39,14 +39,14 @@ const useFilesStatusStore = create((set, get) => ({
         headers: { Authorization: `Bearer ${token}` },
         params
       });
-      
-      set({ 
-        pendingFiles: response.data.mappedFiles || [], 
+
+      set({
+        pendingFiles: response.data.mappedFiles || [],
         totalPages: response.data.meta.last_page || 1,
         currentPage: response.data.meta.current_page || page,
-        loading: false 
+        loading: false
       });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";
       set({ error: message, loading: false });
@@ -58,14 +58,14 @@ const useFilesStatusStore = create((set, get) => ({
     try {
       set({ loading: true, error: null });
       const token = localStorage.getItem("token");
-      
+
       const response = await axios.put(`${API_URL}/aproveRejectFiles/${id_file}`, {
         reason: rejectReason
       }, {
         headers: { Authorization: `Bearer ${token}` },
         params: { status }
       });
-      
+
       return { success: true, message: response.data.message || response.data.succes };
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";

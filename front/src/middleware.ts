@@ -1,8 +1,9 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value;
+  const role = request.cookies.get("role")?.value;
+
   const { pathname } = request.nextUrl;
 
   const isAuthPage =
@@ -10,24 +11,36 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/signup") ||
     pathname.startsWith("/verify-email");
 
-  const isDashboardPage =
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isUserRoute =
     pathname.startsWith("/dashboard") || pathname.startsWith("/profile");
 
-  const isHomePage = pathname === "/"; // ✅ أضف هذا
-
-  // ❌ غير مسجل ويحاول dashboard
-  if (isDashboardPage && !token) {
+  // ❌ not logged in → block protected routes
+  if ((isAdminRoute || isUserRoute) && !token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // ❌ مسجل ويحاول auth pages
+  // ❌ logged in user goes away from auth pages
   if (isAuthPage && token) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const target = role === "admin" ? "/admin" : "/dashboard";
+
+    if (pathname !== target) {
+      return NextResponse.redirect(new URL(target, request.url));
+    }
   }
 
-  // ❌ مسجل ويحاول home "/"
-  if (isHomePage && token) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  // ❌ prevent user from admin
+  if (isAdminRoute && role !== "admin") {
+    if (pathname !== "/dashboard") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  // ❌ optional: prevent admin staying in dashboard
+  if (isUserRoute && role === "admin") {
+    if (pathname !== "/admin") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
   }
 
   return NextResponse.next();
@@ -36,7 +49,7 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
-    "/profile/:path*",
+    "/admin/:path*",
     "/login",
     "/signup",
     "/verify-email",

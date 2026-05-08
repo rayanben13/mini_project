@@ -6,6 +6,7 @@ import { BookmarkPlus, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import SaveStudyListModal from "./studyList/SaveStudyListModal";
+import { Button } from "./ui/button";
 
 // تعريف أنواع البيانات المتوقعة
 interface FileActionsProps {
@@ -30,8 +31,9 @@ export default function FileActions({
     const [userLikeAction, setUserLikeAction] = useState<"LIKE" | "DISLIKE" | null>(initialStatusLike);
 
     const { mutate: handleAction } = useMutation({
-        mutationFn: async (action: "LIKE" | "DISLIKE") => {
-            const result = await likeOrDislikeFile(fileId, action);
+        mutationFn: async (type: "LIKE" | "DISLIKE") => {
+            const result = await likeOrDislikeFile(fileId, type);
+            console.log("rr", result)
             if (!result.success) toast.error(result.message);
             return result.data;
         },
@@ -119,12 +121,22 @@ export default function FileActions({
             </button>
 
             {/* 💾 Save Button */}
-            <button
-                onClick={() => setIsSaveModalOpen(true)}
-                className="p-2.5 rounded-full bg-slate-100 text-slate-600 hover:bg-blue-50 transition-colors"
-            >
-                <BookmarkPlus className="w-5 h-5" />
-            </button>
+            <div className="relative group">
+                <Button
+                    onClick={() => setIsSaveModalOpen(true)}
+                    className="p-2.5 rounded-full bg-slate-100 text-slate-600 hover:bg-blue-50 transition-colors"
+                >
+                    <BookmarkPlus className="w-5 h-5" />
+                </Button>
+
+                {/* Tooltip */}
+                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 
+        whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-lg 
+        bg-black text-white opacity-0 group-hover:opacity-100 
+        transition-all duration-200 pointer-events-none shadow-md">
+                    Save to your study list
+                </div>
+            </div>
 
             <SaveStudyListModal
                 fileId={fileId}

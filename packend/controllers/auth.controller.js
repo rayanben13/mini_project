@@ -205,12 +205,22 @@ export const login = async (req, res) => {
     const payload = {
       id: user.id_user,
       email: user.email,
+      // role: user.role,
     };
 
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
     setRefreshCookie(res, refreshToken);
     setAccessToken(res, accessToken);
+
+    res.cookie("role", user.role, {
+      httpOnly: false, // لازم
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
 
     if (user.role === 'admin') {
       console.log(

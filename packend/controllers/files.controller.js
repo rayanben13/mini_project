@@ -1,11 +1,12 @@
-import prisma from '../lib/prisma.js';
-import { getUniversities } from '../service/univAPI.js';
-
+import dayjs from 'dayjs';
 import {
   cloudinary,
   GetPublicId,
   uploadBufferToCloudinary,
 } from '../config/Cloudinary.js';
+import prisma from '../lib/prisma.js';
+import { getUniversities } from '../service/univAPI.js';
+import { io } from '../config/socket.js';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -535,10 +536,10 @@ export const showDetailFile = async (req, res) => {
       ...(isAdmin
         ? {}
         : {
-            like,
-            dislike,
-            ...(Me.role === 'user' && { statusLike }),
-          }),
+          like,
+          dislike,
+          ...(Me.role === 'user' && { statusLike }),
+        }),
     });
   } catch (err) {
     console.error(err);
@@ -620,18 +621,18 @@ export const UplodeNewFile = async (req, res) => {
 
         subjects: subjectExist
           ? {
-              connect: { id_subject: subjectExist.id_subject },
-            }
+            connect: { id_subject: subjectExist.id_subject },
+          }
           : {
-              create: {
-                major: infoExist.major,
-                specialization: infoExist.specialization,
-                academic_year: infoExist.academic_year,
-                course: infoExist.course,
-                university: univ,
-                course_description: infoExist.course_description,
-              },
+            create: {
+              major: infoExist.major,
+              specialization: infoExist.specialization,
+              academic_year: infoExist.academic_year,
+              course: infoExist.course,
+              university: univ,
+              course_description: infoExist.course_description,
             },
+          },
       },
     });
 
@@ -863,6 +864,7 @@ export const addLikeOrDislike = async (req, res) => {
     const Me = req.user;
     const id_file = Number(req.params.id_file);
     const { type } = req.body; // LIKE / DISLIKE
+    console.log("ty", type)
 
     const fileExist = await prisma.files.findFirst({
       where: {

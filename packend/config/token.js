@@ -44,6 +44,7 @@ export const setAccessToken = (res, token) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/',
   });
+
 };
 
 // 🔹 حذف الكوكيز عند تسجيل الخروج
@@ -54,4 +55,5 @@ export const clearAccessToken = (res) => {
     sameSite: 'lax',
     path: '/',
   });
+
 };

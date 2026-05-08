@@ -3,8 +3,8 @@
 import {
   Bell,
   BookOpen,
+  File,
   LayoutDashboard,
-  Settings,
   ShieldCheck,
   UserCircle
 } from "lucide-react";
@@ -34,7 +34,10 @@ const items = [
 
 const adminItems = [
   { title: "Admin Panel", url: "/admin", icon: ShieldCheck },
-  { title: "Settings", url: "/admin/settings", icon: Settings },
+  { title: "Files", url: "/admin/files", icon: File },
+  { title: "Reports", url: "/admin/reports", icon: File },
+  { title: "Universities", url: "/admin/universities", icon: File },
+  { title: "Subjects", url: "/admin/subjects", icon: File },
 ];
 
 export function AppSidebar() {

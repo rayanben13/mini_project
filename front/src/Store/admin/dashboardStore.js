@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import axios from "axios";
+import { create } from "zustand";
 
 const API_URL = "http://localhost:5000/api/admin/dashboard";
 
@@ -18,7 +18,7 @@ const useDashboardStore = create((set) => ({
         headers: { Authorization: `Bearer ${token}` }
       });
       set({ dashboardStatisData: response.data, loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";
       set({ error: message, loading: false });
@@ -34,7 +34,7 @@ const useDashboardStore = create((set) => ({
         headers: { Authorization: `Bearer ${token}` }
       });
       set({ uploadsGraphData: response.data.stats || response.data, loading: false });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";
       set({ error: message, loading: false });

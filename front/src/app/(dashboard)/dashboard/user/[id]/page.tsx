@@ -93,9 +93,9 @@ export default function PublicUserProfile() {
                                 <div className="flex items-center justify-center h-48">
                                     <Loader2 className="w-8 h-8 animate-spin text-[#0975e6]" />
                                 </div>
-                            ) : userFiles.length > 0 ? (
+                            ) : userFiles.data.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {userFiles.map((file: any) => (
+                                    {userFiles.data.map((file: any) => (
                                         <FileCard
                                             key={file.id_file}
                                             file={file}
@@ -115,9 +115,9 @@ export default function PublicUserProfile() {
                                 <div className="flex items-center justify-center h-48">
                                     <Loader2 className="w-8 h-8 animate-spin text-[#0975e6]" />
                                 </div>
-                            ) : userStudyLists.length > 0 ? (
+                            ) : userStudyLists.data.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {userStudyLists.map((list: any) => (
+                                    {userStudyLists.data.map((list: any) => (
                                         <div
                                             key={list.id_stuList}
                                             onClick={() => router.push(`/dashboard/study_list/${list.id_stuList}`)}

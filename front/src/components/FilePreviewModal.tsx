@@ -72,13 +72,13 @@ export default function FilePreviewModal({ file }: { file: any }) {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                        {/* <Link
+                        <Link
                             href={file.file_path}
                             target="_blank"
                             className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition"
                         >
                             Download
-                        </Link> */}
+                        </Link>
 
                         <button
                             onClick={handleShare}

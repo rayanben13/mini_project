@@ -17,7 +17,13 @@ export default function StudyListTabs() {
     const queryClient = useQueryClient(); // ✅ FIX
 
     const handleCreate = async (data: any) => {
-        const res = await createStudyList(data);
+        const payload = {
+            name: data.name,
+            subject: data.subject,
+            description: data.description,
+            privacy: data.isPublic ? "public" : "private"
+        };
+        const res = await createStudyList(payload);
 
         if (res.success) {
             setOpenModal(false);
