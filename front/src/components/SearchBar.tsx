@@ -10,14 +10,19 @@ type SearchBarProps = {
     mobile?: boolean;
     onClose?: () => void;
     isGuest?: boolean;
+    externalQuery?: string;
 };
 
-export default function SearchBar({ mobile = false, onClose, isGuest = false,
+export default function SearchBar({
+    mobile = false,
+    onClose,
+    isGuest = false,
+    externalQuery = ""
 }: SearchBarProps) {
     const getSearchFiles = allActurStore((state) => state.getSearchFiles);
     const getSearchSubject = allActurStore((state) => state.getSearchSubject);
 
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState(externalQuery);
     const [searchResults, setSearchResults] = useState<{
         files: any[];
         subjects: any[];
@@ -26,6 +31,13 @@ export default function SearchBar({ mobile = false, onClose, isGuest = false,
     const [showResults, setShowResults] = useState(false);
 
     const searchContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setSearchQuery(externalQuery);
+        if (externalQuery.trim().length >= 2) {
+            setShowResults(true);
+        }
+    }, [externalQuery]);
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -52,8 +64,6 @@ export default function SearchBar({ mobile = false, onClose, isGuest = false,
                         getSearchFiles({ title: query }),
                         getSearchSubject({ course: query }),
                     ]);
-
-                    console.log("Search Results:", { filesRes, subjectsRes });
 
                     const files = filesRes.success
                         ? (Array.isArray(filesRes.data?.data) ? filesRes.data.data : (Array.isArray(filesRes.data) ? filesRes.data : []))
@@ -99,13 +109,13 @@ export default function SearchBar({ mobile = false, onClose, isGuest = false,
                         : "Search files or subjects..."
                     }
                     className={`
-                        pl-12 pr-10
+                        pl-12
                         bg-white dark:bg-slate-800
                         border-slate-200 dark:border-slate-700
                         focus-visible:ring-2 focus-visible:ring-blue-500/30
                         ${isGuest
-                            ? "h-14 text-base rounded-2xl shadow-md" // ← أكبر للـ Hero
-                            : "rounded-xl"                            // ← عادي للـ Header
+                            ? "h-14 text-base rounded-2xl shadow-md"
+                            : "rounded-xl"
                         }
                     `}
                 />
@@ -127,12 +137,12 @@ export default function SearchBar({ mobile = false, onClose, isGuest = false,
             {/* ===== Results Dropdown ===== */}
             {showResults && (
                 <div className={`
-                    ${mobile ? "mt-2" : "absolute top-full left-0 mt-2"}
+                    ${mobile ? "mt-2" : "absolute top-[calc(100%+4px)] left-0"}
                     w-full
                     bg-white dark:bg-gray-800
                     border border-slate-200 dark:border-slate-700
-                    rounded-2xl shadow-xl z-[60]
-                    max-h-[70vh] overflow-y-auto
+                    rounded-2xl shadow-lg z-[60]
+                    max-h-[40vh] overflow-y-auto
                 `}>
 
                     {/* Loading */}
@@ -169,7 +179,7 @@ export default function SearchBar({ mobile = false, onClose, isGuest = false,
                                     <div className="space-y-0.5">
                                         {searchResults.subjects.map((sub: any) => (
                                             <Link
-                                                key={sub.id_subject}  // ✅ id_subject من الـ Backend
+                                                key={sub.id_subject}
                                                 href={isGuest ? `/subject/${sub.id_subject}` : `/dashboard/subject/${sub.id_subject}`}
                                                 onClick={() => {
                                                     setShowResults(false);
@@ -181,19 +191,16 @@ export default function SearchBar({ mobile = false, onClose, isGuest = false,
                                                     <Book className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    {/* ✅ course من الـ Backend */}
                                                     <p className="text-sm font-bold truncate">
                                                         {sub.course}
                                                     </p>
                                                     <p className="text-[11px] text-slate-400 truncate">
-                                                        {/* ✅ major و academic_year من الـ Backend */}
                                                         {sub.major}
                                                         {sub.academic_year ? ` • ${sub.academic_year}` : ""}
                                                         {sub.specialization ? ` • ${sub.specialization}` : ""}
                                                     </p>
                                                 </div>
 
-                                                {/* ✅ عدد الملفات من الـ Backend */}
                                                 {sub._count?.files > 0 && (
                                                     <span className="text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full shrink-0">
                                                         {sub._count.files} files
@@ -232,7 +239,7 @@ export default function SearchBar({ mobile = false, onClose, isGuest = false,
                                     <div className="space-y-0.5">
                                         {searchResults.files.map((file: any) => (
                                             <Link
-                                                key={file.id_file}  // ✅ id_file من الـ Backend
+                                                key={file.id_file}
                                                 href={isGuest ? `/file/${file.id_file}` : `/dashboard/${file.id_file}`}
                                                 onClick={() => {
                                                     setShowResults(false);
@@ -244,7 +251,6 @@ export default function SearchBar({ mobile = false, onClose, isGuest = false,
                                                     <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    {/* ✅ title و type_file و course من الـ Backend */}
                                                     <p className="text-sm font-bold truncate">
                                                         {file.title}
                                                     </p>
@@ -255,7 +261,6 @@ export default function SearchBar({ mobile = false, onClose, isGuest = false,
                                                     </p>
                                                 </div>
 
-                                                {/* ✅ نوع الملف كـ Badge */}
                                                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full shrink-0">
                                                     {file.type_file}
                                                 </span>
