@@ -14,18 +14,48 @@ export const searchFiles = async (req, res) => {
     //     details: error.details.map((e) => e.message),
     //   });
     // }
+    const years = ['L1', 'L2', 'L3', 'M1', 'M2'];
+    const type_file = ['TD', 'TP', 'COURS', 'EF', 'CC', 'RESUME', 'OTHER'];
 
     const title = req.query.title?.trim();
     const university = req.query.university?.trim();
     const major = req.query.major?.trim();
-    const academic_year = req.query.academic_year?.trim();
+    const academic_year = req.query.academic_year?.trim().toUpperCase();
     const specialization = req.query.specialization?.trim();
-    const type = req.query.type?.trim();
+    const type = req.query.type?.trim().toUpperCase();
     const year_creation = req.query.year_creation?.trim();
 
     const limit = Math.min(Number(req.query.limit) || 10, 50);
     const page = Math.max(Number(req.query.page) || 1, 1);
     const skip = (page - 1) * limit;
+
+    if (
+      !title &&
+      !university &&
+      !major &&
+      !academic_year &&
+      !specialization &&
+      !type &&
+      !year_creation
+    ) {
+      return res.status(200).json({
+        data: [],
+        meta: {
+          current_page: 1,
+          last_page: 0,
+          per_page: limit,
+          total_files: 0,
+          from: 0,
+          to: 0,
+        },
+      });
+    }
+    if (academic_year && !years.includes(academic_year)) {
+      return res.status(400).json({ error: 'Invalid academic year' });
+    }
+    if (type && !type_file.includes(type)) {
+      return res.status(400).json({ error: 'Invalid file type' });
+    }
 
     // 🟢 COUNT (نفس filters تاع search)
     const total_files = await prisma.files.count({
@@ -44,20 +74,18 @@ export const searchFiles = async (req, res) => {
           : undefined,
 
         subjects: {
-          university: { mode: 'insensitive', equals: university || undefined },
-          academic_year: {
-            mode: 'insensitive',
-            equals: academic_year || undefined,
-          },
-          major: { mode: 'insensitive', equals: major || undefined },
-          specialization: {
-            mode: 'insensitive',
-            equals: specialization || undefined,
-          },
+          university: university
+            ? { mode: 'insensitive', equals: university }
+            : undefined,
+          academic_year: academic_year || undefined,
+          major: major ? { mode: 'insensitive', equals: major } : undefined,
+          specialization: specialization
+            ? { mode: 'insensitive', equals: specialization }
+            : undefined,
         },
 
         type: type || undefined,
-        year_creation: year_creation || undefined,
+        creation_year: year_creation || undefined,
       },
     });
 
@@ -78,14 +106,18 @@ export const searchFiles = async (req, res) => {
           : undefined,
 
         subjects: {
-          university: university || undefined,
+          university: university
+            ? { mode: 'insensitive', equals: university }
+            : undefined,
           academic_year: academic_year || undefined,
-          major: major || undefined,
-          specialization: specialization || undefined,
+          major: major ? { mode: 'insensitive', equals: major } : undefined,
+          specialization: specialization
+            ? { mode: 'insensitive', equals: specialization }
+            : undefined,
         },
 
         type: type || undefined,
-        year_creation: year_creation || undefined,
+        creation_year: year_creation || undefined,
       },
 
       select: {
@@ -139,14 +171,32 @@ export const searchFiles = async (req, res) => {
 
 export const searchSubjects = async (req, res) => {
   try {
+    const years = ['L1', 'L2', 'L3', 'M1', 'M2'];
     const course = req.query.course?.trim();
     const major = req.query.major?.trim();
-    const academic_year = req.query.academic_year?.trim();
+    const academic_year = req.query.academic_year?.trim().toUpperCase();
     const specialization = req.query.specialization?.trim();
 
     const limit = Math.min(Number(req.query.limit) || 10, 50);
     const page = Math.max(Number(req.query.page) || 1, 1);
     const skip = (page - 1) * limit;
+
+    if (!course && !major && !academic_year && !specialization) {
+      return res.status(200).json({
+        data: [],
+        meta: {
+          current_page: 1,
+          last_page: 0,
+          per_page: limit,
+          total_files: 0,
+          from: 0,
+          to: 0,
+        },
+      });
+    }
+    if (academic_year && !years.includes(academic_year)) {
+      return res.status(400).json({ error: 'Invalid academic year' });
+    }
 
     // 🟢 COUNT (نفس filters تاع search)
     const total_subjects = await prisma.subjects.count({
@@ -158,17 +208,13 @@ export const searchSubjects = async (req, res) => {
             }
           : undefined,
 
-        major: { mode: 'insensitive', equals: major || undefined },
+        major: major ? { mode: 'insensitive', equals: major } : undefined,
 
-        academic_year: {
-          mode: 'insensitive',
-          equals: academic_year || undefined,
-        },
+        academic_year: academic_year || undefined,
 
-        specialization: {
-          mode: 'insensitive',
-          equals: specialization || undefined,
-        },
+        specialization: specialization
+          ? { mode: 'insensitive', equals: specialization }
+          : undefined,
       },
     });
 
@@ -182,17 +228,13 @@ export const searchSubjects = async (req, res) => {
             }
           : undefined,
 
-        major: { mode: 'insensitive', equals: major || undefined },
+        major: major ? { mode: 'insensitive', equals: major } : undefined,
 
-        academic_year: {
-          mode: 'insensitive',
-          equals: academic_year || undefined,
-        },
+        academic_year: academic_year || undefined,
 
-        specialization: {
-          mode: 'insensitive',
-          equals: specialization || undefined,
-        },
+        specialization: specialization
+          ? { mode: 'insensitive', equals: specialization }
+          : undefined,
       },
 
       select: {
