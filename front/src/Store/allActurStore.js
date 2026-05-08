@@ -21,10 +21,6 @@ const allActurStore = create((set, get) => ({
   getSearchFiles: async (queryParams) => {
     set({ loading: true });
     try {
-      console.log("API URL:", `${SEARCH_API_URL}/searchFiles`); // ← URL
-      console.log("Params:", queryParams); // ← Params
-      console.log("Headers:", get().getAuthHeader()); // ← Headers
-
       const response = await axios.get(`${SEARCH_API_URL}/searchFiles`, {
         ...get().getAuthHeader(),
         params: queryParams,

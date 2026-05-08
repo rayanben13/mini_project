@@ -1,7 +1,7 @@
 "use client";
 
 import allActurStore from "@/Store/allActurStore";
-import { Book, FileText, Loader2, Search, X } from "lucide-react";
+import { ArrowRight, Book, FileText, Loader2, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Input } from "./ui/input";
@@ -9,9 +9,11 @@ import { Input } from "./ui/input";
 type SearchBarProps = {
     mobile?: boolean;
     onClose?: () => void;
+    isGuest?: boolean;
 };
 
-export default function SearchBar({ mobile = false, onClose }: SearchBarProps) {
+export default function SearchBar({ mobile = false, onClose, isGuest = false,
+}: SearchBarProps) {
     const getSearchFiles = allActurStore((state) => state.getSearchFiles);
     const getSearchSubject = allActurStore((state) => state.getSearchSubject);
 
@@ -86,16 +88,26 @@ export default function SearchBar({ mobile = false, onClose }: SearchBarProps) {
 
             {/* ===== Input ===== */}
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                     type="search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() =>
-                        searchQuery.trim().length >= 2 && setShowResults(true)
+                    onFocus={() => searchQuery.trim().length >= 2 && setShowResults(true)}
+                    placeholder={isGuest
+                        ? "Search study materials, courses..."
+                        : "Search files or subjects..."
                     }
-                    placeholder="Search files or subjects..."
-                    className="pl-9 pr-10 bg-gray-50 dark:bg-gray-800 border-slate-200 dark:border-slate-700 rounded-xl"
+                    className={`
+                        pl-12 pr-10
+                        bg-white dark:bg-slate-800
+                        border-slate-200 dark:border-slate-700
+                        focus-visible:ring-2 focus-visible:ring-blue-500/30
+                        ${isGuest
+                            ? "h-14 text-base rounded-2xl shadow-md" // ← أكبر للـ Hero
+                            : "rounded-xl"                            // ← عادي للـ Header
+                        }
+                    `}
                 />
                 {isSearching ? (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
@@ -158,7 +170,7 @@ export default function SearchBar({ mobile = false, onClose }: SearchBarProps) {
                                         {searchResults.subjects.map((sub: any) => (
                                             <Link
                                                 key={sub.id_subject}  // ✅ id_subject من الـ Backend
-                                                href={`/dashboard/subject/${sub.id_subject}`}
+                                                href={isGuest ? `/subject/${sub.id_subject}` : `/dashboard/subject/${sub.id_subject}`}
                                                 onClick={() => {
                                                     setShowResults(false);
                                                     onClose?.();
@@ -193,6 +205,18 @@ export default function SearchBar({ mobile = false, onClose }: SearchBarProps) {
                                 </div>
                             )}
 
+                            {isGuest && hasResults && (
+                                <div className="p-3 border-t border-slate-100 dark:border-slate-700">
+                                    <Link
+                                        href="/signup"
+                                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#0975e6]/10 hover:bg-[#0975e6]/20 text-[#0975e6] font-semibold rounded-xl text-sm transition-colors"
+                                    >
+                                        Sign up to access all materials
+                                        <ArrowRight className="w-4 h-4" />
+                                    </Link>
+                                </div>
+                            )}
+
                             {/* Divider */}
                             {searchResults.subjects.length > 0 &&
                                 searchResults.files.length > 0 && (
@@ -209,7 +233,7 @@ export default function SearchBar({ mobile = false, onClose }: SearchBarProps) {
                                         {searchResults.files.map((file: any) => (
                                             <Link
                                                 key={file.id_file}  // ✅ id_file من الـ Backend
-                                                href={`/dashboard/${file.id_file}`}
+                                                href={isGuest ? `/file/${file.id_file}` : `/dashboard/${file.id_file}`}
                                                 onClick={() => {
                                                     setShowResults(false);
                                                     onClose?.();

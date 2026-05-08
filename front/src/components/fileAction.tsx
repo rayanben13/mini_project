@@ -33,9 +33,17 @@ export default function FileActions({
 
     // 1. دالة التحقق من الصلاحيات
     const checkPermission = () => {
-        if (userRole === "admin") { // تأكد من مطابقة الكلمة كما تأتي من السيرفر (admin أو ADMIN)
-            toast.error("This feature is only available for students not admin.", {
+        if (!userRole || userRole === "guest") {
+            toast.error("Please sign in to use this feature", {
+                action: {
+                    label: "Sign In",
+                    onClick: () => window.location.href = "/login",
+                },
             });
+            return false;
+        }
+        if (userRole === "admin") {
+            toast.error("This feature is only available for students not admin.");
             return false;
         }
         return true;

@@ -6,14 +6,14 @@ import Link from "next/link";
 import { toast } from "sonner";
 import FileActions from "./fileAction";
 
-import { useFullUserData } from "@/hooks/useUserInformation";
+import { useProfileDropdownData } from "@/hooks/useUserInformation";
 import ReportDialog from "./reportingDialog";
 
 
 
 export default function FilePreviewModal({ file }: { file: any }) {
     const { getShareLink } = allActurStore();
-    const { data: userInfo } = useFullUserData()
+    const { data: userInfo } = useProfileDropdownData()
 
 
     if (!file) return <p>Loading...</p>;
