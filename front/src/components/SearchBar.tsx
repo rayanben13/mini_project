@@ -142,7 +142,7 @@ export default function SearchBar({
                     bg-white dark:bg-gray-800
                     border border-slate-200 dark:border-slate-700
                     rounded-2xl shadow-lg z-[60]
-                    max-h-[40vh] overflow-y-auto
+                    max-h-[80vh] overflow-y-auto
                 `}>
 
                     {/* Loading */}

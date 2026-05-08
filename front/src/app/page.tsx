@@ -10,10 +10,9 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
-    <main className="relative min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col overflow-hidden">
-
+    <main className="relative min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col overflow-x-hidden">
       {/* ===== Background Decoration ===== */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
       </div>
