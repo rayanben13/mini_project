@@ -51,25 +51,27 @@ const useReportedFilesStore = create((set, get) => ({
     }
   },
 
+  detailsLoading: false,
+
   fetchReportedDetails: async (id_file) => {
     try {
-      set({ loading: true, error: null });
+      set({ detailsLoading: true, error: null });
       const token = localStorage.getItem("token");
       const response = await axios.get(`${API_URL}/showReportedDetails/${id_file}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      set({ reportedDetails: response.data.data || response.data, loading: false });
+      set({ reportedDetails: response.data.data || response.data, detailsLoading: false });
       return { success: true, data: response.data };
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";
-      set({ error: message, loading: false });
+      set({ error: message, detailsLoading: false });
       return { success: false, message };
     }
   },
 
   deleteOrIgnoreReportedFile: async (id_file, action, reason = "") => {
     try {
-      set({ loading: true, error: null });
+      set({ error: null });
       const token = localStorage.getItem("token");
       
       const body = action === "delete" ? { reason } : {};
@@ -79,6 +81,12 @@ const useReportedFilesStore = create((set, get) => ({
         params: { action }
       });
       
+      // Update local state to reflect the deletion or ignore
+      set((state) => ({
+        reportedFiles: state.reportedFiles.filter(item => item.id_file !== id_file),
+        reportedDetails: null
+      }));
+
       return { success: true, message: response.data.message || response.data.succes };
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";
