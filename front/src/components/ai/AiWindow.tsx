@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import useAiStore from "@/Store/ai/aiStore";
 import { Bot, Paperclip, Send, User, X, Loader2, PanelRightClose } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function AiWindow() {
   const { messages, loading, isAiWindowOpen, activeFileId, closeAiWindow, sendAiWithFile, sendAiWithId, clearMessages } = useAiStore();
@@ -188,14 +190,22 @@ export default function AiWindow() {
                   }`}>
                     {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                   </div>
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${
+                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm overflow-hidden ${
                     msg.role === 'user'
                       ? 'bg-primary text-white rounded-tr-sm'
                       : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm'
                   }`}>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed font-medium">
-                      {msg.content}
-                    </div>
+                    {msg.role === 'user' ? (
+                      <div className="whitespace-pre-wrap text-sm leading-relaxed font-medium">
+                        {msg.content}
+                      </div>
+                    ) : (
+                      <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent prose-li:marker:text-primary">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

@@ -13,7 +13,7 @@ import useAiStore from "@/Store/ai/aiStore";
 
 
 export default function FilePreviewModal({ file }: { file: any }) {
-    const { getShareLink } = allActurStore();
+    const { getShareLink, getDownloadFiles } = allActurStore();
     const { data: userInfo } = useProfileDropdownData()
     const { openAiWindow } = useAiStore();
 
@@ -76,26 +76,18 @@ export default function FilePreviewModal({ file }: { file: any }) {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                        <Link
-                            href={file.file_path}
-                            target="_blank"
+                        <button
+                            onClick={() => getDownloadFiles(file.id_file)}
                             className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition"
                         >
                             Download
-                        </Link>
+                        </button>
 
                         <button
                             onClick={handleShare}
                             className="p-2 border border-border rounded-xl hover:bg-muted transition"
                         >
                             Share
-                        </button>
-
-                        <button
-                            onClick={() => openAiWindow(file.id_file)}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition"
-                        >
-                            <span className="text-xl">✨</span> Use AI
                         </button>
 
                         {userInfo?.profileData?.role === "user" && <ReportDialog file={file} />}
@@ -123,7 +115,16 @@ export default function FilePreviewModal({ file }: { file: any }) {
             </div>
 
             {/* ================= SIDEBAR ================= */}
-            <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-card">
+            <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-card flex flex-col gap-6">
+
+                {userInfo?.profileData?.role === "user" && (
+                    <button
+                        onClick={() => openAiWindow(file.id_file)}
+                        className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-sm"
+                    >
+                        <span className="text-xl">✨</span> Use AI with this document
+                    </button>
+                )}
 
                 <div className="rounded-2xl border border-border p-6 space-y-6 bg-background">
 
