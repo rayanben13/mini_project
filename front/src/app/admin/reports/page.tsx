@@ -45,7 +45,7 @@ export default function ReportsPage() {
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteFileId, setDeleteFileId] = useState<number | null>(null);
-  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteReason, setDeleteReason] = useState('');
   const [isActionPending, setIsActionPending] = useState(false);
 
   useEffect(() => {
@@ -66,29 +66,32 @@ export default function ReportsPage() {
     const res = await deleteOrIgnoreReportedFile(fileId, 'ignore');
     setIsActionPending(false);
     if (res.success) {
-      toast.success("File reports ignored successfully.");
+      toast.success('File reports ignored successfully.');
     } else {
-      toast.error(res.message || "Failed to ignore reports.");
+      toast.error(res.message || 'Failed to ignore reports.');
     }
   };
 
   const handleDeleteSubmit = async () => {
     if (!deleteFileId || deleteReason.trim().length < 3) {
-      toast.error("Reason must be at least 3 characters.");
+      toast.error('Reason must be at least 3 characters.');
       return;
     }
     setIsActionPending(true);
-    const res = await deleteOrIgnoreReportedFile(deleteFileId, 'delete', deleteReason);
+    const res = await deleteOrIgnoreReportedFile(
+      deleteFileId,
+      'delete',
+      deleteReason
+    );
     setIsActionPending(false);
     if (res.success) {
-      toast.success("File deleted successfully.");
+      toast.success('File deleted successfully.');
       setDeleteFileId(null);
-      setDeleteReason("");
+      setDeleteReason('');
     } else {
-      toast.error(res.message || "Failed to delete file.");
+      toast.error(res.message || 'Failed to delete file.');
     }
   };
-
 
   return (
     <div className="space-y-8">
@@ -171,15 +174,21 @@ export default function ReportsPage() {
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6 gap-8 overflow-x-auto no-scrollbar">
-        <button 
-          onClick={() => { setSection('all'); setPage(1); }}
+        <button
+          onClick={() => {
+            setSection('all');
+            setPage(1);
+          }}
           className={`pb-4 text-sm whitespace-nowrap ${section === 'all' ? 'font-bold text-primary border-b-2 border-primary' : 'font-semibold text-neutral hover:text-gray-800 transition-colors'}`}
         >
           All Reports
         </button>
 
-        <button 
-          onClick={() => { setSection('highRisk_Reports'); setPage(1); }}
+        <button
+          onClick={() => {
+            setSection('highRisk_Reports');
+            setPage(1);
+          }}
           className={`pb-4 text-sm whitespace-nowrap ${section === 'highRisk_Reports' ? 'font-bold text-primary border-b-2 border-primary' : 'font-semibold text-neutral hover:text-gray-800 transition-colors'}`}
         >
           High Risk
@@ -215,92 +224,94 @@ export default function ReportsPage() {
                     </div>
                   </td>
                 </tr>
-              ) : reportedFiles?.map((item: any) => {
-                const fileName = item.file?.title || `File #${item.id_file}`;
-                const ownerName =
-                  item.file?.users?.fullname ||
-                  item.file?.users?.username ||
-                  'Unknown';
-                const initials = ownerName.substring(0, 2).toUpperCase();
-                const reportsCount = item.reports_count || 0;
-                const percent = Math.min((reportsCount / 10) * 100, 100);
-                const progressColor =
-                  reportsCount >= 5 ? 'bg-red-500' : 'bg-amber-500';
-                const avatarBg = 'bg-blue-100 text-blue-600';
+              ) : (
+                reportedFiles?.map((item: any) => {
+                  const fileName = item.file?.title || `File #${item.id_file}`;
+                  const ownerName =
+                    item.file?.users?.fullname ||
+                    item.file?.users?.username ||
+                    'Unknown';
+                  const initials = ownerName.substring(0, 2).toUpperCase();
+                  const reportsCount = item.reports_count || 0;
+                  const percent = Math.min((reportsCount / 10) * 100, 100);
+                  const progressColor =
+                    reportsCount >= 5 ? 'bg-red-500' : 'bg-amber-500';
+                  const avatarBg = 'bg-blue-100 text-blue-600';
 
-                return (
-                  <tr
-                    key={item.id_file}
-                    className="hover:bg-gray-50/80 transition-colors"
-                  >
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <FileWarning className="w-5 h-5 text-gray-400" />
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleViewDetails(String(item.id_file));
-                          }}
-                          className="text-sm font-semibold text-gray-900 hover:text-primary transition-colors underline-offset-4 decoration-primary hover:underline text-left"
-                        >
-                          {fileName}
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${avatarBg}`}
-                        >
-                          {initials}
+                  return (
+                    <tr
+                      key={item.id_file}
+                      className="hover:bg-gray-50/80 transition-colors"
+                    >
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <FileWarning className="w-5 h-5 text-gray-400" />
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleViewDetails(String(item.id_file));
+                            }}
+                            className="text-sm font-semibold text-gray-900 hover:text-primary transition-colors underline-offset-4 decoration-primary hover:underline text-left"
+                          >
+                            {fileName}
+                          </button>
                         </div>
-                        <span className="text-sm font-medium text-gray-700">
-                          {ownerName}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleViewDetails(String(item.id_file));
-                          }}
-                          className="text-sm font-bold text-gray-900 hover:text-primary transition-colors underline-offset-4 decoration-primary hover:underline text-left w-[70px]"
-                        >
-                          {reportsCount} reports
-                        </button>
-                        <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden flex-shrink-0">
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
                           <div
-                            className={`h-full ${progressColor} rounded-full`}
-                            style={{ width: `${percent}%` }}
-                          ></div>
+                            className={`w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${avatarBg}`}
+                          >
+                            {initials}
+                          </div>
+                          <span className="text-sm font-medium text-gray-700">
+                            {ownerName}
+                          </span>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button 
-                          onClick={() => setDeleteFileId(item.id_file)}
-                          disabled={isActionPending}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-xs font-bold disabled:opacity-50"
-                        >
-                          <Trash2 className="w-[16px] h-[16px]" />
-                          Delete
-                        </button>
-                        <button 
-                          onClick={() => handleIgnore(item.id_file)}
-                          disabled={isActionPending}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-xs font-bold disabled:opacity-50"
-                        >
-                          <EyeOff className="w-[16px] h-[16px]" />
-                          Ignore
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleViewDetails(String(item.id_file));
+                            }}
+                            className="text-sm font-bold text-gray-900 hover:text-primary transition-colors underline-offset-4 decoration-primary hover:underline text-left w-[70px]"
+                          >
+                            {reportsCount} reports
+                          </button>
+                          <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden flex-shrink-0">
+                            <div
+                              className={`h-full ${progressColor} rounded-full`}
+                              style={{ width: `${percent}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => setDeleteFileId(item.id_file)}
+                            disabled={isActionPending}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-xs font-bold disabled:opacity-50"
+                          >
+                            <Trash2 className="w-[16px] h-[16px]" />
+                            Delete
+                          </button>
+                          <button
+                            onClick={() => handleIgnore(item.id_file)}
+                            disabled={isActionPending}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-xs font-bold disabled:opacity-50"
+                          >
+                            <EyeOff className="w-[16px] h-[16px]" />
+                            Ignore
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
               {!loading && (!reportedFiles || reportedFiles.length === 0) && (
                 <tr>
                   <td
@@ -376,14 +387,18 @@ export default function ReportsPage() {
       )}
 
       {/* Delete Reason Modal */}
-      <Dialog open={!!deleteFileId} onOpenChange={(open) => !open && setDeleteFileId(null)}>
+      <Dialog
+        open={!!deleteFileId}
+        onOpenChange={(open) => !open && setDeleteFileId(null)}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-gray-600">
-              Please provide a mandatory reason for removing this file. This reason will be logged and sent to the file owner.
+              Please provide a mandatory reason for removing this file. This
+              reason will be logged and sent to the file owner.
             </p>
             <Textarea
               value={deleteReason}
@@ -393,11 +408,23 @@ export default function ReportsPage() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteFileId(null)} disabled={isActionPending}>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteFileId(null)}
+              disabled={isActionPending}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteSubmit} disabled={isActionPending || deleteReason.trim().length < 3}>
-              {isActionPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            <Button
+              variant="destructive"
+              onClick={handleDeleteSubmit}
+              disabled={isActionPending || deleteReason.trim().length < 3}
+            >
+              {isActionPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
               Delete File
             </Button>
           </DialogFooter>
