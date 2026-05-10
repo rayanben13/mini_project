@@ -8,12 +8,14 @@ import FileActions from "./fileAction";
 
 import { useProfileDropdownData } from "@/hooks/useUserInformation";
 import ReportDialog from "./reportingDialog";
+import useAiStore from "@/Store/ai/aiStore";
 
 
 
 export default function FilePreviewModal({ file }: { file: any }) {
     const { getShareLink } = allActurStore();
     const { data: userInfo } = useProfileDropdownData()
+    const { openAiWindow } = useAiStore();
 
 
     if (!file) return <p>Loading...</p>;
@@ -87,6 +89,13 @@ export default function FilePreviewModal({ file }: { file: any }) {
                             className="p-2 border border-border rounded-xl hover:bg-muted transition"
                         >
                             Share
+                        </button>
+
+                        <button
+                            onClick={() => openAiWindow(file.id_file)}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition"
+                        >
+                            <span className="text-xl">✨</span> Use AI
                         </button>
 
                         {userInfo?.profileData?.role === "user" && <ReportDialog file={file} />}
