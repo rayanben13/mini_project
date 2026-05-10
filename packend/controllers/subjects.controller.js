@@ -38,7 +38,16 @@ export const yourSubjects = async (req, res) => {
 
         _count: {
           select: {
-            files: true,
+            files: {
+              where: {
+                status: 'accepted',
+                file_reports: {
+                  none: {
+                    status: 'reviewed',
+                  },
+                },
+              },
+            },
           },
         },
       },
