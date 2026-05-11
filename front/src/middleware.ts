@@ -7,20 +7,22 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAuthPage =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup") ||
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/" ||
     pathname.startsWith("/verify-email");
 
   const isAdminRoute = pathname.startsWith("/admin");
-  const isUserRoute =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/profile");
 
-  // ❌ not logged in → block protected routes
+  const isUserRoute =
+    pathname.startsWith("/dashboard") 
+
+  // ❌ not logged in
   if ((isAdminRoute || isUserRoute) && !token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // ❌ logged in user goes away from auth pages
+  // ❌ logged user visiting auth pages
   if (isAuthPage && token) {
     const target = role === "admin" ? "/admin" : "/dashboard";
 
@@ -29,23 +31,19 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // ❌ prevent user from admin
+  // ❌ user trying admin
   if (isAdminRoute && role !== "admin") {
-    if (pathname !== "/dashboard") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // ❌ optional: prevent admin staying in dashboard
+  // ❌ admin trying user pages
   if (isUserRoute && role === "admin") {
-    if (pathname !== "/admin") {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
 
   return NextResponse.next();
 }
-// 5. تحديد المسارات التي سيتم تشغيل الميدل وير عليها
+
 export const config = {
   matcher: [
     "/dashboard/:path*",

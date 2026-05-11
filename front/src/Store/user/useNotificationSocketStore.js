@@ -25,6 +25,7 @@ const useNotificationSocketStore = create((set, get) => ({
     });
 
     socket.on('notification', (data) => {
+      console.log('Socket received notification:', data);
       set((state) => ({
         notifications: [data, ...state.notifications],
       }));

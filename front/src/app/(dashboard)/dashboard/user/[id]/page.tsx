@@ -19,6 +19,7 @@ export default function PublicUserProfile() {
 
     // Fetch user's files and study lists
     const { data: filesData, isLoading: isLoadingFiles } = useFilesUserById(userId);
+
     const { data: studyListsData, isLoading: isLoadingStudyLists } = useStudyListsUserById(userId);
 
     if (isPending || !data) {

@@ -2,6 +2,7 @@
 
 import { useMyNotificationsList } from "@/hooks/useNotifications";
 import useNotificationStore from "@/Store/user/notificationStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 function NotificationsPage() {
     const [page, setPage] = useState(1);
     const [allNotifications, setAllNotifications] = useState<any[]>([]);
+    const queryClient = useQueryClient();
 
     const {
         data,
@@ -18,6 +20,7 @@ function NotificationsPage() {
         error,
     } = useMyNotificationsList(page);
     const router = useRouter();
+    console.log("nn", data)
 
     const notifications = data?.data || [];
     const meta = data?.meta;
@@ -34,6 +37,7 @@ function NotificationsPage() {
         setIsDeletingAll(false);
         if (res.success) {
             toast.success("All notifications deleted");
+            queryClient.invalidateQueries({ queryKey: ["myNotificationsList"] });
         } else {
             toast.error(res.message || "Failed to delete notifications");
         }
@@ -68,10 +72,17 @@ function NotificationsPage() {
                 )
             );
             await markNotificationAsRead(item.id_notification);
+            queryClient.invalidateQueries({ queryKey: ["myNotificationsList"] });
         }
 
-        if (item.related_id) {
+        if (item.related_type === "user") {
             router.push(`/dashboard/user/${item.related_id}`);
+        }
+        else if (item.related_type === "file") {
+            router.push(`/dashboard/${item.related_id}`);
+        }
+        else {
+            router.push(`/dashboard/study-list/${item.related_id}`);
         }
     };
 

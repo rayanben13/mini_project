@@ -1,7 +1,6 @@
 "use client";
 
 import SetReminder from "@/components/studyList/SetReminder";
-import { Button } from "@/components/ui/button";
 import useStudyListStore from "@/Store/user/studyListStore";
 import { Bell, FileText, Heart, Loader2, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -21,7 +20,6 @@ export default function StudyListDetailPage() {
     // ✅ optimistic
     const [isLoved, setIsLoved] = useState<boolean | null>(null);
     const [isSaved, setIsSaved] = useState<boolean | null>(null);
-    const [saving, setSaving] = useState(false);
     const [likes, setLikes] = useState(0);
     const [initialized, setInitialized] = useState(false);
 
@@ -33,6 +31,18 @@ export default function StudyListDetailPage() {
         setLoadingReminder(false);
 
         if (res.success) {
+
+            // ✅ update local state
+            setDetails((prev: any) => ({
+                ...prev,
+                studyListCard: {
+                    ...prev.studyListCard,
+                    isAddReminder: true,
+                    reminder_date: date,
+                    reminder_time: time,
+                },
+            }));
+
             toast.success("Reminder set successfully!");
         } else {
             toast.error(res.message || "Failed to set reminder");
@@ -58,23 +68,6 @@ export default function StudyListDetailPage() {
             setInitialized(true);
         }
     }, [details, initialized]);
-
-    // 💾 save
-    const handleSave = async () => {
-        if (isSaved || saving) return;
-        setSaving(true);
-        try {
-            const res = await addStudylistToAddedSection(id as string);
-            if (res.success) {
-                toast.success("Saved to library");
-                setIsSaved(true);
-            } else {
-                toast.error(res.message);
-            }
-        } finally {
-            setSaving(false);
-        }
-    };
 
     // ❤️ optimistic like
     const handleLove = async () => {
@@ -129,112 +122,193 @@ export default function StudyListDetailPage() {
         );
     }
 
+
     return (
-        <div className="p-6 max-w-4xl mx-auto space-y-6">
+        <div className="min-h-screen">
+            <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-14">
 
-            {/* HEADER */}
-            <div className="space-y-4 border-b pb-6 dark:border-slate-800">
+                {/* HEADER */}
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden mb-10">
 
-                {/* TOP ROW */}
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold dark:text-slate-100">
-                        {details.studyListCard.name}
-                    </h1>
+                    {/* BG EFFECT */}
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#0975e6]/5 rounded-full blur-3xl" />
 
-                    <div className="flex items-center gap-2">
+                    <div className="relative z-10 flex flex-col lg:flex-row justify-between gap-8">
 
-                        {/* ❤️ Love */}
-                        <Button
-                            onClick={handleLove}
-                            variant="ghost"
-                            className={`gap-2 rounded-full px-4 py-2
-                ${isLoved
-                                    ? "text-red-500 bg-red-50 dark:bg-red-500/10"
-                                    : "text-slate-400 hover:text-red-500 hover:bg-red-50"
-                                }`}
-                        >
-                            <Heart className={`w-5 h-5 ${isLoved ? "fill-current" : ""}`} />
-                            {likes}
-                        </Button>
+                        {/* LEFT */}
+                        <div className="flex flex-col sm:flex-row gap-5 flex-1">
 
-                        {/* ⏰ Reminder */}
-                        <SetReminder
-                            isActive={details.studyListCard.isAddReminder}
-                            initialDate={details.studyListCard.reminder_date}
-                            initialTime={details.studyListCard.reminder_time}
-                            loading={loadingReminder}
-                            onSave={handleReminder}
-                        />
+                            {/* ICON */}
+                            <div className="w-20 h-20 rounded-2xl bg-[#0975e6]/10 flex items-center justify-center shrink-0">
+                                <FileText className="w-10 h-10 text-[#0975e6]" />
+                            </div>
 
-                        {/* 💾 SAVE */}
-                        {!details.studyListCard.isOwner && (
-                            <Button
-                                onClick={handleSave}
-                                disabled={saving || isSaved === true}
-                                className={`rounded-full px-4 py-2 font-bold transition-all ${
-                                    isSaved
-                                        ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400 cursor-default"
-                                        : "bg-[#f1f3fd] text-[#0975e6] hover:bg-[#0975e6] hover:text-white dark:bg-slate-800 dark:text-blue-400 dark:hover:bg-blue-600"
-                                }`}
-                            >
-                                {saving ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : isSaved ? (
-                                    "Saved"
-                                ) : (
-                                    "Save"
-                                )}
-                            </Button>
-                        )}
-                    </div>
-                </div>
+                            {/* INFO */}
+                            <div className="space-y-4 flex-1">
 
-                {/* INFO ROW */}
-                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                                <div>
+                                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                                        {details.studyListCard.name}
+                                    </h1>
 
-                    {/* 📄 Files count */}
-                    <div className="flex items-center gap-1">
-                        <FileText className="w-4 h-4" />
-                        {details.studyListCard.count_files} Files
-                    </div>
+                                    <p className="mt-3 text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
+                                        {details.studyListCard.description ||
+                                            "No description available."}
+                                    </p>
+                                </div>
 
-                    {/* 🔔 Reminder info */}
-                    {details.studyListCard.isAddReminder && (
-                        <div className="flex items-center gap-1 text-blue-500 font-medium">
-                            <Bell className="w-4 h-4" />
-                            Next study: {details.studyListCard.reminder_time}
+                                {/* META */}
+                                <div className="flex flex-wrap items-center gap-5 text-sm font-medium text-slate-500 dark:text-slate-400">
+
+                                    <div className="flex items-center gap-1.5">
+                                        <Heart className="w-4 h-4" />
+                                        {likes} Likes
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5">
+                                        <FileText className="w-4 h-4" />
+                                        {details.studyListCard.count_files} Files
+                                    </div>
+
+                                    {details.studyListCard.isAddReminder && (
+                                        <div className="flex items-center gap-1.5 text-[#0975e6]">
+                                            <Bell className="w-4 h-4" />
+                                            {details.studyListCard.reminder_time}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* OWNER */}
+                                <div className="flex items-center gap-3 mt-4">
+                                    <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">
+                                        Created by:
+                                    </span>
+
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+
+                                        {/* Avatar */}
+                                        <div className="w-7 h-7 rounded-full bg-[#0975e6]/10 text-[#0975e6] flex items-center justify-center text-xs font-black uppercase">
+                                            {details.studyListCard.users?.fullname?.charAt(0)}
+                                        </div>
+
+                                        {/* Name */}
+                                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                            {details.studyListCard.users?.fullname}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    )}
+
+                        {/* ACTIONS */}
+                        <div className="flex items-start gap-3">
+
+
+                            {/* REMINDER */}
+                            <SetReminder
+                                isActive={details.studyListCard.isAddReminder}
+                                initialDate={details.studyListCard.reminder_date}
+                                initialTime={details.studyListCard.reminder_time}
+                                loading={loadingReminder}
+                                onSave={handleReminder}
+                            />
+
+                            {/* LOVE */}
+                            <button
+                                onClick={handleLove}
+                                className={`
+                                p-3 rounded-full border transition-all
+                                ${isLoved
+                                        ? "bg-red-50 text-red-500 border-red-100 dark:bg-red-500/10 dark:border-red-500/20"
+                                        : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-red-500"
+                                    }
+                            `}
+                            >
+                                <Heart
+                                    className={`w-5 h-5 ${isLoved ? "fill-current" : ""}`}
+                                />
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                {/* DESCRIPTION */}
-                {details.studyListCard.description && (
-                    <p className="text-gray-600 dark:text-slate-400">
-                        {details.studyListCard.description}
-                    </p>
-                )}
-            </div>
+                {/* SECTION TITLE */}
+                <div className="flex items-center gap-2 mb-6 px-1">
+                    <span className="w-1 h-6 bg-[#0975e6] rounded-full" />
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                        Study Materials
+                    </h2>
+                </div>
 
-            {/* FILES */}
-            <div className="grid gap-4">
-                {details.FilesStudylist?.map((file: any) => (
-                    <div
-                        key={file.id_file}
-                        onClick={() => router.push(`/dashboard/${file.id_file}`)}
-                        className="flex justify-between items-center p-4 border rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50"
-                    >
-                        <span>{file.title}</span>
+                {/* FILES */}
+                <div className="flex flex-col gap-5">
 
-                        <Button
-                            variant="ghost"
-                            onClick={(e) => handleDeleteFile(e, file.id_file)}
-                            className="text-red-500"
+                    {details.FilesStudylist?.map((file: any) => (
+                        <div
+                            key={file.id_file}
+                            onClick={() =>
+                                router.push(`/dashboard/${file.id_file}`)
+                            }
+                            className="
+                            bg-white dark:bg-slate-900
+                            rounded-3xl overflow-hidden
+                            border border-slate-100 dark:border-slate-800
+                            shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]
+                            hover:shadow-lg
+                            transition-all
+                            flex flex-col md:flex-row
+                            group cursor-pointer
+                        "
                         >
-                            <Trash2 />
-                        </Button>
-                    </div>
-                ))}
-            </div>
+
+                            {/* LEFT ICON */}
+                            <div className="w-full md:w-44 h-32 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-center shrink-0">
+                                <FileText className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+                            </div>
+
+                            {/* CONTENT */}
+                            <div className="flex-1 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+                                <div className="space-y-2">
+
+                                    <span className="inline-block px-2 py-0.5 rounded-md bg-[#0975e6]/10 text-[10px] font-black tracking-wider uppercase text-[#0975e6]">
+                                        {file.type_file || "FILE"}
+                                    </span>
+
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                                        {file.title}
+                                    </h3>
+
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                        {file?.subjects?.course || "Unknown course"}
+                                    </p>
+                                </div>
+
+                                {/* ACTION */}
+                                {details?.studyListCard?.isOwner && (
+                                    <div className="flex items-center gap-3 ml-auto">
+
+                                        <button
+                                            onClick={(e) =>
+                                                handleDeleteFile(e, file.id_file)
+                                            }
+                                            className="
+                                        p-2 rounded-full
+                                        text-red-500
+                                        hover:bg-red-50
+                                        dark:hover:bg-red-500/10
+                                        transition
+                                    "
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </main>
         </div>
     );
 }

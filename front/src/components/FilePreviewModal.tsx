@@ -16,6 +16,7 @@ export default function FilePreviewModal({ file }: { file: any }) {
     const { data: userInfo } = useProfileDropdownData()
 
 
+
     if (!file) return <p>Loading...</p>;
 
     const subject = file.subjects;
@@ -114,83 +115,156 @@ export default function FilePreviewModal({ file }: { file: any }) {
             </div>
 
             {/* ================= SIDEBAR ================= */}
-            <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-card">
+            <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-slate-50/50 dark:bg-slate-950">
 
-                <div className="rounded-2xl border border-border p-6 space-y-6 bg-background">
+                <div className="rounded-[28px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6">
 
-                    <h3 className="font-bold text-xl">Document Info</h3>
+                    {/* Header */}
+                    <h3 className="text-xs font-extrabold tracking-[0.25em] uppercase text-slate-400 mb-8">
+                        Document Info
+                    </h3>
 
-                    <div className="space-y-3 text-sm">
+                    <div className="space-y-6">
 
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Subject</span>
-                            <span className="text-primary font-bold">
-                                {subject?.course}
-                            </span>
-                        </div>
+                        {/* Submitter */}
+                        <div>
+                            <p className="text-sm text-slate-400 mb-3">
+                                Submitted by
+                            </p>
 
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Major</span>
-                            <span>{subject?.major}</span>
-                        </div>
-
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">University</span>
-                            <span>{subject?.university}</span>
-                        </div>
-
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Year</span>
-                            <span>{subject?.academic_year}</span>
-                        </div>
-
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Creation</span>
-                            <span>{file.creation_year}</span>
-                        </div>
-                    </div>
-
-                    <hr className="border-border" />
-
-                    {/* User */}
-                    <div>
-                        <p className="text-xs text-muted-foreground mb-2">
-                            Submitted by
-                        </p>
-
-                        <div className="flex items-center gap-3">
                             <Link
                                 href={`/dashboard/user/${file.users?.id_user}`}
                                 onClick={(e) => {
                                     if (file.users?.role === "admin") {
-                                        e.preventDefault(); // 🔥 يمنع الانتقال
+                                        e.preventDefault();
                                         toast.error("You can't see this profile");
                                     }
                                 }}
-                                className="flex items-center gap-3 group cursor-pointer"
+                                className="flex items-center gap-3 group w-fit"
                             >
-                                <div className="size-10 rounded-full overflow-hidden bg-muted relative border-2 border-transparent group-hover:border-primary transition-all">
-                                    <Image
-                                        src={file.users?.img_user || "/avatar.png"}
-                                        alt={file.users?.fullname || "User"}
-                                        fill
-                                        className="object-cover"
-                                        unoptimized
-                                    />
+
+                                {/* Avatar */}
+                                <div className="relative size-11 rounded-full overflow-hidden bg-fuchsia-100 border border-fuchsia-200 flex items-center justify-center">
+
+                                    {file.users?.img_user ? (
+                                        <Image
+                                            src={file.users?.img_user}
+                                            alt={file.users?.fullname || "User"}
+                                            fill
+                                            className="object-cover"
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <span className="text-sm font-bold text-fuchsia-600 uppercase">
+                                            {file.users?.fullname?.charAt(0)}
+                                        </span>
+                                    )}
                                 </div>
 
+                                {/* User Info */}
                                 <div>
-                                    <p className="font-bold group-hover:text-primary transition-colors">
+                                    <p className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-fuchsia-600 transition-colors">
                                         {file.users?.fullname || "Unknown user"}
                                     </p>
-                                    <p className="text-xs text-muted-foreground">
+
+                                    <p className="text-xs text-slate-400">
                                         @{file.users?.username || "unknown"}
                                     </p>
                                 </div>
                             </Link>
                         </div>
-                    </div>
 
+                        {/* Divider */}
+                        <div className="border-t border-slate-100 dark:border-slate-800" />
+
+                        {/* Subject */}
+                        <div>
+                            <p className="text-sm text-slate-400 mb-2">
+                                Subject
+                            </p>
+
+                            <span className="inline-flex px-3 py-1 rounded-full bg-fuchsia-100 text-fuchsia-700 text-sm font-semibold">
+                                {subject?.course}
+                            </span>
+                        </div>
+
+                        {/* Info Fields */}
+                        <div className="space-y-5">
+
+                            <div>
+                                <p className="text-sm text-slate-400">
+                                    Major
+                                </p>
+
+                                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                    {subject?.major}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-slate-400">
+                                    University
+                                </p>
+
+                                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                    {subject?.university}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-slate-400">
+                                    Academic Year
+                                </p>
+
+                                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                    {subject?.academic_year}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-slate-400">
+                                    Type
+                                </p>
+
+                                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                    {file?.type}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-slate-400">
+                                    Status
+                                </p>
+
+                                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                    {file?.status}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-slate-400">
+                                    Approved At
+                                </p>
+
+                                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                    {file?.approved_at}
+                                </p>
+                            </div>
+
+
+
+                            <div>
+                                <p className="text-sm text-slate-400">
+                                    Creation Year
+                                </p>
+
+                                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                    {file.creation_year}
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
             </aside>
         </main>

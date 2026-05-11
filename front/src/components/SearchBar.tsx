@@ -1,5 +1,6 @@
 "use client";
 
+import { useProfileDropdownData } from "@/hooks/useUserInformation";
 import allActurStore from "@/Store/allActurStore";
 import { ArrowRight, Book, FileText, Loader2, Search, X } from "lucide-react";
 import Link from "next/link";
@@ -19,8 +20,11 @@ export default function SearchBar({
     isGuest = false,
     externalQuery = ""
 }: SearchBarProps) {
+    const { data: user } = useProfileDropdownData();
     const getSearchFiles = allActurStore((state) => state.getSearchFiles);
     const getSearchSubject = allActurStore((state) => state.getSearchSubject);
+    const role = user?.profileData?.role;
+    const isAdmin = role === "admin";
 
     const [searchQuery, setSearchQuery] = useState(externalQuery);
     const [searchResults, setSearchResults] = useState<{
@@ -180,7 +184,7 @@ export default function SearchBar({
                                         {searchResults.subjects.map((sub: any) => (
                                             <Link
                                                 key={sub.id_subject}
-                                                href={isGuest ? `/subject/${sub.id_subject}` : `/dashboard/subject/${sub.id_subject}`}
+                                                href={isAdmin ? `/admin/subject/${sub.id_subject}` : (isGuest ? `/subject/${sub.id_subject}` : `/dashboard/subject/${sub.id_subject}`)}
                                                 onClick={() => {
                                                     setShowResults(false);
                                                     onClose?.();
@@ -240,7 +244,7 @@ export default function SearchBar({
                                         {searchResults.files.map((file: any) => (
                                             <Link
                                                 key={file.id_file}
-                                                href={isGuest ? `/file/${file.id_file}` : `/dashboard/${file.id_file}`}
+                                                href={isAdmin ? `/admin/files/${file.id_file}` : (isGuest ? `/file/${file.id_file}` : `/dashboard/${file.id_file}`)}
                                                 onClick={() => {
                                                     setShowResults(false);
                                                     onClose?.();

@@ -4,6 +4,7 @@ import Header from "@/components/header";
 import { AppSidebar } from "@/components/sideBar/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import ReminderDialog from "@/components/notifications/ReminderDialog";
 
 export default function DashboardLayout({
   children,
@@ -24,6 +25,7 @@ export default function DashboardLayout({
 
         <SidebarInset className="flex flex-col min-w-0">
           <Header />
+          <ReminderDialog />
           {/* استخدام min-w-0 هنا ضروري جداً لكي تسمح للمحتوى بالتقلص 
               داخل الـ Flexbox بدلاً من دفع الحواف للخارج.
           */}

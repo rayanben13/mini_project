@@ -102,60 +102,65 @@ export default function FileActions({
 
     return (
         <div className="flex items-center gap-2">
-            {/* 👍 Like Button */}
-            <button
-                type="button"
-                onClick={onLikeClick} // استخدام الدالة الجديدة
-                className={`flex items-center justify-center p-2.5 rounded-full transition-all duration-200 group relative
-                    ${userLikeAction === "LIKE"
-                        ? "bg-[#0975e6]/10 text-[#0975e6]"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-[#0975e6]/10 hover:text-[#0975e6]"}`}
-            >
-                <ThumbsUp
-                    className={`w-5 h-5 ${userLikeAction === "LIKE" ? "scale-110" : ""}`}
-                    fill={userLikeAction === "LIKE" ? "currentColor" : "none"}
-                />
-                <span className={`absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold flex items-center justify-center
-                    ${userLikeAction === "LIKE" ? "bg-[#0975e6] text-white" : "bg-slate-200 text-slate-600"}`}>
-                    {likes}
-                </span>
-            </button>
+            {userRole === "user" && (
+                <>
+                    {/* 👍 Like Button */}
+                    <button
+                        type="button"
+                        onClick={onLikeClick}
+                        className={`flex items-center justify-center p-2.5 rounded-full transition-all duration-200 group relative
+            ${userLikeAction === "LIKE"
+                                ? "bg-[#0975e6]/10 text-[#0975e6]"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-[#0975e6]/10 hover:text-[#0975e6]"}`}
+                    >
+                        <ThumbsUp
+                            className={`w-5 h-5 ${userLikeAction === "LIKE" ? "scale-110" : ""}`}
+                            fill={userLikeAction === "LIKE" ? "currentColor" : "none"}
+                        />
+                        <span className={`absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold flex items-center justify-center
+            ${userLikeAction === "LIKE" ? "bg-[#0975e6] text-white" : "bg-slate-200 text-slate-600"}`}>
+                            {likes}
+                        </span>
+                    </button>
 
-            {/* 👎 Dislike Button */}
-            <button
-                type="button"
-                onClick={onDislikeClick} // استخدام الدالة الجديدة
-                className={`flex items-center justify-center p-2.5 rounded-full transition-all duration-200 group relative
-                    ${userLikeAction === "DISLIKE"
-                        ? "bg-red-500/10 text-red-500"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-red-500/10 hover:text-red-500"}`}
-            >
-                <ThumbsDown
-                    className={`w-5 h-5 ${userLikeAction === "DISLIKE" ? "scale-110" : ""}`}
-                    fill={userLikeAction === "DISLIKE" ? "currentColor" : "none"}
-                />
-                <span className={`absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold flex items-center justify-center
-                    ${userLikeAction === "DISLIKE" ? "bg-red-500 text-white" : "bg-slate-200 text-slate-600"}`}>
-                    {dislikes}
-                </span>
-            </button>
+                    {/* 👎 Dislike Button */}
+                    <button
+                        type="button"
+                        onClick={onDislikeClick}
+                        className={`flex items-center justify-center p-2.5 rounded-full transition-all duration-200 group relative
+            ${userLikeAction === "DISLIKE"
+                                ? "bg-red-500/10 text-red-500"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-red-500/10 hover:text-red-500"}`}
+                    >
+                        <ThumbsDown
+                            className={`w-5 h-5 ${userLikeAction === "DISLIKE" ? "scale-110" : ""}`}
+                            fill={userLikeAction === "DISLIKE" ? "currentColor" : "none"}
+                        />
+                        <span className={`absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold flex items-center justify-center
+            ${userLikeAction === "DISLIKE" ? "bg-red-500 text-white" : "bg-slate-200 text-slate-600"}`}>
+                            {dislikes}
+                        </span>
+                    </button>
 
-            {/* 💾 Save Button */}
-            <div className="relative group">
-                <Button
-                    onClick={onSaveClick} // استخدام الدالة الجديدة
-                    className="p-2.5 rounded-full bg-slate-100 text-slate-600 hover:bg-blue-50 transition-colors"
-                >
-                    <BookmarkPlus className="w-5 h-5" />
-                </Button>
+                    {/* 💾 Save Button */}
+                    <div className="relative group">
+                        <Button
+                            onClick={onSaveClick}
+                            className="p-2.5 rounded-full bg-slate-100 text-slate-600 hover:bg-blue-50 transition-colors"
+                        >
+                            <BookmarkPlus className="w-5 h-5" />
+                        </Button>
 
-                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 
-                whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-lg 
-                bg-black text-white opacity-0 group-hover:opacity-100 
-                transition-all duration-200 pointer-events-none shadow-md">
-                    Save to your study list
-                </div>
-            </div>
+                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 
+            whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-lg 
+            bg-black text-white opacity-0 group-hover:opacity-100 
+            transition-all duration-200 pointer-events-none shadow-md">
+                            Save to your study list
+                        </div>
+                    </div>
+                </>
+            )}
+
 
             <SaveStudyListModal
                 fileId={fileId}

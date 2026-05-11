@@ -2,8 +2,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { getPdfPreview } from "@/utils/cloudinary";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 export default function TopFilesSlider({
@@ -132,55 +134,73 @@ export default function TopFilesSlider({
 
 export const FileCard = memo(({ file, onNavigate }: { file: any, onNavigate: () => void }) => {
 
-    // ✅ إما نستخدم Link مباشر (للتنقل)، أو onclick للحاوية
+    const previewUrl = getPdfPreview(file.file_path);
     const cardContent = (
         <>
-            {/* الجزء العلوي - معاينة */}
-            <div onClick={(e) => { e.stopPropagation(); onNavigate(); }} className="h-32 bg-slate-50 dark:bg-slate-800/50 relative overflow-hidden rounded-t-2xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent"></div>
-                <div className="absolute inset-x-4 top-4 bottom-0 bg-white dark:bg-slate-800 rounded-t-xl shadow-sm p-3 translate-y-4 group-hover:translate-y-2 transition-transform duration-300">
-                    <p className="text-[10px] text-slate-400 line-clamp-2">
-                        {file.title}
-                    </p>
+            {/* الجزء العلوي - معاينة المحتوى */}
+            <div
+                onClick={(e) => { e.stopPropagation(); onNavigate(); }}
+                className="h-36 bg-slate-50 dark:bg-slate-800/50 relative overflow-hidden rounded-t-2xl border-b border-slate-100 dark:border-slate-800"
+            >
+                {/* خلفية تجميلية */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-[#ae1ce9]/5"></div>
+
+                {/* ورقة المعاينة المنبثقة */}
+                <div className="h-44 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+                    <Image
+                        src={previewUrl}
+                        alt={file.title}
+                        fill
+                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        // في حال لم يجد Cloudinary الملف أو حدث خطأ
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = "https://placehold.co/400x600/e2e8f0/64748b?text=No+Preview";
+                        }}
+                    />
+
+                    {/* Overlay وتأثير بصري */}
+                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
+
+
                 </div>
             </div>
 
-            {/* المحتوى */}
+            {/* المحتوى السفلي */}
             <div className="p-5">
-                <span className="text-[10px] font-bold uppercase text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">
-                    {file.major || "general"}
-                </span>
+                <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase text-[#ae1ce9] bg-[#ae1ce9]/10 px-2.5 py-1 rounded-md">
+                        {file.major || "General"}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                        {file.type ?? ""}
+                    </span>
+                </div>
 
-                <h3 className="mt-3 text-md font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
+                <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-[#ae1ce9] transition-colors">
                     {file.title}
                 </h3>
 
                 <div className="flex items-center gap-2 mt-2 text-slate-500 dark:text-slate-400">
-                    <span className="text-xs font-medium">{file.course}</span>
-                    <span className="text-[10px] opacity-30">•</span>
-                    <span className="text-xs">{file.type}</span>
+                    <span className="text-xs font-medium truncate max-w-[150px]">{file.course}</span>
                 </div>
 
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 dark:border-slate-800">
-                    <p className="text-xs text-slate-400 flex items-center gap-1">
-                        ❤️ <span className="font-semibold text-slate-600 dark:text-slate-300">{file.likes_count || 0}</span>
-                    </p>
-
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
+                    {file.likes_count && <><p className="text-xs text-slate-400 flex items-center gap-1.5">
+                        <span className="text-red-500">❤️</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">{file.likes_count || 0}</span>
+                    </p></>}
+                    {/* إضافة رتبة المالك أو التاريخ إذا أردت */}
+                    <span className="text-[10px] text-slate-400 italic">By {file.users?.username || "Student"}</span>
                 </div>
             </div>
         </>
     );
 
     return (
-        <div
-            onClick={onNavigate}
-            className="block h-full"
-        >
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group h-full relative">
-
-                {/* Hover Overlay (اختياري: إظهار تفاصيل إضافية عند الوقوف) */}
-                <div className="absolute inset-0 bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none" />
-
+        <div onClick={onNavigate} className="block h-full">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer group h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/[0.02] dark:to-white/[0.02] pointer-events-none" />
                 {cardContent}
             </div>
         </div>

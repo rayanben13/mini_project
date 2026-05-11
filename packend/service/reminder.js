@@ -40,7 +40,7 @@ cron.schedule('* * * * *', async () => {
         const message = `Reminder to study ${reminder.study_lists.name}`;
 
         // Create notification
-        await prisma.notifications.create({
+        const newNotification = await prisma.notifications.create({
           data: {
             id_user: reminder.users.id_user,
             message,
@@ -51,10 +51,13 @@ cron.schedule('* * * * *', async () => {
 
         // Emit via Socket
         const roomName = String(reminder.users.id_user);
+        console.log(`[Reminder] Emitting socket event to room: ${roomName}`);
         io.to(roomName).emit('notification', {
-          message,
-          related_id: reminder.study_lists.id_stuList,
-          related_type: 'study_list',
+          ...newNotification,
+          // compatibility with previous format if needed
+          message: newNotification.message,
+          related_id: newNotification.related_id,
+          related_type: newNotification.related_type,
         });
 
         console.log(
