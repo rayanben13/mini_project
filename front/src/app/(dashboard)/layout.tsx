@@ -1,14 +1,11 @@
 "use client";
 
+import AiWindow from "@/components/ai/AiWindow";
 import Header from "@/components/header";
+import ReminderDialog from "@/components/notifications/ReminderDialog";
 import { AppSidebar } from "@/components/sideBar/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-<<<<<<< HEAD
-import ReminderDialog from "@/components/notifications/ReminderDialog";
-=======
-import AiWindow from "@/components/ai/AiWindow";
->>>>>>> d55b84205cf548b1a0863c35fe60e93170380fb0
 
 export default function DashboardLayout({
   children,
