@@ -8,12 +8,14 @@ import FileActions from "./fileAction";
 
 import { useProfileDropdownData } from "@/hooks/useUserInformation";
 import ReportDialog from "./reportingDialog";
+import useAiStore from "@/Store/ai/aiStore";
 
 
 
 export default function FilePreviewModal({ file }: { file: any }) {
-    const { getShareLink } = allActurStore();
+    const { getShareLink, getDownloadFiles } = allActurStore();
     const { data: userInfo } = useProfileDropdownData()
+    const { openAiWindow } = useAiStore();
 
 
 
@@ -75,13 +77,12 @@ export default function FilePreviewModal({ file }: { file: any }) {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                        <Link
-                            href={file.file_path}
-                            target="_blank"
+                        <button
+                            onClick={() => getDownloadFiles(file.id_file)}
                             className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition"
                         >
                             Download
-                        </Link>
+                        </button>
 
                         <button
                             onClick={handleShare}
@@ -115,7 +116,20 @@ export default function FilePreviewModal({ file }: { file: any }) {
             </div>
 
             {/* ================= SIDEBAR ================= */}
+<<<<<<< HEAD
             <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-slate-50/50 dark:bg-slate-950">
+=======
+            <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-card flex flex-col gap-6">
+
+                {userInfo?.profileData?.role === "user" && (
+                    <button
+                        onClick={() => openAiWindow(file.id_file)}
+                        className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-sm"
+                    >
+                        <span className="text-xl">✨</span> Use AI with this document
+                    </button>
+                )}
+>>>>>>> d55b84205cf548b1a0863c35fe60e93170380fb0
 
                 <div className="rounded-[28px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6">
 

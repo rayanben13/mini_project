@@ -3,12 +3,24 @@ import prisma from '../../lib/prisma.js';
 import { downloadPDF } from '../../service/downloadPDFsaveRam.js';
 import { extractText } from '../../config/pdf-parse.js';
 
+const userFileCache = new Map();
+
 export const sendMessageToAi = async (req, res) => {
   try {
+    const userId = req.user.id_user;
     if (!req.body) {
       return res.status(400).json({ error: 'Request body is missing' });
     }
     const { message } = req.body;
+    let history = [];
+    if (req.body.history) {
+      try {
+        history = typeof req.body.history === 'string' ? JSON.parse(req.body.history) : req.body.history;
+      } catch (e) {
+        history = [];
+      }
+    }
+
     const lang = req.query.lang || 'en';
     const id_file = req.params.id_file ? Number(req.params.id_file) : null;
     const file_upload = req.file;
@@ -19,55 +31,42 @@ export const sendMessageToAi = async (req, res) => {
       return res.status(400).json({ error: 'Invalid language choice' });
     }
 
-    if ((!file_upload && !id_file) || (file_upload && id_file)) {
-      return res
-        .status(400)
-        .json({ error: 'Please provide an id_file or upload a file.' });
-    }
+    let text = '';
+    const cachedData = userFileCache.get(userId);
 
-    let buffer;
-
-    // Check if the user uploaded a file directly (stored in RAM via multer)
-    if (file_upload) {
-      buffer = file_upload.buffer;
-    } else if (id_file) {
-      // Fallback: Fetch file path from database
-      const fileExist = await prisma.files.findUnique({
-        where: {
-          id_file,
-          status: 'accepted',
-          file_reports: {
-            none: { status: 'reviewed' },
+    if (id_file) {
+      if (cachedData && cachedData.id_file === id_file) {
+        text = cachedData.text;
+      } else {
+        const fileExist = await prisma.files.findUnique({
+          where: {
+            id_file,
+            status: 'accepted',
+            file_reports: { none: { status: 'reviewed' } },
           },
-        },
-      });
-
-      if (!fileExist) {
-        return res
-          .status(404)
-          .json({ error: 'File not found or not processed' });
+        });
+        if (!fileExist) {
+          return res.status(404).json({ error: 'File not found or not processed' });
+        }
+        const buffer = await downloadPDF(fileExist.file_path);
+        text = await extractText(buffer);
+        userFileCache.set(userId, { text, id_file });
       }
-
-      // 1. Download PDF
-      buffer = await downloadPDF(fileExist.file_path);
+    } else if (file_upload && file_upload.buffer.length > 0) {
+      text = await extractText(file_upload.buffer);
+      userFileCache.set(userId, { text, id_file: null });
     } else {
-      return res
-        .status(400)
-        .json({ error: 'Please provide an id_file or upload a file.' });
+      if (cachedData && cachedData.text) {
+        text = cachedData.text;
+      } else {
+        return res.status(400).json({ error: 'Please provide an id_file or upload a file first.' });
+      }
     }
 
-    // 2. Extract text
-    const text = await extractText(buffer);
-
-    // 3. AI request
-    const stream = await openrouter.chat.send({
-      chatRequest: {
-        model: 'openai/gpt-oss-120b:free',
-        stream: true,
-        messages: [
-          {
-            role: 'system',
-            content: `
+    const apiMessages = [
+      {
+        role: 'system',
+        content: `
 You are an AI assistant that answers questions based ONLY on the provided PDF content.
 
 ========================
@@ -101,12 +100,31 @@ PDF CONTENT
 ${text}
 """
 `,
-          },
-          {
-            role: 'user',
-            content: message,
-          },
-        ],
+      },
+    ];
+
+    if (history && history.length > 0) {
+      history.forEach((h) => {
+        if (h.role === 'user' || h.role === 'ai' || h.role === 'assistant') {
+          apiMessages.push({
+            role: h.role === 'ai' ? 'assistant' : h.role,
+            content: h.content,
+          });
+        }
+      });
+    }
+
+    apiMessages.push({
+      role: 'user',
+      content: message,
+    });
+
+    // 3. AI request
+    const stream = await openrouter.chat.send({
+      chatRequest: {
+        model: 'openai/gpt-oss-120b:free',
+        stream: true,
+        messages: apiMessages,
       },
     });
 

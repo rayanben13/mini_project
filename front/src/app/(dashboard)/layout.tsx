@@ -4,7 +4,11 @@ import Header from "@/components/header";
 import { AppSidebar } from "@/components/sideBar/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+<<<<<<< HEAD
 import ReminderDialog from "@/components/notifications/ReminderDialog";
+=======
+import AiWindow from "@/components/ai/AiWindow";
+>>>>>>> d55b84205cf548b1a0863c35fe60e93170380fb0
 
 export default function DashboardLayout({
   children,
@@ -23,7 +27,7 @@ export default function DashboardLayout({
 
         <AppSidebar />
 
-        <SidebarInset className="flex flex-col min-w-0">
+        <SidebarInset className="flex flex-col min-w-0 relative">
           <Header />
           <ReminderDialog />
           {/* استخدام min-w-0 هنا ضروري جداً لكي تسمح للمحتوى بالتقلص 
@@ -36,6 +40,7 @@ export default function DashboardLayout({
           </main>
         </SidebarInset>
       </SidebarProvider>
+      <AiWindow />
     </TooltipProvider>
   );
 }

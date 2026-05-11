@@ -3,6 +3,7 @@
 import {
   Bell,
   BookOpen,
+  Bot,
   File,
   FileWarning,
   LayoutDashboard,
@@ -25,10 +26,12 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import UploadFileBtn from "../profile/uploadFileBtn";
+import useAiStore from "@/Store/ai/aiStore";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "My Library", url: "/dashboard/study-list", icon: BookOpen },
+  { title: "AI Assistant", url: "/dashboard/ai", icon: Bot },
   { title: "My Profile", url: "/dashboard/profile", icon: UserCircle },
   { title: "Notifications", url: "/dashboard/notification", icon: Bell },
 ];
@@ -43,6 +46,7 @@ const adminItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const pathname = usePathname();
+  const { openAiWindow } = useAiStore();
 
   const isAdmin = pathname.startsWith("/admin");
   const currentItems = isAdmin ? adminItems : items;
@@ -71,24 +75,37 @@ export function AppSidebar() {
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
-                  asChild
+                  asChild={item.title !== "AI Assistant"}
                   tooltip={item.title}
+                  onClick={item.title === "AI Assistant" ? (e) => { e.preventDefault(); openAiWindow(); } : undefined}
                   className={`
                     group rounded-xl px-3 py-2
                     transition-all duration-200
-                    ${isActive
+                    cursor-pointer
+                    ${isActive && item.title !== "AI Assistant"
                       ? "bg-primary/10 text-primary dark:bg-blue-500/20 dark:text-blue-400"
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
                   `}
                 >
-                  <Link href={item.url}>
-                    <item.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive ? "text-primary dark:text-blue-400" : ""}`} />
-                    {state === "expanded" && (
-                      <span className={`font-medium ${isActive ? "font-bold" : ""}`}>
-                        {item.title}
-                      </span>
-                    )}
-                  </Link>
+                  {item.title === "AI Assistant" ? (
+                    <div className="flex items-center gap-2">
+                      <item.icon className="w-5 h-5 transition-transform group-hover:scale-110" />
+                      {state === "expanded" && (
+                        <span className="font-medium">
+                          {item.title}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <Link href={item.url}>
+                      <item.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive ? "text-primary dark:text-blue-400" : ""}`} />
+                      {state === "expanded" && (
+                        <span className={`font-medium ${isActive ? "font-bold" : ""}`}>
+                          {item.title}
+                        </span>
+                      )}
+                    </Link>
+                  )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );

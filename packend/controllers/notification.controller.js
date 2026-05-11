@@ -24,6 +24,9 @@ export const showMyNotifications = async (req, res) => {
         is_read: true,
         created_at: true,
       },
+      orderBy: {
+        created_at: 'desc',
+      },
       skip,
       take: limit,
     });
