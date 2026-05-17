@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import useUserStore from '@/Store/user/userStore';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, UserMinus, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -10,6 +11,7 @@ function FollowButton({ id_user, status, onActionSuccess }: { id_user: number, s
     const router = useRouter()
     const { addFollow, removeFollow } = useUserStore()
     const initialFollowing = status === "FOLLOWING" ? true : false
+    const queryClient = useQueryClient();
 
     // نضع القيمة المبدئية القادمة من السيرفر/الأب
     const [following, setFollowing] = useState(initialFollowing)
@@ -28,7 +30,8 @@ function FollowButton({ id_user, status, onActionSuccess }: { id_user: number, s
                 if (res.success) {
                     setFollowing(false)
                     toast.success('Unfollowed successfully')
-                    router.refresh() // لتحديث العدادات في الصفحة
+                    router.refresh()
+                    queryClient.invalidateQueries({ queryKey: ["myNotificationsList"] })
                     onActionSuccess(false)
                 }
             } else {
@@ -37,6 +40,7 @@ function FollowButton({ id_user, status, onActionSuccess }: { id_user: number, s
                     setFollowing(true)
                     toast.success('Followed successfully')
                     router.refresh() // لتحديث العدادات في الصفحة
+                    queryClient.invalidateQueries({ queryKey: ["myNotificationsList"] })
                     onActionSuccess(true)
                 }
             }
