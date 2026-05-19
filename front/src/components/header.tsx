@@ -274,7 +274,7 @@ export default function Header() {
                 onClick={() =>
                   setOpen(!open)
                 }
-                className="rounded-full hover:ring-2 hover:ring-primary/30 transition-all"
+                className="rounded-full cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
               >
 
                 {displayUser?.img_user ? (

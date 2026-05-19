@@ -16,14 +16,14 @@ import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import z from "zod";
 import useAuthStore from "../../../Store/AuthStore";
 
 type ForgotPasswordFormValues = z.infer<typeof emailSchema>;
 
 export default function ForgotPasswordPage() {
-  const { forgotPassword, loading } = useAuthStore();
+  const { forgetPassword, loading } = useAuthStore();
   const [success, setSuccess] = useState(false);
 
   const form = useForm<ForgotPasswordFormValues>({
@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
   });
 
   const onSubmit = async (values: ForgotPasswordFormValues) => {
-    const result = await forgotPassword(values.email);
+    const result = await forgetPassword({ email: values.email });
 
     if (result.success) {
       toast.success("Password reset link sent!");

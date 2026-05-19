@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { BadgeCheck, Edit2, GraduationCap, Share } from "lucide-react";
+import { BadgeCheck, Edit2, GraduationCap } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import FollowButton from "./FollowButton";
@@ -27,12 +27,10 @@ export default function ProfileHeader({
 
     const [currentStats, setCurrentStats] = useState(initialStats);
 
-    // للتأكد من مزامنة الأرقام إذا تغيرت من الخارج
     useEffect(() => {
         setCurrentStats(initialStats);
     }, [initialStats]);
 
-    // دالة لتحديث العداد محلياً عند المتابعة/إلغاء المتابعة
     const handleStatsUpdate = (isFollowing: boolean) => {
         setCurrentStats((prev: any) => ({
             ...prev,
@@ -111,15 +109,24 @@ export default function ProfileHeader({
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 md:mt-2">
-                    <Button variant="ghost" className="size-12 md:size-14 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border hover:bg-[#0975e6]/5 group">
-                        <Share className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    </Button>
 
                     {isOwnProfile ? (
                         // إذا كان بروفايلي: أظهر زر التعديل
                         <Button
                             onClick={onEditClick}
-                            className="size-12 md:size-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white hover:bg-slate-50 rounded-2xl"
+                            className="
+        size-12 md:size-14
+        rounded-2xl
+        border border-slate-200 dark:border-slate-700
+        bg-slate-50 dark:bg-slate-800
+        text-slate-600 dark:text-slate-300
+        shadow-sm
+        transition-all duration-200
+        hover:border-[#0975e6]/30
+        hover:text-[#0975e6]
+        hover:bg-[#0975e6]/5
+        active:scale-95
+    "
                         >
                             <Edit2 className="w-5 h-5" />
                         </Button>

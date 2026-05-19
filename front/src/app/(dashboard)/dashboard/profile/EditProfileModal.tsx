@@ -190,6 +190,7 @@ export default function EditProfileModal({
                 queryClient.invalidateQueries({ queryKey: ["filesLikes"] });
                 queryClient.invalidateQueries({ queryKey: ["yourSubjects"] });
                 queryClient.invalidateQueries({ queryKey: ["recommendedStudyList"] });
+                queryClient.invalidateQueries({ queryKey: ["myNotificationsList"] });
                 onClose();
             } else {
                 toast.error(result.message || "Update failed");

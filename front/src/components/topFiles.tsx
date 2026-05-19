@@ -190,8 +190,6 @@ export const FileCard = memo(({ file, onNavigate }: { file: any, onNavigate: () 
                         <span className="text-red-500">❤️</span>
                         <span className="font-bold text-slate-700 dark:text-slate-300">{file.likes_count || 0}</span>
                     </p></>}
-                    {/* إضافة رتبة المالك أو التاريخ إذا أردت */}
-                    <span className="text-[10px] text-slate-400 italic">By {file.users?.username || "Student"}</span>
                 </div>
             </div>
         </>
