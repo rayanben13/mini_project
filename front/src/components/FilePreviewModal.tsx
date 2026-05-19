@@ -116,9 +116,6 @@ export default function FilePreviewModal({ file }: { file: any }) {
             </div>
 
             {/* ================= SIDEBAR ================= */}
-<<<<<<< HEAD
-            <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-slate-50/50 dark:bg-slate-950">
-=======
             <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-card flex flex-col gap-6">
 
                 {userInfo?.profileData?.role === "user" && (
@@ -129,7 +126,6 @@ export default function FilePreviewModal({ file }: { file: any }) {
                         <span className="text-xl">✨</span> Use AI with this document
                     </button>
                 )}
->>>>>>> d55b84205cf548b1a0863c35fe60e93170380fb0
 
                 <div className="rounded-[28px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-6">
 
