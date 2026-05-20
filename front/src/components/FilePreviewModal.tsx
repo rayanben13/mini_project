@@ -116,55 +116,53 @@ export default function FilePreviewModal({ file }: { file: any }) {
 
           <div className="space-y-6">
             {/* Submitter */}
-            {isAdmin && (
-              <>
-                <div>
-                  <p className="text-sm text-slate-400 mb-3">Submitted by</p>
+            <>
+              <div>
+                <p className="text-sm text-slate-400 mb-3">Submitted by</p>
 
-                  <Link
-                    href={`/dashboard/user/${file.users?.id_user}`}
-                    onClick={(e) => {
-                      if (file.users?.role === 'admin') {
-                        e.preventDefault();
-                        toast.error("You can't see this profile");
-                      }
-                    }}
-                    className="flex items-center gap-3 group w-fit"
-                  >
-                    {/* Avatar */}
-                    <div className="relative size-11 rounded-full overflow-hidden bg-fuchsia-100 border border-fuchsia-200 flex items-center justify-center">
-                      {file.users?.img_user ? (
-                        <Image
-                          src={file.users?.img_user}
-                          alt={file.users?.fullname || 'User'}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <span className="text-sm font-bold text-fuchsia-600 uppercase">
-                          {file.users?.fullname?.charAt(0)}
-                        </span>
-                      )}
-                    </div>
+                <Link
+                  href={`/dashboard/user/${file.users?.id_user}`}
+                  onClick={(e) => {
+                    if (file.users?.role === 'admin') {
+                      e.preventDefault();
+                      toast.error("You can't see this profile");
+                    }
+                  }}
+                  className="flex items-center gap-3 group w-fit"
+                >
+                  {/* Avatar */}
+                  <div className="relative size-11 rounded-full overflow-hidden bg-fuchsia-100 border border-fuchsia-200 flex items-center justify-center">
+                    {file.users?.img_user ? (
+                      <Image
+                        src={file.users?.img_user}
+                        alt={file.users?.fullname || 'User'}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <span className="text-sm font-bold text-fuchsia-600 uppercase">
+                        {file.users?.fullname?.charAt(0)}
+                      </span>
+                    )}
+                  </div>
 
-                    {/* User Info */}
-                    <div>
-                      <p className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-fuchsia-600 transition-colors">
-                        {file.users?.fullname || 'Unknown user'}
-                      </p>
+                  {/* User Info */}
+                  <div>
+                    <p className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-fuchsia-600 transition-colors">
+                      {file.users?.fullname || 'Unknown user'}
+                    </p>
 
-                      <p className="text-xs text-slate-400">
-                        @{file.users?.username || 'unknown'}
-                      </p>
-                    </div>
-                  </Link>
-                </div>
+                    <p className="text-xs text-slate-400">
+                      @{file.users?.username || 'unknown'}
+                    </p>
+                  </div>
+                </Link>
+              </div>
 
-                {/* Divider */}
-                <div className="border-t border-slate-100 dark:border-slate-800" />
-              </>
-            )}
+              {/* Divider */}
+              <div className="border-t border-slate-100 dark:border-slate-800" />
+            </>
 
             {/* Subject */}
             <div>
