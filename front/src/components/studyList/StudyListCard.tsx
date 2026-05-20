@@ -159,7 +159,7 @@ export default function StudyListCard({
 
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent data-stop onClick={(e) => e.stopPropagation()}
-                    className="sm:max-w-[425px] rounded-[2rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-6 md:p-8 space-y-6 relative" >
+                    className="max-w-[390px] w-full rounded-[2rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-6 space-y-5" >
                     
                     {/* Centered Header */}
                     <div className="flex flex-col items-center justify-center text-center space-y-3.5 pt-2">

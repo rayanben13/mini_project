@@ -50,14 +50,13 @@ export function CreateStudyListModal({
 
     if (!isOpen) return null;
 
-    return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-950 w-full max-w-md rounded-[2rem] shadow-2xl p-6 md:p-8 space-y-6 border border-slate-100 dark:border-slate-900 relative">
+            <div className="bg-white dark:bg-slate-950 w-full max-w-[390px] rounded-[2rem] shadow-2xl p-6 space-y-5 border border-slate-100 dark:border-slate-900 relative">
                 
                 {/* Close Button top-right */}
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+                    className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
                 >
                     <X className="w-5 h-5" />
                 </button>
