@@ -47,13 +47,11 @@ export default function StudyListCard({
     description = "",
     privacy = "public",
     files,
-    likes,
-    isLoved = false,
     isOwner = true,
 }: StudyListCardProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [openConfirm, setOpenConfirm] = useState(false);
-    const { editStudyList, deleteStudyList, loveStudyList, loading } = useStudyListStore();
+    const { editStudyList, deleteStudyList, loading } = useStudyListStore();
     const queryClient = useQueryClient();
 
     // Form states
@@ -61,7 +59,7 @@ export default function StudyListCard({
     const [editDesc, setEditDesc] = useState(description);
     const [editPrivacy, setEditPrivacy] = useState(privacy);
 
-    const handleEdit = async (e: React.MouseEvent) => {
+    const handleEdit = (e: React.MouseEvent) => {
         e.stopPropagation();
         setIsEditModalOpen(true);
     };
@@ -75,7 +73,7 @@ export default function StudyListCard({
         const res = await deleteStudyList(id);
 
         if (res.success) {
-            toast.success("Study list deleted");
+            toast.success("Study list deleted successfully");
             queryClient.invalidateQueries({ queryKey: ["myStudyList"] });
         } else {
             toast.error(res.message);
@@ -92,7 +90,7 @@ export default function StudyListCard({
         });
 
         if (res.success) {
-            toast.success("Study list updated");
+            toast.success("Study list updated successfully");
             setIsEditModalOpen(false);
             queryClient.invalidateQueries({ queryKey: ["myStudyList"] });
         } else {
@@ -101,76 +99,81 @@ export default function StudyListCard({
     };
 
     return (
-        <div className="relative bg-white dark:bg-slate-900 rounded-[24px] p-6 flex items-center justify-between border border-[#e0e2ec] dark:border-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer group min-h-[104px] relative">
-            <div className="flex items-center gap-5 flex-1">
-                {/* أيقونة المجلد مع خلفية متغيرة */}
-                <div className="w-[60px] h-[60px] rounded-2xl bg-[#f1f3fd] dark:bg-slate-800 flex items-center justify-center text-[#0975e6] dark:text-blue-400 group-hover:bg-[#0975e6]/10 dark:group-hover:bg-blue-400/20">
-                    <Folder className="w-8 h-8 fill-[#d7e3ff] dark:fill-blue-900/50" strokeWidth={1.5} />
+        <div className="relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 flex items-center justify-between border border-slate-100 dark:border-slate-800/80 hover:shadow-md hover:border-[#ae1ce9]/20 transition-all duration-300 cursor-pointer group min-h-[104px]">
+            <div className="flex items-center gap-5 flex-1 min-w-0">
+                {/* Modern decorative folder icon with beautiful purple/blue gradient */}
+                <div className="w-[60px] h-[60px] rounded-2xl bg-gradient-to-br from-[#0975e6]/10 to-[#ae1ce9]/10 dark:from-[#0975e6]/20 dark:to-[#ae1ce9]/20 flex items-center justify-center text-[#ae1ce9] dark:text-purple-400 group-hover:scale-105 transition-transform duration-300 shrink-0">
+                    <Folder className="w-7 h-7 fill-[#ae1ce9]/20 dark:fill-[#ae1ce9]/40" strokeWidth={1.5} />
                 </div>
 
-                <div className="space-y-2 flex-1">
-                    <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-primary dark:text-slate-100 text-[17px] line-clamp-1 ">
+                <div className="space-y-1.5 flex-1 min-w-0 pr-6">
+                    <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg leading-tight truncate group-hover:text-[#ae1ce9] dark:group-hover:text-purple-400 transition-colors">
                             {title}
                         </h4>
-
-                        {isOwner ? (
-                            <div className="absolute top-4 right-4 z-10">
-
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                        <Button data-stop variant="ghost" className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400">
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent data-stop align="end" className="rounded-xl border-slate-200 dark:border-slate-800">
-                                        <DropdownMenuItem onClick={handleEdit} className="gap-2 cursor-pointer font-medium">
-                                            <Pencil className="w-4 h-4" />
-                                            Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={handleDelete} className="gap-2 cursor-pointer text-red-600 focus:text-red-600 font-medium">
-                                            <Trash2 className="w-4 h-4" />
-                                            Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        ) : null}
                     </div>
 
                     {description && (
-                        <p className="text-[13px] text-[#74777f] dark:text-slate-400 line-clamp-1">
+                        <p className="text-xs font-medium text-slate-400 dark:text-slate-500 line-clamp-1 leading-relaxed">
                             {description}
                         </p>
                     )}
 
-                    <div className="flex items-center gap-4 text-[13px] text-[#74777f] dark:text-slate-400 font-medium">
+                    <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
                         <div className="flex items-center gap-1.5">
-                            <FileText className="w-3.5 h-3.5" />
-                            {files} Files
+                            <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                            <span>{files} Files</span>
                         </div>
 
-                        <div className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 uppercase tracking-wider font-bold">
+                        {/* Semantic, visually elegant privacy badge */}
+                        <div className={`text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider font-extrabold ${
+                            privacy === "public"
+                                ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                        }`}>
                             {privacy}
                         </div>
                     </div>
                 </div>
             </div>
 
+            {isOwner && (
+                <div className="absolute top-5 right-5 z-10">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button data-stop variant="ghost" className="h-8 w-8 p-0 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                                <MoreVertical className="h-4.5 w-4.5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent data-stop align="end" className="rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-xl p-1.5">
+                            <DropdownMenuItem onClick={handleEdit} className="gap-2 cursor-pointer font-bold text-xs uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 p-2.5">
+                                <Pencil className="w-4 h-4 text-[#0975e6]" />
+                                Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleDelete} className="gap-2 cursor-pointer text-rose-500 focus:text-rose-500 font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 p-2.5">
+                                <Trash2 className="w-4 h-4" />
+                                Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            )}
+
+            {/* Edit Dialog */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent data-stop onClick={(e) => e.stopPropagation()}
-                    className="sm:max-w-[425px] rounded-[2rem] bg-white dark:bg-slate-900 border-none shadow-2xl" >
+                    className="sm:max-w-[425px] rounded-[2.5rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-8" >
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-black tracking-tight">Edit Study List</DialogTitle>
+                        <DialogTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Edit Study List</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-6 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-400">Name</Label>
+                            <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-400">List Name</Label>
                             <Input
                                 id="name"
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
-                                className="rounded-xl border-slate-200 dark:border-slate-800"
+                                className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#ae1ce9]"
                             />
                         </div>
                         <div className="space-y-2">
@@ -179,18 +182,18 @@ export default function StudyListCard({
                                 id="description"
                                 value={editDesc}
                                 onChange={(e) => setEditDesc(e.target.value)}
-                                className="rounded-xl border-slate-200 dark:border-slate-800 min-h-[100px]"
+                                className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#ae1ce9] min-h-[100px] resize-none"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="privacy" className="text-xs font-black uppercase tracking-widest text-slate-400">Privacy</Label>
+                            <Label htmlFor="privacy" className="text-xs font-black uppercase tracking-widest text-slate-400">Privacy Status</Label>
                             <Select value={editPrivacy} onValueChange={(val: any) => setEditPrivacy(val)}>
-                                <SelectTrigger className="rounded-xl border-slate-200 dark:border-slate-800">
+                                <SelectTrigger className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#ae1ce9]">
                                     <SelectValue placeholder="Select privacy" />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    <SelectItem value="public">Public</SelectItem>
-                                    <SelectItem value="private">Private</SelectItem>
+                                <SelectContent className="rounded-xl border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900">
+                                    <SelectItem value="public" className="font-bold text-xs uppercase tracking-wider text-slate-600 dark:text-slate-300">Public</SelectItem>
+                                    <SelectItem value="private" className="font-bold text-xs uppercase tracking-wider text-slate-600 dark:text-slate-300">Private</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -199,31 +202,33 @@ export default function StudyListCard({
                         <Button
                             onClick={onSaveEdit}
                             disabled={loading}
-                            className="w-full bg-[#0975e6] hover:bg-[#0866c9] text-white py-6 rounded-2xl font-black uppercase tracking-widest text-sm"
+                            className="w-full bg-[#ae1ce9] hover:bg-[#9612c8] text-white py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-purple-500/10 transition-all duration-300"
                         >
-                            {loading ? "Saving..." : "Save Changes"}
+                            {loading ? "Saving Changes..." : "Save Changes"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
+            {/* Confirm Delete Dialog */}
             <Dialog open={openConfirm} onOpenChange={setOpenConfirm}>
                 <DialogContent data-stop onClick={(e) => e.stopPropagation()}
-                    className="max-w-md rounded-2xl">
+                    className="max-w-md rounded-[2.5rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-8">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-bold">
+                        <DialogTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                             Confirm Deletion
                         </DialogTitle>
                     </DialogHeader>
 
-                    <p className="text-sm text-muted-foreground">
-                        Are you sure you want to delete this study list? This action cannot be undone.
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed mt-2">
+                        Are you sure you want to delete this study list? This action is permanent and cannot be undone.
                     </p>
 
-                    <DialogFooter className="mt-4">
+                    <DialogFooter className="mt-6 flex gap-3">
                         <Button
                             variant="ghost"
                             onClick={() => setOpenConfirm(false)}
+                            className="rounded-xl font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400"
                         >
                             Cancel
                         </Button>
@@ -231,8 +236,9 @@ export default function StudyListCard({
                         <Button
                             variant="destructive"
                             onClick={confirmDelete}
+                            className="rounded-xl font-bold text-xs uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white"
                         >
-                            Delete
+                            Delete List
                         </Button>
                     </DialogFooter>
                 </DialogContent>

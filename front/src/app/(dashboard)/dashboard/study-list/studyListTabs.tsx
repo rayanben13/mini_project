@@ -14,7 +14,7 @@ export default function StudyListTabs() {
     const [openModal, setOpenModal] = useState(false);
     const { createStudyList, loading: isLoading } = useStudyListStore();
 
-    const queryClient = useQueryClient(); // ✅ FIX
+    const queryClient = useQueryClient();
 
     const handleCreate = async (data: any) => {
         const payload = {
@@ -28,8 +28,6 @@ export default function StudyListTabs() {
         if (res.success) {
             setOpenModal(false);
             toast.success("Study list created successfully");
-
-            // 🔄 refresh data
             queryClient.invalidateQueries({ queryKey: ["myStudyList"] });
         } else {
             toast.error(res.message);
@@ -37,36 +35,48 @@ export default function StudyListTabs() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8 w-full max-w-7xl mx-auto px-1 md:px-2 py-2 animate-in fade-in duration-500">
+            
+            {/* Page Header */}
+            <div className="space-y-1">
+                <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-white">
+                    My Library
+                </h1>
+                <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">
+                    Manage and organize your curated subject study lists and collections
+                </p>
+            </div>
 
-            {/* 🔵 Tabs */}
-            <div className="flex gap-2">
+            {/* 🔵 Premium Tabs Filter Controls */}
+            <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/50 rounded-2.5xl w-fit border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
                 <button
                     onClick={() => setActiveTab("myList")}
-                    className={`px-4 py-2 rounded-lg font-medium transition
-            ${activeTab === "myList"
-                            ? "bg-primary text-white"
-                            : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                        }`}
+                    className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 ${
+                        activeTab === "myList"
+                            ? "bg-white dark:bg-slate-800 text-[#ae1ce9] dark:text-white shadow-sm border border-slate-200/40 dark:border-slate-700/40"
+                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    }`}
                 >
-                    My Lists
+                    <div className="w-2 h-2 rounded-full bg-[#ae1ce9] animate-pulse" />
+                    <span>My Lists</span>
                 </button>
 
                 <button
                     onClick={() => setActiveTab("added")}
-                    className={`px-4 py-2 rounded-lg font-medium transition
-            ${activeTab === "added"
-                            ? "bg-primary text-white"
-                            : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                        }`}
+                    className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 ${
+                        activeTab === "added"
+                            ? "bg-white dark:bg-slate-800 text-blue-500 dark:text-white shadow-sm border border-slate-200/40 dark:border-slate-700/40"
+                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    }`}
                 >
-                    Added Lists
+                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    <span>Added Lists</span>
                 </button>
             </div>
 
             {/* 🟢 Content */}
             {activeTab === "myList" && (
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <AddStudyListCard onClick={() => setOpenModal(true)} />
                     <StudyList />
                 </div>
