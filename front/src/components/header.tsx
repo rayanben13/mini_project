@@ -110,7 +110,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-slate-200 dark:border-slate-800">
+    <header className="sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-slate-200 dark:border-slate-800">
       {/* Main Header */}
       <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between gap-3">
         {/* LEFT */}
