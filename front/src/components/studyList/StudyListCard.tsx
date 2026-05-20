@@ -8,24 +8,24 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import useStudyListStore from "@/Store/user/studyListStore";
-import useAuthStore from "@/Store/AuthStore";
-import { useQueryClient } from "@tanstack/react-query";
 import {
-    BookOpen,
-    FlaskConical,
-    Palette,
-    Globe,
-    Calculator,
-    Folder,
-    FileText,
-    User,
-    ChevronRight,
-    Trash2,
-    Pencil
-} from "lucide-react";
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import useStudyListStore from "@/Store/user/studyListStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { FileText, Folder, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Textarea } from "../ui/textarea";
@@ -39,18 +39,6 @@ interface StudyListCardProps {
     readonly likes: number;
     readonly isLoved?: boolean;
     readonly isOwner?: boolean;
-    readonly creatorName?: string;
-}
-
-// Helper to match subject icons perfectly to the mockup image
-function getSubjectIcon(title: string, description?: string) {
-    const text = `${title} ${description || ""}`.toLowerCase();
-    if (text.includes("law") || text.includes("tort")) return BookOpen;
-    if (text.includes("chem") || text.includes("bio") || text.includes("sci") || text.includes("organic") || text.includes("chemistry")) return FlaskConical;
-    if (text.includes("art") || text.includes("paint") || text.includes("history") || text.includes("renaiss")) return Palette;
-    if (text.includes("calc") || text.includes("math") || text.includes("algebra") || text.includes("calculus") || text.includes("intro to")) return Calculator;
-    if (text.includes("spanish") || text.includes("english") || text.includes("globe") || text.includes("lang") || text.includes("world") || text.includes("intensive")) return Globe;
-    return BookOpen; // Default to book open matching mockup screenshot
 }
 
 export default function StudyListCard({
@@ -59,24 +47,35 @@ export default function StudyListCard({
     description = "",
     privacy = "public",
     files,
+    likes,
+    isLoved = false,
     isOwner = true,
-    creatorName,
 }: StudyListCardProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [openConfirm, setOpenConfirm] = useState(false);
-    const { editStudyList, deleteStudyList, loading } = useStudyListStore();
-    const { user } = useAuthStore();
+    const { editStudyList, deleteStudyList, loveStudyList, loading } = useStudyListStore();
     const queryClient = useQueryClient();
 
     // Form states
     const [editName, setEditName] = useState(title);
     const [editDesc, setEditDesc] = useState(description);
+    const [editPrivacy, setEditPrivacy] = useState(privacy);
+
+    const handleEdit = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsEditModalOpen(true);
+    };
+
+    const handleDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setOpenConfirm(true);
+    };
 
     const confirmDelete = async () => {
         const res = await deleteStudyList(id);
 
         if (res.success) {
-            toast.success("Study list deleted successfully");
+            toast.success("Study list deleted");
             queryClient.invalidateQueries({ queryKey: ["myStudyList"] });
         } else {
             toast.error(res.message);
@@ -89,11 +88,11 @@ export default function StudyListCard({
         const res = await editStudyList(id, {
             name: editName,
             description: editDesc,
-            privacy: privacy, // Keep same privacy
+            privacy: editPrivacy,
         });
 
         if (res.success) {
-            toast.success("Study list updated successfully");
+            toast.success("Study list updated");
             setIsEditModalOpen(false);
             queryClient.invalidateQueries({ queryKey: ["myStudyList"] });
         } else {
@@ -101,84 +100,77 @@ export default function StudyListCard({
         }
     };
 
-    const IconComponent = getSubjectIcon(title, description);
-    const resolvedCreator = creatorName || user?.fullname || user?.username || "You";
-
     return (
-        <div className="relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-3xl p-5 flex items-center justify-between shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 min-h-[104px] cursor-pointer group">
-            <div className="flex items-center gap-5 flex-1 min-w-0">
-                {/* Clean blue icon container matching mockup */}
-                <div className="w-16 h-16 rounded-[1.25rem] bg-blue-50/50 dark:bg-blue-950/20 text-[#0975e6] dark:text-blue-400 flex items-center justify-center shrink-0">
-                    <IconComponent className="w-6 h-6" strokeWidth={2.2} />
+        <div className="relative bg-white dark:bg-slate-900 rounded-[24px] p-6 flex items-center justify-between border border-[#e0e2ec] dark:border-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer group min-h-[104px] relative">
+            <div className="flex items-center gap-5 flex-1">
+                {/* أيقونة المجلد مع خلفية متغيرة */}
+                <div className="w-[60px] h-[60px] rounded-2xl bg-[#f1f3fd] dark:bg-slate-800 flex items-center justify-center text-[#0975e6] dark:text-blue-400 group-hover:bg-[#0975e6]/10 dark:group-hover:bg-blue-400/20">
+                    <Folder className="w-8 h-8 fill-[#d7e3ff] dark:fill-blue-900/50" strokeWidth={1.5} />
                 </div>
 
-                <div className="space-y-1.5 flex-1 min-w-0 pr-2">
-                    <h4 className="font-bold text-slate-850 dark:text-slate-100 text-[16px] leading-tight truncate">
-                        {title}
-                    </h4>
+                <div className="space-y-2 flex-1">
+                    <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-primary dark:text-slate-100 text-[17px] line-clamp-1 ">
+                            {title}
+                        </h4>
 
-                    {/* Metadata row matching mockup */}
-                    <div className="flex items-center gap-4 text-xs font-semibold text-slate-400 dark:text-slate-500">
+                        {isOwner ? (
+                            <div className="absolute top-4 right-4 z-10">
+
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                        <Button data-stop variant="ghost" className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent data-stop align="end" className="rounded-xl border-slate-200 dark:border-slate-800">
+                                        <DropdownMenuItem onClick={handleEdit} className="gap-2 cursor-pointer font-medium">
+                                            <Pencil className="w-4 h-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handleDelete} className="gap-2 cursor-pointer text-red-600 focus:text-red-600 font-medium">
+                                            <Trash2 className="w-4 h-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        ) : null}
+                    </div>
+
+                    {description && (
+                        <p className="text-[13px] text-[#74777f] dark:text-slate-400 line-clamp-1">
+                            {description}
+                        </p>
+                    )}
+
+                    <div className="flex items-center gap-4 text-[13px] text-[#74777f] dark:text-slate-400 font-medium">
                         <div className="flex items-center gap-1.5">
-                            <FileText className="w-3.5 h-3.5 text-slate-400" />
-                            <span>{files} Files</span>
+                            <FileText className="w-3.5 h-3.5" />
+                            {files} Files
                         </div>
 
-                        <div className="flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5 text-slate-400" />
-                            <span className="truncate">By {resolvedCreator}</span>
+                        <div className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 uppercase tracking-wider font-bold">
+                            {privacy}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Right Side Actions matching mockup */}
-            <div className="flex items-center gap-1 shrink-0">
-                {isOwner && (
-                    <>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsEditModalOpen(true);
-                            }}
-                            className="p-2 rounded-xl text-slate-400 hover:text-[#0975e6] hover:bg-blue-50/50 dark:hover:bg-slate-800 transition-colors"
-                            title="Edit List"
-                        >
-                            <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenConfirm(true);
-                            }}
-                            className="p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
-                            title="Delete List"
-                        >
-                            <Trash2 className="w-4.5 h-4.5" />
-                        </button>
-                    </>
-                )}
-
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-600 group-hover:translate-x-0.5 group-hover:text-[#0975e6] transition-all">
-                    <ChevronRight className="w-5 h-5" />
-                </div>
-            </div>
-
-            {/* Edit Dialog */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent data-stop onClick={(e) => e.stopPropagation()}
-                    className="sm:max-w-[425px] rounded-[2.5rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-8" >
+                    className="sm:max-w-[425px] rounded-[2rem] bg-white dark:bg-slate-900 border-none shadow-2xl" >
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Edit Study List</DialogTitle>
+                        <DialogTitle className="text-2xl font-black tracking-tight">Edit Study List</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-6 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-400">List Name</Label>
+                            <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-400">Name</Label>
                             <Input
                                 id="name"
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
-                                className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6]"
+                                className="rounded-xl border-slate-200 dark:border-slate-800"
                             />
                         </div>
                         <div className="space-y-2">
@@ -187,41 +179,51 @@ export default function StudyListCard({
                                 id="description"
                                 value={editDesc}
                                 onChange={(e) => setEditDesc(e.target.value)}
-                                className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6] min-h-[100px] resize-none"
+                                className="rounded-xl border-slate-200 dark:border-slate-800 min-h-[100px]"
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="privacy" className="text-xs font-black uppercase tracking-widest text-slate-400">Privacy</Label>
+                            <Select value={editPrivacy} onValueChange={(val: any) => setEditPrivacy(val)}>
+                                <SelectTrigger className="rounded-xl border-slate-200 dark:border-slate-800">
+                                    <SelectValue placeholder="Select privacy" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                    <SelectItem value="public">Public</SelectItem>
+                                    <SelectItem value="private">Private</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                     <DialogFooter>
                         <Button
                             onClick={onSaveEdit}
                             disabled={loading}
-                            className="w-full bg-[#0975e6] hover:bg-[#0866c9] text-white py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-500/10 transition-all duration-300"
+                            className="w-full bg-[#0975e6] hover:bg-[#0866c9] text-white py-6 rounded-2xl font-black uppercase tracking-widest text-sm"
                         >
-                            {loading ? "Saving Changes..." : "Save Changes"}
+                            {loading ? "Saving..." : "Save Changes"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Confirm Delete Dialog */}
             <Dialog open={openConfirm} onOpenChange={setOpenConfirm}>
                 <DialogContent data-stop onClick={(e) => e.stopPropagation()}
-                    className="max-w-md rounded-[2.5rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-8">
+                    className="max-w-md rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                        <DialogTitle className="text-lg font-bold">
                             Confirm Deletion
                         </DialogTitle>
                     </DialogHeader>
 
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed mt-2">
-                        Are you sure you want to delete this study list? This action is permanent and cannot be undone.
+                    <p className="text-sm text-muted-foreground">
+                        Are you sure you want to delete this study list? This action cannot be undone.
                     </p>
 
-                    <DialogFooter className="mt-6 flex gap-3">
+                    <DialogFooter className="mt-4">
                         <Button
                             variant="ghost"
                             onClick={() => setOpenConfirm(false)}
-                            className="rounded-xl font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400"
                         >
                             Cancel
                         </Button>
@@ -229,9 +231,8 @@ export default function StudyListCard({
                         <Button
                             variant="destructive"
                             onClick={confirmDelete}
-                            className="rounded-xl font-bold text-xs uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white"
                         >
-                            Delete List
+                            Delete
                         </Button>
                     </DialogFooter>
                 </DialogContent>
