@@ -6,7 +6,7 @@ import StudyListCard from "./StudyListCard";
 import StudyListSkeleton from "./StudyListSkeleton";
 import { AddStudyListCard } from "@/app/(dashboard)/dashboard/study-list/AddStudyListCard";
 
-export default function StudyList({ onOpenCreateModal }: { readonly onOpenCreateModal: () => void }) {
+export default function StudyList({ onOpenCreateModal }: { readonly onOpenCreateModal?: () => void }) {
   const { data: myStudyList, isLoading, error } = useMyStudyList();
   const router = useRouter();
 
@@ -44,8 +44,10 @@ export default function StudyList({ onOpenCreateModal }: { readonly onOpenCreate
         </div>
       ))}
 
-      {/* Render the Create List card directly inside the grid matching mockup exactly */}
-      <AddStudyListCard onClick={onOpenCreateModal} />
+      {/* Render the Create List card directly inside the grid if onOpenCreateModal is provided */}
+      {onOpenCreateModal && (
+        <AddStudyListCard onClick={onOpenCreateModal} />
+      )}
     </div>
   );
 }
