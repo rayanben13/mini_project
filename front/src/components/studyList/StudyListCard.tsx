@@ -8,24 +8,24 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import useStudyListStore from "@/Store/user/studyListStore";
+import useAuthStore from "@/Store/AuthStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText, Folder, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import {
+    BookOpen,
+    FlaskConical,
+    Palette,
+    Globe,
+    Calculator,
+    Folder,
+    FileText,
+    User,
+    ChevronRight,
+    Trash2,
+    Pencil
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Textarea } from "../ui/textarea";
@@ -39,6 +39,18 @@ interface StudyListCardProps {
     readonly likes: number;
     readonly isLoved?: boolean;
     readonly isOwner?: boolean;
+    readonly creatorName?: string;
+}
+
+// Helper to match subject icons perfectly to the mockup image
+function getSubjectIcon(title: string, description?: string) {
+    const text = `${title} ${description || ""}`.toLowerCase();
+    if (text.includes("law") || text.includes("tort")) return BookOpen;
+    if (text.includes("chem") || text.includes("bio") || text.includes("sci") || text.includes("organic") || text.includes("chemistry")) return FlaskConical;
+    if (text.includes("art") || text.includes("paint") || text.includes("history") || text.includes("renaiss")) return Palette;
+    if (text.includes("calc") || text.includes("math") || text.includes("algebra") || text.includes("calculus") || text.includes("intro to")) return Calculator;
+    if (text.includes("spanish") || text.includes("english") || text.includes("globe") || text.includes("lang") || text.includes("world") || text.includes("intensive")) return Globe;
+    return BookOpen; // Default to book open matching mockup screenshot
 }
 
 export default function StudyListCard({
@@ -48,26 +60,17 @@ export default function StudyListCard({
     privacy = "public",
     files,
     isOwner = true,
+    creatorName,
 }: StudyListCardProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [openConfirm, setOpenConfirm] = useState(false);
     const { editStudyList, deleteStudyList, loading } = useStudyListStore();
+    const { user } = useAuthStore();
     const queryClient = useQueryClient();
 
     // Form states
     const [editName, setEditName] = useState(title);
     const [editDesc, setEditDesc] = useState(description);
-    const [editPrivacy, setEditPrivacy] = useState(privacy);
-
-    const handleEdit = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setIsEditModalOpen(true);
-    };
-
-    const handleDelete = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setOpenConfirm(true);
-    };
 
     const confirmDelete = async () => {
         const res = await deleteStudyList(id);
@@ -86,7 +89,7 @@ export default function StudyListCard({
         const res = await editStudyList(id, {
             name: editName,
             description: editDesc,
-            privacy: editPrivacy,
+            privacy: privacy, // Keep same privacy
         });
 
         if (res.success) {
@@ -98,66 +101,68 @@ export default function StudyListCard({
         }
     };
 
+    const IconComponent = getSubjectIcon(title, description);
+    const resolvedCreator = creatorName || user?.fullname || user?.username || "You";
+
     return (
-        <div className="relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 flex items-center justify-between border border-slate-100 dark:border-slate-800/80 hover:shadow-md hover:border-[#ae1ce9]/20 transition-all duration-300 cursor-pointer group min-h-[104px]">
+        <div className="relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-3xl p-5 flex items-center justify-between shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 min-h-[104px] cursor-pointer group">
             <div className="flex items-center gap-5 flex-1 min-w-0">
-                {/* Modern decorative folder icon with beautiful purple/blue gradient */}
-                <div className="w-[60px] h-[60px] rounded-2xl bg-gradient-to-br from-[#0975e6]/10 to-[#ae1ce9]/10 dark:from-[#0975e6]/20 dark:to-[#ae1ce9]/20 flex items-center justify-center text-[#ae1ce9] dark:text-purple-400 group-hover:scale-105 transition-transform duration-300 shrink-0">
-                    <Folder className="w-7 h-7 fill-[#ae1ce9]/20 dark:fill-[#ae1ce9]/40" strokeWidth={1.5} />
+                {/* Clean blue icon container matching mockup */}
+                <div className="w-16 h-16 rounded-[1.25rem] bg-blue-50/50 dark:bg-blue-950/20 text-[#0975e6] dark:text-blue-400 flex items-center justify-center shrink-0">
+                    <IconComponent className="w-6 h-6" strokeWidth={2.2} />
                 </div>
 
-                <div className="space-y-1.5 flex-1 min-w-0 pr-6">
-                    <div className="flex items-center justify-between gap-2">
-                        <h4 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg leading-tight truncate group-hover:text-[#ae1ce9] dark:group-hover:text-purple-400 transition-colors">
-                            {title}
-                        </h4>
-                    </div>
+                <div className="space-y-1.5 flex-1 min-w-0 pr-2">
+                    <h4 className="font-bold text-slate-850 dark:text-slate-100 text-[16px] leading-tight truncate">
+                        {title}
+                    </h4>
 
-                    {description && (
-                        <p className="text-xs font-medium text-slate-400 dark:text-slate-500 line-clamp-1 leading-relaxed">
-                            {description}
-                        </p>
-                    )}
-
-                    <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {/* Metadata row matching mockup */}
+                    <div className="flex items-center gap-4 text-xs font-semibold text-slate-400 dark:text-slate-500">
                         <div className="flex items-center gap-1.5">
-                            <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                            <FileText className="w-3.5 h-3.5 text-slate-400" />
                             <span>{files} Files</span>
                         </div>
 
-                        {/* Semantic, visually elegant privacy badge */}
-                        <div className={`text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider font-extrabold ${
-                            privacy === "public"
-                                ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
-                                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                        }`}>
-                            {privacy}
+                        <div className="flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="truncate">By {resolvedCreator}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {isOwner && (
-                <div className="absolute top-5 right-5 z-10">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button data-stop variant="ghost" className="h-8 w-8 p-0 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
-                                <MoreVertical className="h-4.5 w-4.5" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent data-stop align="end" className="rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-xl p-1.5">
-                            <DropdownMenuItem onClick={handleEdit} className="gap-2 cursor-pointer font-bold text-xs uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 p-2.5">
-                                <Pencil className="w-4 h-4 text-[#0975e6]" />
-                                Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleDelete} className="gap-2 cursor-pointer text-rose-500 focus:text-rose-500 font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 p-2.5">
-                                <Trash2 className="w-4 h-4" />
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+            {/* Right Side Actions matching mockup */}
+            <div className="flex items-center gap-1 shrink-0">
+                {isOwner && (
+                    <>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsEditModalOpen(true);
+                            }}
+                            className="p-2 rounded-xl text-slate-400 hover:text-[#0975e6] hover:bg-blue-50/50 dark:hover:bg-slate-800 transition-colors"
+                            title="Edit List"
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenConfirm(true);
+                            }}
+                            className="p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+                            title="Delete List"
+                        >
+                            <Trash2 className="w-4.5 h-4.5" />
+                        </button>
+                    </>
+                )}
+
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-600 group-hover:translate-x-0.5 group-hover:text-[#0975e6] transition-all">
+                    <ChevronRight className="w-5 h-5" />
                 </div>
-            )}
+            </div>
 
             {/* Edit Dialog */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
@@ -173,7 +178,7 @@ export default function StudyListCard({
                                 id="name"
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
-                                className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#ae1ce9]"
+                                className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6]"
                             />
                         </div>
                         <div className="space-y-2">
@@ -182,27 +187,15 @@ export default function StudyListCard({
                                 id="description"
                                 value={editDesc}
                                 onChange={(e) => setEditDesc(e.target.value)}
-                                className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#ae1ce9] min-h-[100px] resize-none"
+                                className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6] min-h-[100px] resize-none"
                             />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="privacy" className="text-xs font-black uppercase tracking-widest text-slate-400">Privacy Status</Label>
-                            <Select value={editPrivacy} onValueChange={(val: any) => setEditPrivacy(val)}>
-                                <SelectTrigger className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#ae1ce9]">
-                                    <SelectValue placeholder="Select privacy" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900">
-                                    <SelectItem value="public" className="font-bold text-xs uppercase tracking-wider text-slate-600 dark:text-slate-300">Public</SelectItem>
-                                    <SelectItem value="private" className="font-bold text-xs uppercase tracking-wider text-slate-600 dark:text-slate-300">Private</SelectItem>
-                                </SelectContent>
-                            </Select>
                         </div>
                     </div>
                     <DialogFooter>
                         <Button
                             onClick={onSaveEdit}
                             disabled={loading}
-                            className="w-full bg-[#ae1ce9] hover:bg-[#9612c8] text-white py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-purple-500/10 transition-all duration-300"
+                            className="w-full bg-[#0975e6] hover:bg-[#0866c9] text-white py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-500/10 transition-all duration-300"
                         >
                             {loading ? "Saving Changes..." : "Save Changes"}
                         </Button>

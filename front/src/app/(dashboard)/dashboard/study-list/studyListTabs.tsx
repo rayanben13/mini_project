@@ -6,7 +6,6 @@ import useStudyListStore from "@/Store/user/studyListStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AddStudyListCard } from "./AddStudyListCard";
 import { CreateStudyListModal } from "./CreateStudyListModal";
 
 export default function StudyListTabs() {
@@ -35,51 +34,46 @@ export default function StudyListTabs() {
     };
 
     return (
-        <div className="space-y-8 w-full max-w-7xl mx-auto px-1 md:px-2 py-2 animate-in fade-in duration-500">
+        <div className="space-y-6 w-full max-w-7xl mx-auto px-1 md:px-2 py-2 animate-in fade-in duration-500">
             
-            {/* Page Header */}
+            {/* Page Header matching mockup */}
             <div className="space-y-1">
-                <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-white">
-                    My Library
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    Study Lists
                 </h1>
-                <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">
-                    Manage and organize your curated subject study lists and collections
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Manage and organize your learning materials across all subjects
                 </p>
             </div>
 
-            {/* 🔵 Premium Tabs Filter Controls */}
-            <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/50 rounded-2.5xl w-fit border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
+            {/* 🔵 Minimalist Tabs matching mockup */}
+            <div className="border-b border-slate-200 dark:border-slate-800 flex gap-6 pb-0">
                 <button
                     onClick={() => setActiveTab("myList")}
-                    className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 ${
+                    className={`pb-3 text-sm font-semibold transition-all duration-200 relative ${
                         activeTab === "myList"
-                            ? "bg-white dark:bg-slate-800 text-[#ae1ce9] dark:text-white shadow-sm border border-slate-200/40 dark:border-slate-700/40"
-                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            ? "text-[#0975e6] dark:text-blue-400 border-b-2 border-[#0975e6] -mb-[2px]"
+                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                     }`}
                 >
-                    <div className="w-2 h-2 rounded-full bg-[#ae1ce9] animate-pulse" />
-                    <span>My Lists</span>
+                    My List
                 </button>
 
                 <button
                     onClick={() => setActiveTab("added")}
-                    className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 ${
+                    className={`pb-3 text-sm font-semibold transition-all duration-200 relative ${
                         activeTab === "added"
-                            ? "bg-white dark:bg-slate-800 text-blue-500 dark:text-white shadow-sm border border-slate-200/40 dark:border-slate-700/40"
-                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            ? "text-[#0975e6] dark:text-blue-400 border-b-2 border-[#0975e6] -mb-[2px]"
+                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                     }`}
                 >
-                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                    <span>Added Lists</span>
+                    Added
                 </button>
             </div>
 
             {/* 🟢 Content */}
             {activeTab === "myList" && (
-                <div className="space-y-6">
-                    <AddStudyListCard onClick={() => setOpenModal(true)} />
-                    <StudyList />
-                </div>
+                <StudyList onOpenCreateModal={() => setOpenModal(true)} />
             )}
 
             {activeTab === "added" && <AddedStudyList />}
