@@ -1,12 +1,11 @@
 "use client";
 
 import { useMyFiles } from "@/hooks/useFilesInformations";
-import { AlertCircle, AlertTriangle, CheckCircle, Clock, Loader2, Upload } from "lucide-react";
-import Image from "next/image";
+import { Loader2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import UploadFileBtn from "./uploadFileBtn";
-import { getPdfPreview } from "@/utils/cloudinary";
+import { FileCard } from "@/components/topFiles";
 
 const MAX_PAGES = 5;
 
@@ -28,118 +27,6 @@ const GridSkeleton = () => (
         ))}
     </div>
 );
-
-// ==========================================
-// 📄 Premium Profile File Card Component
-// ==========================================
-const ProfileFileCard = ({ file, onNavigate }: { file: any; onNavigate: () => void }) => {
-    const previewUrl = getPdfPreview(file.file_path);
-
-    // Dynamic semantic status badges
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "pending":
-                return (
-                    <div className="absolute top-4 right-4 z-20 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2.5 py-1 rounded-md text-[9px] font-bold tracking-wider uppercase flex items-center gap-1.5 backdrop-blur-md">
-                        <Clock className="w-3 h-3 animate-spin" />
-                        <span>Pending</span>
-                    </div>
-                );
-            case "accepted":
-                return (
-                    <div className="absolute top-4 right-4 z-20 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2.5 py-1 rounded-md text-[9px] font-bold tracking-wider uppercase flex items-center gap-1.5 backdrop-blur-md">
-                        <CheckCircle className="w-3 h-3" />
-                        <span>Accepted</span>
-                    </div>
-                );
-            case "rejected":
-                return (
-                    <div className="absolute top-4 right-4 z-20 bg-rose-500/10 text-rose-500 border border-rose-500/20 px-2.5 py-1 rounded-md text-[9px] font-bold tracking-wider uppercase flex items-center gap-1.5 backdrop-blur-md">
-                        <AlertTriangle className="w-3 h-3" />
-                        <span>Rejected</span>
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
-
-    return (
-        <div onClick={onNavigate} className="block h-full">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer group h-full relative overflow-hidden flex flex-col justify-between">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/[0.02] dark:to-white/[0.02] pointer-events-none" />
-                
-                {/* Upper Section - Preview */}
-                <div className="h-36 bg-slate-50 dark:bg-slate-800/50 relative overflow-hidden rounded-t-2xl border-b border-slate-100 dark:border-slate-800">
-                    {/* Background Glow */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-[#ae1ce9]/5"></div>
-
-                    <Image
-                        src={previewUrl}
-                        alt={file.title}
-                        fill
-                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = "https://placehold.co/400x600/e2e8f0/64748b?text=No+Preview";
-                        }}
-                    />
-
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
-
-                    {/* Status Badge */}
-                    {getStatusBadge(file.status)}
-
-                    {/* Rejection Hover Tooltip Overlay (Stunning Glassmorphism) */}
-                    {file.status === "rejected" && (
-                        <div className="absolute inset-0 bg-slate-950/85 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-center items-center p-4 text-center z-30 backdrop-blur-sm">
-                            <AlertCircle className="w-5 h-5 text-rose-500 mb-1.5 animate-bounce" />
-                            <span className="text-[9px] font-extrabold uppercase tracking-widest text-rose-400">Rejection Reason</span>
-                            <div className="max-h-16 overflow-y-auto mt-1 px-1 w-full custom-scrollbar">
-                                <p className="text-[11px] text-slate-100 font-medium leading-relaxed">
-                                    {file.reason_rejected || "No reason specified by administrator."}
-                                </p>
-                            </div>
-                            <span className="text-[8px] text-slate-400/80 mt-2 font-semibold uppercase tracking-wider">Hover out to view details</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Lower Section - Details */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold uppercase text-[#ae1ce9] bg-[#ae1ce9]/10 px-2.5 py-1 rounded-md">
-                                {file.major || "General"}
-                            </span>
-                            <span className="text-[10px] text-slate-400 font-medium uppercase">
-                                {file.type || "Other"}
-                            </span>
-                        </div>
-
-                        <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-[#ae1ce9] transition-colors">
-                            {file.title}
-                        </h3>
-
-                        <div className="flex items-center gap-2 mt-2 text-slate-500 dark:text-slate-400">
-                            <span className="text-xs font-medium truncate max-w-[150px]">{file.course || "No Course"}</span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
-                        {file.likes_count !== undefined && file.likes_count > 0 && (
-                            <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                                <span className="text-red-500">❤️</span>
-                                <span className="font-bold text-slate-700 dark:text-slate-300">{file.likes_count}</span>
-                            </p>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 // ==========================================
 // 📂 Main FilesSection Component
@@ -197,7 +84,7 @@ export default function FilesSection() {
         <div className="flex flex-wrap gap-2 px-2 lg:px-0">
             {statuses.map((s) => {
                 const isActive = status === s.id;
-                let activeClass = "bg-[#0975e6] text-white border-[#0975e6] shadow-md shadow-blue-500/20";
+                let activeClass = "bg-[#ae1ce9] text-white border-[#ae1ce9] shadow-md shadow-[#ae1ce9]/20";
                 
                 if (isActive) {
                     if (s.id === 'pending') {
@@ -224,7 +111,7 @@ export default function FilesSection() {
                         {s.id === 'pending' && <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-amber-500 animate-pulse'}`} />}
                         {s.id === 'accepted' && <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-emerald-500'}`} />}
                         {s.id === 'rejected' && <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-rose-500'}`} />}
-                        {s.id === 'all' && <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-[#0975e6]'}`} />}
+                        {s.id === 'all' && <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-[#ae1ce9]'}`} />}
                         {s.label}
                     </button>
                 );
@@ -285,9 +172,10 @@ export default function FilesSection() {
             {/* Grid files cards layout */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {myFiles.map((file) => (
-                    <ProfileFileCard
+                    <FileCard
                         key={file.id_file}
                         file={file}
+                        showStatus={true}
                         onNavigate={() => router.push(`/dashboard/${file.id_file}`)}
                     />
                 ))}
@@ -303,7 +191,7 @@ export default function FilesSection() {
                     >
                         {isFetchingFiles ? (
                             <>
-                                <Loader2 className="w-4 h-4 animate-spin text-[#0975e6]" />
+                                <Loader2 className="w-4 h-4 animate-spin text-[#ae1ce9]" />
                                 Loading More...
                             </>
                         ) : (
