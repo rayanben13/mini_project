@@ -6,7 +6,6 @@ import useStudyListStore from "@/Store/user/studyListStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AddStudyListCard } from "./AddStudyListCard";
 import { CreateStudyListModal } from "./CreateStudyListModal";
 
 export default function StudyListTabs() {
@@ -14,7 +13,7 @@ export default function StudyListTabs() {
     const [openModal, setOpenModal] = useState(false);
     const { createStudyList, loading: isLoading } = useStudyListStore();
 
-    const queryClient = useQueryClient(); // ✅ FIX
+    const queryClient = useQueryClient();
 
     const handleCreate = async (data: any) => {
         const payload = {
@@ -28,8 +27,6 @@ export default function StudyListTabs() {
         if (res.success) {
             setOpenModal(false);
             toast.success("Study list created successfully");
-
-            // 🔄 refresh data
             queryClient.invalidateQueries({ queryKey: ["myStudyList"] });
         } else {
             toast.error(res.message);
@@ -37,39 +34,46 @@ export default function StudyListTabs() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full max-w-7xl mx-auto px-1 md:px-2 py-2 animate-in fade-in duration-500">
+            
+            {/* Page Header matching mockup */}
+            <div className="space-y-1">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    Study Lists
+                </h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Manage and organize your learning materials across all subjects
+                </p>
+            </div>
 
-            {/* 🔵 Tabs */}
-            <div className="flex gap-2">
+            {/* 🔵 Minimalist Tabs matching mockup */}
+            <div className="border-b border-slate-200 dark:border-slate-800 flex gap-6 pb-0">
                 <button
                     onClick={() => setActiveTab("myList")}
-                    className={`px-4 py-2 rounded-lg font-medium transition
-            ${activeTab === "myList"
-                            ? "bg-primary text-white"
-                            : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                        }`}
+                    className={`pb-3 text-sm font-semibold transition-all duration-200 relative ${
+                        activeTab === "myList"
+                            ? "text-[#0975e6] dark:text-blue-400 border-b-2 border-[#0975e6] -mb-[2px]"
+                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                    }`}
                 >
-                    My Lists
+                    My List
                 </button>
 
                 <button
                     onClick={() => setActiveTab("added")}
-                    className={`px-4 py-2 rounded-lg font-medium transition
-            ${activeTab === "added"
-                            ? "bg-primary text-white"
-                            : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                        }`}
+                    className={`pb-3 text-sm font-semibold transition-all duration-200 relative ${
+                        activeTab === "added"
+                            ? "text-[#0975e6] dark:text-blue-400 border-b-2 border-[#0975e6] -mb-[2px]"
+                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                    }`}
                 >
-                    Added Lists
+                    Added
                 </button>
             </div>
 
             {/* 🟢 Content */}
             {activeTab === "myList" && (
-                <div className="space-y-4">
-                    <AddStudyListCard onClick={() => setOpenModal(true)} />
-                    <StudyList />
-                </div>
+                <StudyList onOpenCreateModal={() => setOpenModal(true)} />
             )}
 
             {activeTab === "added" && <AddedStudyList />}

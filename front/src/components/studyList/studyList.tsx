@@ -4,8 +4,9 @@ import { useMyStudyList } from "@/hooks/useStudyList";
 import { useRouter } from "next/navigation";
 import StudyListCard from "./StudyListCard";
 import StudyListSkeleton from "./StudyListSkeleton";
+import { AddStudyListCard } from "@/app/(dashboard)/dashboard/study-list/AddStudyListCard";
 
-export default function StudyList() {
+export default function StudyList({ onOpenCreateModal }: { readonly onOpenCreateModal: () => void }) {
   const { data: myStudyList, isLoading, error } = useMyStudyList();
   const router = useRouter();
 
@@ -19,34 +20,13 @@ export default function StudyList() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div
-            key={i}
-            className="h-[104px] rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse border dark:border-slate-800"
-          />
-        ))}
-      </div>
-    );
-  }
-
-  if (!myStudyList?.data?.length) {
-    return (
-      <div className="space-y-4">
-        <p className="text-center text-2xl dark:text-slate-300">No study list found</p>
-      </div>
-    );
-  }
+  const studyLists = myStudyList?.data || [];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {myStudyList.data.map((item: any) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {studyLists.map((item: any) => (
         <div
-
           key={item.id_stuList}
-
           onClick={(e) => {
             if ((e.target as HTMLElement).closest("[data-stop]")) return;
             router.push(`/dashboard/study-list/${item.id_stuList}`)
@@ -63,6 +43,9 @@ export default function StudyList() {
           />
         </div>
       ))}
+
+      {/* Render the Create List card directly inside the grid matching mockup exactly */}
+      <AddStudyListCard onClick={onOpenCreateModal} />
     </div>
   );
 }
