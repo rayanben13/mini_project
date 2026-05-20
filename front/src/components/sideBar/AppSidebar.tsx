@@ -31,11 +31,11 @@ import useAiStore from '@/Store/ai/aiStore';
 import { useMyNotificationsList } from '@/hooks/useNotifications';
 
 const items = [
-  { title: 'Home', url: '/Home', icon: House },
-  { title: 'My Library', url: '/Home/study-list', icon: BookOpen },
-  { title: 'AI Assistant', url: '/Home/ai', icon: Bot },
-  { title: 'My Profile', url: '/Home/profile', icon: UserCircle },
-  { title: 'Notifications', url: '/Home/notification', icon: Bell },
+  { title: 'Home', url: '/dashboard', icon: House },
+  { title: 'My Library', url: '/dashboard/study-list', icon: BookOpen },
+  { title: 'AI Assistant', url: '/dashboard/ai', icon: Bot },
+  { title: 'My Profile', url: '/dashboard/profile', icon: UserCircle },
+  { title: 'Notifications', url: '/dashboard/notification', icon: Bell },
 ];
 
 const adminItems = [
