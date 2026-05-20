@@ -45,47 +45,40 @@ export default function PublicUserProfile() {
     const userStudyLists = studyListsData?.data || [];
 
     return (
-        <div className="min-h-screen bg-[#f8f6f6] dark:bg-[#221610] p-4 md:p-8 lg:p-12 pb-32">
-            <div className="max-w-6xl mx-auto space-y-12">
+        <div className="w-full max-w-6xl mx-auto space-y-10">
+            {/* Header */}
+            <ProfileHeader
+                user={user}
+                stats={stats}
+                status={data.result.status}
+                isOwnProfile={false}
+            />
 
-                {/* Header */}
-                <ProfileHeader
-                    user={user}
-                    stats={stats}
-                    status={data.result.status}
-                    isOwnProfile={false}
-                />
-
-                {/* Tabs Section */}
-                <div className="space-y-8">
-                    <div className="flex items-center gap-2 p-1 bg-slate-200/50 dark:bg-slate-800/50 w-fit rounded-2xl border border-slate-200 dark:border-slate-700">
+            {/* Tabs Section */}
+            <div className="space-y-8">
+                <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 px-2 lg:px-0">
+                    {[
+                        { id: 'files', label: 'User Files', icon: FileText, count: userFiles.length || 0 },
+                        { id: 'lists', label: 'Study Lists', icon: Shapes, count: userStudyLists.length || 0 },
+                    ].map((tab) => (
                         <button
-                            onClick={() => setActiveTab("files")}
-                            className={cn(
-                                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
-                                activeTab === "files"
-                                    ? "bg-white dark:bg-slate-900 text-[#0975e6] shadow-sm"
-                                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                            )}
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`
+                                flex items-center gap-2 px-6 py-4 border-b-2 font-bold text-sm tracking-wide transition-colors
+                                ${
+                                    activeTab === tab.id
+                                        ? 'border-[#0975e6] text-[#0975e6]'
+                                        : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                                }
+                            `}
                         >
-                            <FileText className="w-4 h-4" />
-                            User Files
-                            <span className="ml-1 opacity-50 text-xs">{userFiles.length}</span>
+                            <tab.icon className="w-4 h-4" />
+                            {tab.label}
+                            <span className="ml-1 opacity-50 text-xs">{tab.count}</span>
                         </button>
-                        <button
-                            onClick={() => setActiveTab("lists")}
-                            className={cn(
-                                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
-                                activeTab === "lists"
-                                    ? "bg-white dark:bg-slate-900 text-[#0975e6] shadow-sm"
-                                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                            )}
-                        >
-                            <Shapes className="w-4 h-4" />
-                            Study Lists
-                            <span className="ml-1 opacity-50 text-xs">{userStudyLists.length}</span>
-                        </button>
-                    </div>
+                    ))}
+                </div>
 
                     {/* Content Section */}
                     <div className="min-h-[400px]">
@@ -145,7 +138,6 @@ export default function PublicUserProfile() {
                         )}
                     </div>
                 </div>
-            </div>
         </div>
     );
 }
