@@ -2,7 +2,7 @@
 
 import SetReminder from "@/components/studyList/SetReminder";
 import useStudyListStore from "@/Store/user/studyListStore";
-import { Bell, BookOpen, FileText, Heart, Loader2, Trash2 } from "lucide-react";
+import { Bell, FileText, Heart, Loader2, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -11,14 +11,15 @@ export default function StudyListDetailPage() {
     const { id } = useParams();
     const router = useRouter();
 
-    const { showDetailStudyList, loveStudyList, deleteFileFromStudyList, addSetReminder } =
+    const { showDetailStudyList, loveStudyList, deleteFileFromStudyList, addSetReminder, addStudylistToAddedSection } =
         useStudyListStore();
 
     const [details, setDetails] = useState<any>(null);
     const [loadingReminder, setLoadingReminder] = useState(false);
 
-    // ✅ optimistic states
+    // ✅ optimistic
     const [isLoved, setIsLoved] = useState<boolean | null>(null);
+    const [isSaved, setIsSaved] = useState<boolean | null>(null);
     const [likes, setLikes] = useState(0);
     const [initialized, setInitialized] = useState(false);
 
@@ -30,6 +31,7 @@ export default function StudyListDetailPage() {
         setLoadingReminder(false);
 
         if (res.success) {
+
             // ✅ update local state
             setDetails((prev: any) => ({
                 ...prev,
@@ -61,6 +63,7 @@ export default function StudyListDetailPage() {
     useEffect(() => {
         if (details?.studyListCard && !initialized) {
             setIsLoved(details.studyListCard.isLoved);
+            setIsSaved(details.studyListCard.isSaved);
             setLikes(details.studyListCard.count_loved || 0);
             setInitialized(true);
         }
@@ -81,7 +84,7 @@ export default function StudyListDetailPage() {
         if (!res.success) {
             setIsLoved(prevLoved);
             setLikes(prevLikes);
-            toast.error("Failed to update likes");
+            toast.error("Failed");
         }
     };
 
@@ -105,80 +108,91 @@ export default function StudyListDetailPage() {
                 ...prev,
                 FilesStudylist: prevFiles,
             }));
-            toast.error("Failed to delete file from study list");
-        } else {
-            toast.success("File removed from study list successfully!");
+            toast.error("Delete failed");
         }
     };
 
-    // ⏳ loading spinner
+    // ⏳ loading
     if (!details || isLoved === null) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] w-full">
-                <Loader2 className="w-8 h-8 animate-spin text-[#ae1ce9]" />
-                <p className="mt-2 text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Loading details...</p>
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="mt-2 text-muted-foreground">Loading...</p>
             </div>
         );
     }
 
+
     return (
-        <div className="w-full max-w-7xl mx-auto px-1 md:px-2 py-2 animate-in fade-in duration-500">
-            <main className="space-y-10">
+        <div className="min-h-screen">
+            <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-14">
 
-                {/* 🌟 Premium Collection Header Card */}
-                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-10 border border-slate-100 dark:border-slate-800/80 shadow-sm relative overflow-hidden">
-                    {/* Modern purple/blue background glowing accent */}
-                    <div className="absolute -top-12 -right-12 w-60 h-60 bg-gradient-to-br from-[#0975e6]/10 to-[#ae1ce9]/10 rounded-full blur-3xl pointer-events-none" />
+                {/* HEADER */}
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden mb-10">
 
-                    <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
-                        {/* LEFT SECTION */}
-                        <div className="flex flex-col sm:flex-row gap-6 flex-1 min-w-0">
-                            {/* Premium Icon Wrapper */}
-                            <div className="w-20 h-20 rounded-[1.75rem] bg-gradient-to-br from-[#0975e6]/15 to-[#ae1ce9]/15 dark:from-[#0975e6]/25 dark:to-[#ae1ce9]/25 flex items-center justify-center shrink-0 text-[#ae1ce9] dark:text-purple-400 shadow-inner">
-                                <BookOpen className="w-10 h-10" />
+                    {/* BG EFFECT */}
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#0975e6]/5 rounded-full blur-3xl" />
+
+                    <div className="relative z-10 flex flex-col lg:flex-row justify-between gap-8">
+
+                        {/* LEFT */}
+                        <div className="flex flex-col sm:flex-row gap-5 flex-1">
+
+                            {/* ICON */}
+                            <div className="w-20 h-20 rounded-2xl bg-[#0975e6]/10 flex items-center justify-center shrink-0">
+                                <FileText className="w-10 h-10 text-[#0975e6]" />
                             </div>
 
-                            {/* TEXT INFO */}
-                            <div className="space-y-4 flex-1 min-w-0">
+                            {/* INFO */}
+                            <div className="space-y-4 flex-1">
+
                                 <div>
-                                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-800 dark:text-white leading-tight">
+                                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                                         {details.studyListCard.name}
                                     </h1>
-                                    <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl">
-                                        {details.studyListCard.description || "No description available for this study list."}
+
+                                    <p className="mt-3 text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
+                                        {details.studyListCard.description ||
+                                            "No description available."}
                                     </p>
                                 </div>
 
-                                {/* META METRICS */}
-                                <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                        <Heart className={`w-4 h-4 ${isLoved ? "text-rose-500 fill-current animate-pulse" : "text-slate-400"}`} />
-                                        <span>{likes} Likes</span>
+                                {/* META */}
+                                <div className="flex flex-wrap items-center gap-5 text-sm font-medium text-slate-500 dark:text-slate-400">
+
+                                    <div className="flex items-center gap-1.5">
+                                        <Heart className="w-4 h-4" />
+                                        {likes} Likes
                                     </div>
 
-                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                        <FileText className="w-4 h-4 text-[#ae1ce9]" />
-                                        <span>{details.studyListCard.count_files} Files</span>
+                                    <div className="flex items-center gap-1.5">
+                                        <FileText className="w-4 h-4" />
+                                        {details.studyListCard.count_files} Files
                                     </div>
 
                                     {details.studyListCard.isAddReminder && (
-                                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0975e6]/10 text-[#0975e6] dark:text-blue-400">
-                                            <Bell className="w-4 h-4 animate-bounce" />
-                                            <span>{details.studyListCard.reminder_time}</span>
+                                        <div className="flex items-center gap-1.5 text-[#0975e6]">
+                                            <Bell className="w-4 h-4" />
+                                            {details.studyListCard.reminder_time}
                                         </div>
                                     )}
                                 </div>
 
-                                {/* CREATOR PILL */}
-                                <div className="flex items-center gap-3">
-                                    <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold">
-                                        Collection Creator:
+                                {/* OWNER */}
+                                <div className="flex items-center gap-3 mt-4">
+                                    <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">
+                                        Created by:
                                     </span>
-                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-800">
-                                        <div className="w-6 h-6 rounded-full bg-[#ae1ce9] text-white flex items-center justify-center text-[10px] font-black uppercase shadow-sm">
+
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+
+                                        {/* Avatar */}
+                                        <div className="w-7 h-7 rounded-full bg-[#0975e6]/10 text-[#0975e6] flex items-center justify-center text-xs font-black uppercase">
                                             {details.studyListCard.users?.fullname?.charAt(0)}
                                         </div>
-                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+
+                                        {/* Name */}
+                                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                             {details.studyListCard.users?.fullname}
                                         </span>
                                     </div>
@@ -186,9 +200,11 @@ export default function StudyListDetailPage() {
                             </div>
                         </div>
 
-                        {/* RIGHT ACTIONS */}
-                        <div className="flex items-center gap-3.5 self-stretch lg:self-auto shrink-0">
-                            {/* REMINDER MODAL TRIGGER */}
+                        {/* ACTIONS */}
+                        <div className="flex items-start gap-3">
+
+
+                            {/* REMINDER */}
                             <SetReminder
                                 isActive={details.studyListCard.isAddReminder}
                                 initialDate={details.studyListCard.reminder_date}
@@ -197,84 +213,101 @@ export default function StudyListDetailPage() {
                                 onSave={handleReminder}
                             />
 
-                            {/* LOVE BUTTON */}
+                            {/* LOVE */}
                             <button
                                 onClick={handleLove}
-                                className={`p-4 rounded-2xl border transition-all duration-300 flex items-center justify-center shrink-0 ${
-                                    isLoved
-                                        ? "bg-rose-50 text-rose-500 border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20"
-                                        : "bg-slate-50 dark:bg-slate-850 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:border-rose-200 dark:hover:border-rose-500/20 shadow-sm"
-                                }`}
+                                className={`
+                                p-3 rounded-full border transition-all
+                                ${isLoved
+                                        ? "bg-red-50 text-red-500 border-red-100 dark:bg-red-500/10 dark:border-red-500/20"
+                                        : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-red-500"
+                                    }
+                            `}
                             >
-                                <Heart className={`w-5 h-5 ${isLoved ? "fill-current" : ""}`} />
+                                <Heart
+                                    className={`w-5 h-5 ${isLoved ? "fill-current" : ""}`}
+                                />
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* 📂 study list items title */}
-                <div className="space-y-6">
-                    <div className="flex items-center gap-2 px-1">
-                        <span className="w-1.5 h-6 bg-[#ae1ce9] rounded-full animate-pulse" />
-                        <h2 className="text-xl font-extrabold text-slate-800 dark:text-white">
-                            Study Materials
-                        </h2>
-                    </div>
-
-                    {/* FILES ITEMS LIST */}
-                    <div className="grid grid-cols-1 gap-4">
-                        {details.FilesStudylist?.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-900/40 rounded-[2rem] border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500">
-                                <FileText className="w-10 h-10 mb-2 stroke-[1.5]" />
-                                <p className="text-sm font-semibold uppercase tracking-wider">This study list is empty</p>
-                            </div>
-                        ) : (
-                            details.FilesStudylist?.map((file: any) => (
-                                <div
-                                    key={file.id_file}
-                                    onClick={() => router.push(`/dashboard/${file.id_file}`)}
-                                    className="bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden border border-slate-100 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-[#ae1ce9]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col sm:flex-row items-stretch sm:items-center p-4 gap-5 cursor-pointer group"
-                                >
-                                    {/* Gradient type indicator thumbnail cover */}
-                                    <div className="w-full sm:w-28 h-24 rounded-2xl bg-gradient-to-br from-[#0975e6]/5 to-[#ae1ce9]/5 dark:from-[#0975e6]/10 dark:to-[#ae1ce9]/10 flex items-center justify-center shrink-0 text-[#ae1ce9] dark:text-purple-400 shadow-inner group-hover:scale-102 transition-transform duration-300">
-                                        <FileText className="w-8 h-8 fill-purple-500/5" strokeWidth={1.5} />
-                                    </div>
-
-                                    {/* CONTENT DESCRIPTION */}
-                                    <div className="flex-1 min-w-0 space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#ae1ce9]/10 text-[10px] font-black tracking-wider uppercase text-[#ae1ce9]">
-                                                {file.type_file || "FILE"}
-                                            </span>
-                                        </div>
-
-                                        <h3 className="text-lg font-extrabold text-slate-850 dark:text-slate-100 leading-snug truncate group-hover:text-[#ae1ce9] dark:group-hover:text-purple-400 transition-colors">
-                                            {file.title}
-                                        </h3>
-
-                                        <p className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                                            Subject: <span className="text-[#0975e6] dark:text-blue-400">{file?.subjects?.course || "General Subject"}</span>
-                                        </p>
-                                    </div>
-
-                                    {/* DELETE ACTION BUTTON */}
-                                    {details?.studyListCard?.isOwner && (
-                                        <div className="flex items-center justify-end pr-2">
-                                            <button
-                                                onClick={(e) => handleDeleteFile(e, file.id_file)}
-                                                className="p-3 rounded-2xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 transition-all duration-300 shrink-0"
-                                                title="Remove from list"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            ))
-                        )}
-                    </div>
+                {/* SECTION TITLE */}
+                <div className="flex items-center gap-2 mb-6 px-1">
+                    <span className="w-1 h-6 bg-[#0975e6] rounded-full" />
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                        Study Materials
+                    </h2>
                 </div>
 
+                {/* FILES */}
+                <div className="flex flex-col gap-5">
+
+                    {details.FilesStudylist?.map((file: any) => (
+                        <div
+                            key={file.id_file}
+                            onClick={() =>
+                                router.push(`/dashboard/${file.id_file}`)
+                            }
+                            className="
+                            bg-white dark:bg-slate-900
+                            rounded-3xl overflow-hidden
+                            border border-slate-100 dark:border-slate-800
+                            shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]
+                            hover:shadow-lg
+                            transition-all
+                            flex flex-col md:flex-row
+                            group cursor-pointer
+                        "
+                        >
+
+                            {/* LEFT ICON */}
+                            <div className="w-full md:w-44 h-32 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-center shrink-0">
+                                <FileText className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+                            </div>
+
+                            {/* CONTENT */}
+                            <div className="flex-1 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+                                <div className="space-y-2">
+
+                                    <span className="inline-block px-2 py-0.5 rounded-md bg-[#0975e6]/10 text-[10px] font-black tracking-wider uppercase text-[#0975e6]">
+                                        {file.type_file || "FILE"}
+                                    </span>
+
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                                        {file.title}
+                                    </h3>
+
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                        {file?.subjects?.course || "Unknown course"}
+                                    </p>
+                                </div>
+
+                                {/* ACTION */}
+                                {details?.studyListCard?.isOwner && (
+                                    <div className="flex items-center gap-3 ml-auto">
+
+                                        <button
+                                            onClick={(e) =>
+                                                handleDeleteFile(e, file.id_file)
+                                            }
+                                            className="
+                                        p-2 rounded-full
+                                        text-red-500
+                                        hover:bg-red-50
+                                        dark:hover:bg-red-500/10
+                                        transition
+                                    "
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </main>
         </div>
     );
