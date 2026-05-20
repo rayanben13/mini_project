@@ -121,7 +121,7 @@ export default function Header() {
           {/* Logo */}
           {!isAuthenticated && (
             <Link href="/" className="font-bold text-lg sm:text-xl shrink-0">
-              AuthSystem
+              Study Share
             </Link>
           )}
 
