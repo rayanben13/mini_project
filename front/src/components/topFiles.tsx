@@ -118,11 +118,9 @@ export default function TopFilesSlider({
                             key={item[itemKey]}
                             className="flex-[0_0_85%] md:flex-[0_0_50%] lg:flex-[0_0_25%] pl-4"
                         >
-                            {/* ✅ تمرير dunction للنقر */}
                             {renderItem
                                 ? renderItem(item, index)
-                                : <FileCard file={item} onNavigate={() => onFileClick?.(item[itemKey])}
-                                />
+                                : <FileCard file={item} showStatus={true} onNavigate={() => onFileClick?.(item[itemKey])} />
                             }
                         </div>
                     ))}

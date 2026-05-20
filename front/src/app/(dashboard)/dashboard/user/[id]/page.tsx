@@ -100,6 +100,7 @@ export default function PublicUserProfile() {
                                         <FileCard
                                             key={file.id_file}
                                             file={file}
+                                            showStatus={true}
                                             onNavigate={() => router.push(`/dashboard/${file.id_file}`)}
                                         />
                                     ))}
