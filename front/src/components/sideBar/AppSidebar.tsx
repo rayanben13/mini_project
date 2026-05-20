@@ -27,6 +27,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import UploadFileBtn from "../profile/uploadFileBtn";
 import useAiStore from "@/Store/ai/aiStore";
+import { useMyNotificationsList } from "@/hooks/useNotifications";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -47,6 +48,8 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const pathname = usePathname();
   const { openAiWindow } = useAiStore();
+  const { data: notifData } = useMyNotificationsList(1, 50);
+  const unreadCount = notifData?.data?.filter((n: any) => !n.is_read).length || 0;
 
   const isAdmin = pathname.startsWith("/admin");
   const currentItems = isAdmin ? adminItems : items;
@@ -97,11 +100,23 @@ export function AppSidebar() {
                       )}
                     </div>
                   ) : (
-                    <Link href={item.url}>
-                      <item.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive ? "text-primary dark:text-blue-400" : ""}`} />
-                      {state === "expanded" && (
-                        <span className={`font-medium ${isActive ? "font-bold" : ""}`}>
-                          {item.title}
+                    <Link href={item.url} className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2 relative">
+                        <div className="relative">
+                          <item.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive ? "text-primary dark:text-blue-400" : ""}`} />
+                          {item.title === "Notifications" && unreadCount > 0 && state === "icon" && (
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white dark:border-slate-900 shrink-0" />
+                          )}
+                        </div>
+                        {state === "expanded" && (
+                          <span className={`font-medium ${isActive ? "font-bold" : ""}`}>
+                            {item.title}
+                          </span>
+                        )}
+                      </div>
+                      {item.title === "Notifications" && unreadCount > 0 && state === "expanded" && (
+                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shrink-0 min-w-5 h-5 flex items-center justify-center animate-pulse">
+                          {unreadCount}
                         </span>
                       )}
                     </Link>

@@ -786,7 +786,7 @@ export const loveStudyList = async (req, res) => {
     if (ownerFile.id_user !== Me.id_user) {
       const message = `${Me.username} loved your study list ${ownerFile.name}`;
 
-      await prisma.notifications.create({
+      const newNotification = await prisma.notifications.create({
         data: {
           id_user: ownerFile.id_user,
           message,
@@ -796,12 +796,15 @@ export const loveStudyList = async (req, res) => {
       });
 
       io.to(String(ownerFile.id_user)).emit('notification', {
+        ...newNotification,
+        // compatibility
         message,
         related_id: Me.id_user,
         related_type: 'user',
       });
 
       console.log('SOCKET DATA:', {
+        ...newNotification,
         message,
         related_id: Me.id_user,
         related_type: 'user',

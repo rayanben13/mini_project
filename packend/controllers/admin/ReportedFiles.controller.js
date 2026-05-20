@@ -439,21 +439,20 @@ export const DeleteOrIgnoreReportedFile = async (req, res) => {
         }),
       ]);
 
-      const message = `Your file "${fileExists.title ?? ''}" has been deleted becouse ${reason}`;
-
-      io.to(String(fileExists.users.id_user)).emit('notification', {
-        message,
-        related_id: id_file,
-        related_type: 'file',
-      });
-
-      await prisma.notifications.create({
+      const newNotification = await prisma.notifications.create({
         data: {
           id_user: fileExists.users.id_user,
           message,
           related_id: id_file,
           related_type: 'file',
         },
+      });
+
+      io.to(String(fileExists.users.id_user)).emit('notification', {
+        ...newNotification,
+        message,
+        related_id: id_file,
+        related_type: 'file',
       });
 
       console.log({

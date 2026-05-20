@@ -5,7 +5,7 @@ import useNotificationStore from "@/Store/user/notificationStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bell, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function NotificationsPage() {
@@ -43,7 +43,7 @@ function NotificationsPage() {
         }
     };
 
-    // 🔥 دمج البيانات (pagination)
+    // 🔥 دمج البيانات (pagination) مع الترتيب التنازلي لإبقاء الإشعارات الجديدة في الأعلى
     useEffect(() => {
         if (!notifications.length) return;
 
@@ -54,14 +54,16 @@ function NotificationsPage() {
                 (n: any) => !existingIds.has(n.id_notification)
             );
 
-            return [...prev, ...newOnes];
+            const merged = [...prev, ...newOnes];
+            // ترتيب الإشعارات تنازلياً حسب المعرف ID (الأحدث في الأعلى)
+            return merged.sort((a, b) => b.id_notification - a.id_notification);
         });
     }, [notifications]);
 
     const hasMore =
         meta && meta.current_page < meta.last_page;
 
-    const handleNotificationClick = async (item: any) => {
+    const markAsReadHelper = async (item: any) => {
         if (!item.is_read) {
             // Optimistic update
             setAllNotifications((prev) =>
@@ -74,16 +76,169 @@ function NotificationsPage() {
             await markNotificationAsRead(item.id_notification);
             queryClient.invalidateQueries({ queryKey: ["myNotificationsList"] });
         }
+    };
 
-        if (item.related_type === "user") {
-            router.push(`/dashboard/user/${item.related_id}`);
+    const handleNotificationClick = async (item: any) => {
+        await markAsReadHelper(item);
+    };
+
+    // دالة تحليل الرسالة وتحويل أصحاب المعرفات والأسماء إلى روابط قابلة للضغط
+    const renderParsedMessage = (item: any) => {
+        const text = item.content || item.message || '';
+        const linkClass = "font-bold text-primary hover:text-primary/80 transition-colors hover:underline cursor-pointer relative z-10";
+
+        const handleLinkClick = async (e: React.MouseEvent, url: string) => {
+            e.stopPropagation(); // منع انتقال الضغطة إلى الكارت بالكامل (لكي لا يقوم فقط بالقراءة)
+            await markAsReadHelper(item);
+            router.push(url);
+        };
+
+        if (item.related_type === 'user') {
+            const followPhrase = " followed you";
+            const lovePhrase = " loved your study list ";
+            const likePhrase = " liked your file: ";
+
+            if (text.includes(followPhrase)) {
+                const parts = text.split(followPhrase);
+                const username = parts[0];
+                return (
+                    <span>
+                        <span onClick={(e) => handleLinkClick(e, `/dashboard/user/${item.related_id}`)} className={linkClass}>
+                            {username}
+                        </span>
+                        {followPhrase}
+                    </span>
+                );
+            }
+
+            if (text.includes(lovePhrase)) {
+                const parts = text.split(lovePhrase);
+                const username = parts[0];
+                const rest = parts[1];
+                return (
+                    <span>
+                        <span onClick={(e) => handleLinkClick(e, `/dashboard/user/${item.related_id}`)} className={linkClass}>
+                            {username}
+                        </span>
+                        {lovePhrase}
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{rest}</span>
+                    </span>
+                );
+            }
+
+            if (text.includes(likePhrase)) {
+                const parts = text.split(likePhrase);
+                const username = parts[0];
+                const rest = parts[1];
+                return (
+                    <span>
+                        <span onClick={(e) => handleLinkClick(e, `/dashboard/user/${item.related_id}`)} className={linkClass}>
+                            {username}
+                        </span>
+                        {likePhrase}
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{rest}</span>
+                    </span>
+                );
+            }
+
+            return (
+                <span onClick={(e) => handleLinkClick(e, `/dashboard/user/${item.related_id}`)} className={linkClass}>
+                    {text}
+                </span>
+            );
         }
-        else if (item.related_type === "file") {
-            router.push(`/dashboard/${item.related_id}`);
+
+        if (item.related_type === 'file') {
+            const approvePhrase = "Admin approved your file: ";
+            const rejectPhrase = "Admin rejected your file: ";
+            const deleteStart = 'Your file "';
+
+            if (text.startsWith(approvePhrase)) {
+                const title = text.substring(approvePhrase.length);
+                return (
+                    <span>
+                        {approvePhrase}
+                        <span onClick={(e) => handleLinkClick(e, `/dashboard/${item.related_id}`)} className={linkClass}>
+                            {title}
+                        </span>
+                    </span>
+                );
+            }
+
+            if (text.startsWith(rejectPhrase)) {
+                const titlePart = text.substring(rejectPhrase.length);
+                const reasonIndex = titlePart.indexOf(" (reason:");
+                if (reasonIndex !== -1) {
+                    const title = titlePart.substring(0, reasonIndex);
+                    const reason = titlePart.substring(reasonIndex);
+                    return (
+                        <span>
+                            {rejectPhrase}
+                            <span onClick={(e) => handleLinkClick(e, `/dashboard/${item.related_id}`)} className={linkClass}>
+                                {title}
+                            </span>
+                            <span className="text-slate-500 dark:text-slate-400 text-sm font-normal">{reason}</span>
+                        </span>
+                    );
+                } else {
+                    return (
+                        <span>
+                            {rejectPhrase}
+                            <span onClick={(e) => handleLinkClick(e, `/dashboard/${item.related_id}`)} className={linkClass}>
+                                {titlePart}
+                            </span>
+                        </span>
+                    );
+                }
+            }
+
+            if (text.startsWith(deleteStart)) {
+                const firstQuote = text.indexOf('"');
+                const secondQuote = text.indexOf('"', firstQuote + 1);
+                if (firstQuote !== -1 && secondQuote !== -1) {
+                    const title = text.substring(firstQuote + 1, secondQuote);
+                    const rest = text.substring(secondQuote + 1);
+                    return (
+                        <span>
+                            Your file "
+                            <span onClick={(e) => handleLinkClick(e, `/dashboard/${item.related_id}`)} className={linkClass}>
+                                {title}
+                            </span>
+                            "{rest}
+                        </span>
+                    );
+                }
+            }
+
+            return (
+                <span onClick={(e) => handleLinkClick(e, `/dashboard/${item.related_id}`)} className={linkClass}>
+                    {text}
+                </span>
+            );
         }
-        else {
-            router.push(`/dashboard/study-list/${item.related_id}`);
+
+        if (item.related_type === 'study_list') {
+            const studyPhrase = "Reminder to study ";
+            if (text.startsWith(studyPhrase)) {
+                const name = text.substring(studyPhrase.length);
+                return (
+                    <span>
+                        {studyPhrase}
+                        <span onClick={(e) => handleLinkClick(e, `/dashboard/study-list/${item.related_id}`)} className={linkClass}>
+                            {name}
+                        </span>
+                    </span>
+                );
+            }
+
+            return (
+                <span onClick={(e) => handleLinkClick(e, `/dashboard/study-list/${item.related_id}`)} className={linkClass}>
+                    {text}
+                </span>
+            );
         }
+
+        return <span>{text}</span>;
     };
 
     return (
@@ -164,7 +319,7 @@ function NotificationsPage() {
 
                                         <div>
                                             <p className={`text-slate-800 dark:text-slate-200 ${!item.is_read ? 'font-semibold' : ''}`}>
-                                                {item.content || item.message}
+                                                {renderParsedMessage(item)}
                                             </p>
 
                                             {item.reason && (

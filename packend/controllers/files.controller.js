@@ -944,7 +944,7 @@ export const addLikeOrDislike = async (req, res) => {
 
     // 🔥 notification فقط لل LIKE
     if (type === 'LIKE' && ownerFile.id_user !== Me.id_user) {
-      await prisma.notifications.create({
+      const newNotification = await prisma.notifications.create({
         data: {
           id_user: ownerFile.id_user,
           message: `${Me.username} liked your file: ${ownerFile.title}`,
@@ -954,6 +954,7 @@ export const addLikeOrDislike = async (req, res) => {
       });
 
       io.to(String(ownerFile.id_user)).emit('notification', {
+        ...newNotification,
         message: `${Me.username} liked your file: ${ownerFile.title}`,
         related_id: Me.id_user,
         related_type: 'user',

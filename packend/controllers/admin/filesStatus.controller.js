@@ -210,7 +210,7 @@ export const AproveRejectFiles = async (req, res) => {
           status === 'reject' && reason ? ` (reason: ${reason})` : ''
         }`;
 
-        await tx.notifications.create({
+        const newNotification = await tx.notifications.create({
           data: {
             id_user: file.users.id_user,
             message: ownerMessage,
@@ -220,6 +220,7 @@ export const AproveRejectFiles = async (req, res) => {
         });
 
         io.to(String(file.users.id_user)).emit('notification', {
+          ...newNotification,
           message: ownerMessage,
           related_id: file.id_file,
           related_type: 'file',

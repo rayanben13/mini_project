@@ -14,6 +14,7 @@ import {
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMyNotificationsList } from "@/hooks/useNotifications";
 
 import {
     Sheet,
@@ -43,6 +44,8 @@ export function MobileSidebar() {
     const { logout } = useAuthStore();
 
     const pathname = usePathname();
+    const { data: notifData } = useMyNotificationsList(1, 50);
+    const unreadCount = notifData?.data?.filter((n: any) => !n.is_read).length || 0;
 
     const isAdmin = pathname.startsWith("/admin");
 
@@ -108,7 +111,7 @@ export function MobileSidebar() {
                                     key={item.title}
                                     href={item.url}
                                     className={`
-                                        group flex items-center gap-3 rounded-xl px-3 py-3
+                                        group flex items-center justify-between rounded-xl px-3 py-3
                                         transition-all duration-200
 
                                         ${isActive
@@ -118,29 +121,37 @@ export function MobileSidebar() {
                                     `}
                                 >
 
-                                    <item.icon
-                                        className={`
-                                            w-5 h-5 transition-transform group-hover:scale-110
+                                    <div className="flex items-center gap-3">
+                                        <item.icon
+                                            className={`
+                                                w-5 h-5 transition-transform group-hover:scale-110
 
-                                            ${isActive
-                                                ? "text-primary dark:text-blue-400"
-                                                : ""
-                                            }
-                                        `}
-                                    />
+                                                ${isActive
+                                                    ? "text-primary dark:text-blue-400"
+                                                    : ""
+                                                }
+                                            `}
+                                        />
 
-                                    <span
-                                        className={`
-                                            text-[15px] font-medium
+                                        <span
+                                            className={`
+                                                text-[15px] font-medium
 
-                                            ${isActive
-                                                ? "font-bold"
-                                                : ""
-                                            }
-                                        `}
-                                    >
-                                        {item.title}
-                                    </span>
+                                                ${isActive
+                                                    ? "font-bold"
+                                                    : ""
+                                                }
+                                            `}
+                                        >
+                                            {item.title}
+                                        </span>
+                                    </div>
+
+                                    {item.title === "Notifications" && unreadCount > 0 && (
+                                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shrink-0 min-w-5 h-5 flex items-center justify-center animate-pulse">
+                                            {unreadCount}
+                                        </span>
+                                    )}
 
                                 </Link>
 

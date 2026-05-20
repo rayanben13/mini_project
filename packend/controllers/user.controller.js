@@ -271,7 +271,7 @@ export const addFollow = async (req, res) => {
       },
     });
 
-    await prisma.notifications.create({
+    const newNotification = await prisma.notifications.create({
       data: {
         id_user: userId,
         message: `${Me.username} followed you`,
@@ -281,15 +281,13 @@ export const addFollow = async (req, res) => {
     });
 
     io.to(String(userId)).emit('notification', {
-      message: `${Me.username} followed you`,
-      type: 'user',
-      related_id: Me.id_user,
+      ...newNotification,
+      type: newNotification.related_type,
     });
 
     console.log('SOCKET DATA:', {
-      message: `${Me.username} followed you`,
-      type: 'user',
-      related_id: Me.id_user,
+      ...newNotification,
+      type: newNotification.related_type,
     });
     return res.status(200).json({ message: 'Followed successfully' });
   } catch (err) {

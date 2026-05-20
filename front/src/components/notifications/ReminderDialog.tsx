@@ -12,6 +12,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { useFullUserData } from "@/hooks/useUserInformation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell, BookOpen, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -23,8 +24,9 @@ export default function ReminderDialog() {
     const { data: userData } = useFullUserData();
     const [isOpen, setIsOpen] = useState(false);
     const [activeReminder, setActiveReminder] = useState<any>(null);
-    const lastNotificationId = useRef<number | null>(null);
+    const lastNotificationId = useRef<any>(null);
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     // Initialize socket when authenticated
     useEffect(() => {
@@ -45,28 +47,58 @@ export default function ReminderDialog() {
             const latest = notifications[0];
 
             // Only process if it's a new notification ID
-            if (latest.id_notification && latest.id_notification !== lastNotificationId.current) {
-                lastNotificationId.current = latest.id_notification;
+            const notificationId =
+                latest.id_notification ||
+                latest.id ||
+                `${latest.message}-${latest.created_at || Date.now()}`;
+
+            if (notificationId && notificationId !== lastNotificationId.current) {
+                lastNotificationId.current = notificationId;
+
+                // Invalidate react-query notifications cache so list is always up-to-date!
+                queryClient.invalidateQueries({ queryKey: ["myNotificationsList"] });
 
                 // Check if it's a reminder
                 const isReminder =
                     latest.related_type === 'study_list' &&
                     (latest.message?.toLowerCase().includes('reminder') || latest.content?.toLowerCase().includes('reminder'));
 
+                // Play audio alert
+                const audio = new Audio('/mixkit-correct-answer-tone-2870.wav');
+                audio.play().catch(e => console.log("Audio play failed", e));
 
                 if (isReminder) {
                     toast.info("Study Reminder: " + (latest.message || latest.content));
                     setActiveReminder(latest);
                     setIsOpen(true);
+                } else {
+                    // Show a beautiful live interactive toast!
+                    toast(latest.message || latest.content || "New notification received", {
+                        description: latest.time || "Just now",
+                        action: {
+                            label: "View",
+                            onClick: () => {
+                                const relatedId = latest.related_id;
+                                const relatedType = latest.related_type || latest.type;
 
-                    const audio = new Audio('/mixkit-correct-answer-tone-2870.wav');
-                    audio.play().catch(e => console.log("Audio play failed", e));
+                                if (relatedType === "user") {
+                                    router.push(`/dashboard/user/${relatedId}`);
+                                } else if (relatedType === "file") {
+                                    router.push(`/dashboard/${relatedId}`);
+                                } else if (relatedId) {
+                                    router.push(`/dashboard/study-list/${relatedId}`);
+                                } else {
+                                    router.push('/dashboard/notification');
+                                }
+                            }
+                        }
+                    });
                 }
             } else {
                 console.log("ReminderDialog: Notification already processed or missing ID", latest.id_notification);
             }
         }
-    }, [notifications]);
+    }, [notifications, queryClient, router]);
 
     const handleGoToStudyList = () => {
         if (activeReminder?.related_id) {
