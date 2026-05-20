@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import useFilesStore from "@/Store/user/filesStore";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import useFilesStore from '@/Store/user/filesStore';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import {
   Dialog,
   DialogContent,
@@ -12,47 +12,56 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Loader2, UploadCloud, FileText, PlusCircle } from "lucide-react";
-import { toast } from "sonner";
-import { useSuggestions } from "@/hooks/useSuggestions";
+} from '@/components/ui/select';
+import { Loader2, UploadCloud, FileText, PlusCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { useSuggestions } from '@/hooks/useSuggestions';
 
-const uploadSchema = z.object({
-  title: z.string().min(3, "Title is too short"),
-  univ: z.string().min(2, "Please select a university"),
-  major: z.string().min(2, "Please select a major"),
-  academic_year: z.string().min(2, "Please select an academic year"),
-  specialty: z.string().optional(),
-  subject: z.string().min(3, "Subject name is too short"),
-  type: z.string().min(2, "Please select a file type"),
-  creation_year: z.string().regex(/^\d{4}$/, "Must be a 4-digit year"),
-}).refine((data) => {
-  if (["M1", "M2"].includes(data.academic_year)) {
-    return !!data.specialty && data.specialty.length >= 2;
-  }
-  return true;
-}, {
-  message: "Specialty is required for Master years",
-  path: ["specialty"],
-});
+const uploadSchema = z
+  .object({
+    title: z.string().min(3, 'Title is too short'),
+    univ: z.string().min(2, 'Please select a university'),
+    major: z.string().min(2, 'Please select a major'),
+    academic_year: z.string().min(2, 'Please select an academic year'),
+    specialty: z.string().optional(),
+    subject: z.string().min(3, 'Subject name is too short'),
+    type: z.string().min(2, 'Please select a file type'),
+    creation_year: z.string().regex(/^\d{4}$/, 'Must be a 4-digit year'),
+  })
+  .refine(
+    (data) => {
+      if (['M1', 'M2'].includes(data.academic_year)) {
+        return !!data.specialty && data.specialty.length >= 2;
+      }
+      return true;
+    },
+    {
+      message: 'Specialty is required for Master years',
+      path: ['specialty'],
+    }
+  );
 
 type UploadFormValues = z.infer<typeof uploadSchema>;
 
-function UploadFileBtn({ variant = "default" }: { variant?: "default" | "sidebar" }) {
+function UploadFileBtn({
+  variant = 'default',
+}: {
+  variant?: 'default' | 'sidebar';
+}) {
   const { UplodeNewFile, loading } = useFilesStore();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  
+
   const {
     register,
     handleSubmit,
@@ -63,14 +72,16 @@ function UploadFileBtn({ variant = "default" }: { variant?: "default" | "sidebar
   } = useForm<UploadFormValues>({
     resolver: zodResolver(uploadSchema),
     defaultValues: {
-      type: "COURS",
-      academic_year: "L1",
+      type: 'COURS',
+      academic_year: 'L1',
       creation_year: new Date().getFullYear().toString(),
     },
   });
 
   const { suggestions, fetchSuggestions, clearSuggestions } = useSuggestions();
-  const [activeSearchField, setActiveSearchField] = useState<string | null>(null);
+  const [activeSearchField, setActiveSearchField] = useState<string | null>(
+    null
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -80,54 +91,59 @@ function UploadFileBtn({ variant = "default" }: { variant?: "default" | "sidebar
 
   const onSubmit = async (values: UploadFormValues) => {
     if (!selectedFile) {
-      toast.error("Please select a file to upload");
+      toast.error('Please select a file to upload');
       return;
     }
 
     const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("title", values.title);
-    formData.append("univ", values.univ);
-    formData.append("major", values.major);
-    formData.append("academic_year", values.academic_year);
-    
+    formData.append('file', selectedFile);
+    formData.append('title', values.title);
+    formData.append('univ', values.univ);
+    formData.append('major', values.major);
+    formData.append('academic_year', values.academic_year);
+
     // Only send specialty if it's M1 or M2 (required by backend schema)
-    if (["M1", "M2"].includes(values.academic_year) && values.specialty) {
-      formData.append("specialty", values.specialty);
+    if (['M1', 'M2'].includes(values.academic_year) && values.specialty) {
+      formData.append('specialty', values.specialty);
     }
-    
-    formData.append("subject", values.subject);
-    formData.append("type", values.type);
-    formData.append("creation_year", values.creation_year);
+
+    formData.append('subject', values.subject);
+    formData.append('type', values.type);
+    formData.append('creation_year', values.creation_year);
 
     const result = await UplodeNewFile(formData);
 
     if (result.success) {
-      toast.success("File uploaded successfully! It will be reviewed by admins.");
+      toast.success(
+        'File uploaded successfully! It will be reviewed by admins.'
+      );
       setIsOpen(false);
       reset();
       setSelectedFile(null);
     } else {
-      toast.error(result.message || "Failed to upload file");
+      toast.error(result.message || 'Failed to upload file');
     }
   };
 
-  const handleSearch = (field: "univ" | "major" | "specialty" | "subject", value: string) => {
+  const handleSearch = (
+    field: 'univ' | 'major' | 'specialty' | 'subject',
+    value: string
+  ) => {
     setValue(field as any, value);
     setActiveSearchField(field);
-    
+
     const extra: any = {};
-    if (field === "major") extra.univ = watch("univ");
-    if (field === "specialty") {
-        extra.univ = watch("univ");
-        extra.major = watch("major");
-        extra.year = watch("academic_year");
+    if (field === 'major') extra.univ = watch('univ');
+    if (field === 'specialty') {
+      extra.univ = watch('univ');
+      extra.major = watch('major');
+      extra.year = watch('academic_year');
     }
-    if (field === "subject") {
-        extra.univ = watch("univ");
-        extra.major = watch("major");
-        extra.year = watch("academic_year");
-        extra.specialization = watch("specialty");
+    if (field === 'subject') {
+      extra.univ = watch('univ');
+      extra.major = watch('major');
+      extra.year = watch('academic_year');
+      extra.specialization = watch('specialty');
     }
 
     fetchSuggestions(field, value, extra);
@@ -136,7 +152,7 @@ function UploadFileBtn({ variant = "default" }: { variant?: "default" | "sidebar
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {variant === "sidebar" ? (
+        {variant === 'sidebar' ? (
           <div className="flex items-center gap-3 w-full cursor-pointer">
             <PlusCircle className="w-5 h-5" />
             <span className="font-medium">Upload File</span>
@@ -164,12 +180,14 @@ function UploadFileBtn({ variant = "default" }: { variant?: "default" | "sidebar
             <Label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 block">
               Document File
             </Label>
-            <div 
+            <div
               className={`
                 relative border-2 border-dashed rounded-[1.5rem] p-8 transition-all
-                ${selectedFile 
-                  ? "border-[#0975e6] bg-[#0975e6]/5" 
-                  : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-[#0975e6]/50 hover:bg-[#0975e6]/5"}
+                ${
+                  selectedFile
+                    ? 'border-[#0975e6] bg-[#0975e6]/5'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-[#0975e6]/50 hover:bg-[#0975e6]/5'
+                }
               `}
             >
               <input
@@ -211,117 +229,145 @@ function UploadFileBtn({ variant = "default" }: { variant?: "default" | "sidebar
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Title */}
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Document Title</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Document Title
+              </Label>
               <Input
-                {...register("title")}
+                {...register('title')}
                 placeholder="Ex: Calculus I Exam 2023"
                 className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6]"
               />
-              {errors.title && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.title.message}</p>}
+              {errors.title && (
+                <p className="text-red-500 text-[10px] font-bold uppercase">
+                  {errors.title.message}
+                </p>
+              )}
             </div>
 
             {/* Creation Year */}
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Year of Creation</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Year of Creation
+              </Label>
               <Input
-                {...register("creation_year")}
+                {...register('creation_year')}
                 placeholder="2023"
                 className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6]"
               />
-              {errors.creation_year && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.creation_year.message}</p>}
+              {errors.creation_year && (
+                <p className="text-red-500 text-[10px] font-bold uppercase">
+                  {errors.creation_year.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* University */}
             <div className="space-y-2 relative">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">University</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                University
+              </Label>
               <Input
-                value={watch("univ") || ""}
-                onChange={(e) => handleSearch("univ", e.target.value)}
+                value={watch('univ') || ''}
+                onChange={(e) => handleSearch('univ', e.target.value)}
                 autoComplete="off"
                 placeholder="Search University..."
                 className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6]"
               />
-              {activeSearchField === "univ" && (suggestions.length > 0 || loading) && (
-                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-4 gap-2 text-slate-400 text-sm">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Searching...
-                    </div>
-                  ) : (
-                    suggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium border-b border-slate-50 dark:border-slate-800 last:border-none"
-                        onClick={() => {
-                          setValue("univ", s);
-                          clearSuggestions();
-                          setActiveSearchField(null);
-                        }}
-                      >
-                        {s}
-                      </button>
-                    ))
-                  )}
-                </div>
+              {activeSearchField === 'univ' &&
+                (suggestions.length > 0 || loading) && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
+                    {loading ? (
+                      <div className="flex items-center justify-center py-4 gap-2 text-slate-400 text-sm">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Searching...
+                      </div>
+                    ) : (
+                      suggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium border-b border-slate-50 dark:border-slate-800 last:border-none"
+                          onClick={() => {
+                            setValue('univ', s);
+                            clearSuggestions();
+                            setActiveSearchField(null);
+                          }}
+                        >
+                          {s}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              {errors.univ && (
+                <p className="text-red-500 text-[10px] font-bold uppercase">
+                  {errors.univ.message}
+                </p>
               )}
-              {errors.univ && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.univ.message}</p>}
             </div>
 
             {/* Major */}
             <div className="space-y-2 relative">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Major</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Major
+              </Label>
               <Input
-                value={watch("major") || ""}
-                onChange={(e) => handleSearch("major", e.target.value)}
+                value={watch('major') || ''}
+                onChange={(e) => handleSearch('major', e.target.value)}
                 autoComplete="off"
                 placeholder="Ex: Computer Science"
                 className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6]"
               />
-              {activeSearchField === "major" && (suggestions.length > 0 || loading) && (
-                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-4 gap-2 text-slate-400 text-sm">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Searching...
-                    </div>
-                  ) : (
-                    suggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium border-b border-slate-50 dark:border-slate-800 last:border-none"
-                        onClick={() => {
-                          setValue("major", s);
-                          clearSuggestions();
-                          setActiveSearchField(null);
-                        }}
-                      >
-                        {s}
-                      </button>
-                    ))
-                  )}
-                </div>
+              {activeSearchField === 'major' &&
+                (suggestions.length > 0 || loading) && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
+                    {loading ? (
+                      <div className="flex items-center justify-center py-4 gap-2 text-slate-400 text-sm">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Searching...
+                      </div>
+                    ) : (
+                      suggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium border-b border-slate-50 dark:border-slate-800 last:border-none"
+                          onClick={() => {
+                            setValue('major', s);
+                            clearSuggestions();
+                            setActiveSearchField(null);
+                          }}
+                        >
+                          {s}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              {errors.major && (
+                <p className="text-red-500 text-[10px] font-bold uppercase">
+                  {errors.major.message}
+                </p>
               )}
-              {errors.major && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.major.message}</p>}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Academic Year */}
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Academic Year</Label>
-              <Select 
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Academic Year
+              </Label>
+              <Select
                 onValueChange={(val) => {
-                  setValue("academic_year", val);
-                  if (!["M1", "M2"].includes(val)) {
-                    setValue("specialty", "");
+                  setValue('academic_year', val);
+                  if (!['M1', 'M2'].includes(val)) {
+                    setValue('specialty', '');
                     clearSuggestions();
                   }
-                }} 
+                }}
                 defaultValue="L1"
               >
                 <SelectTrigger className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -339,8 +385,13 @@ function UploadFileBtn({ variant = "default" }: { variant?: "default" | "sidebar
 
             {/* Type */}
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Document Type</Label>
-              <Select onValueChange={(val) => setValue("type", val)} defaultValue="COURS">
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Document Type
+              </Label>
+              <Select
+                onValueChange={(val) => setValue('type', val)}
+                defaultValue="COURS"
+              >
                 <SelectTrigger className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
                   <SelectValue placeholder="Select Type" />
                 </SelectTrigger>
@@ -360,79 +411,95 @@ function UploadFileBtn({ variant = "default" }: { variant?: "default" | "sidebar
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Specialty */}
             <div className="space-y-2 relative">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Specialty (Optional)</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Specialty (Optional)
+              </Label>
               <Input
-                value={watch("specialty") || ""}
-                onChange={(e) => handleSearch("specialty", e.target.value)}
-                onFocus={() => handleSearch("specialty", watch("specialty") || "")}
+                value={watch('specialty') || ''}
+                onChange={(e) => handleSearch('specialty', e.target.value)}
+                onFocus={() =>
+                  handleSearch('specialty', watch('specialty') || '')
+                }
                 autoComplete="off"
-                placeholder={["M1", "M2"].includes(watch("academic_year")) ? "Ex: AI, Software Engineering" : "Only for Master years"}
-                disabled={!["M1", "M2"].includes(watch("academic_year"))}
+                placeholder={
+                  ['M1', 'M2'].includes(watch('academic_year'))
+                    ? 'Ex: AI, Software Engineering'
+                    : 'Only for Master years'
+                }
+                disabled={!['M1', 'M2'].includes(watch('academic_year'))}
                 className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6] disabled:opacity-50"
               />
-              {activeSearchField === "specialty" && (suggestions.length > 0 || loading) && (
-                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-4 gap-2 text-slate-400 text-sm">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Searching...
-                    </div>
-                  ) : (
-                    suggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium border-b border-slate-50 dark:border-slate-800 last:border-none"
-                        onClick={() => {
-                          setValue("specialty", s);
-                          clearSuggestions();
-                          setActiveSearchField(null);
-                        }}
-                      >
-                        {s}
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
+              {activeSearchField === 'specialty' &&
+                (suggestions.length > 0 || loading) && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
+                    {loading ? (
+                      <div className="flex items-center justify-center py-4 gap-2 text-slate-400 text-sm">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Searching...
+                      </div>
+                    ) : (
+                      suggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium border-b border-slate-50 dark:border-slate-800 last:border-none"
+                          onClick={() => {
+                            setValue('specialty', s);
+                            clearSuggestions();
+                            setActiveSearchField(null);
+                          }}
+                        >
+                          {s}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
             </div>
 
             {/* Subject */}
             <div className="space-y-2 relative">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Subject / Module</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Subject / Module
+              </Label>
               <Input
-                value={watch("subject") || ""}
-                onChange={(e) => handleSearch("subject", e.target.value)}
+                value={watch('subject') || ''}
+                onChange={(e) => handleSearch('subject', e.target.value)}
                 autoComplete="off"
                 placeholder="Ex: Mathematics 1"
                 className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-[#0975e6]"
               />
-              {activeSearchField === "subject" && (suggestions.length > 0 || loading) && (
-                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-4 gap-2 text-slate-400 text-sm">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Searching...
-                    </div>
-                  ) : (
-                    suggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium border-b border-slate-50 dark:border-slate-800 last:border-none"
-                        onClick={() => {
-                          setValue("subject", s);
-                          clearSuggestions();
-                          setActiveSearchField(null);
-                        }}
-                      >
-                        {s}
-                      </button>
-                    ))
-                  )}
-                </div>
+              {activeSearchField === 'subject' &&
+                (suggestions.length > 0 || loading) && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
+                    {loading ? (
+                      <div className="flex items-center justify-center py-4 gap-2 text-slate-400 text-sm">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Searching...
+                      </div>
+                    ) : (
+                      suggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium border-b border-slate-50 dark:border-slate-800 last:border-none"
+                          onClick={() => {
+                            setValue('subject', s);
+                            clearSuggestions();
+                            setActiveSearchField(null);
+                          }}
+                        >
+                          {s}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              {errors.subject && (
+                <p className="text-red-500 text-[10px] font-bold uppercase">
+                  {errors.subject.message}
+                </p>
               )}
-              {errors.subject && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.subject.message}</p>}
             </div>
           </div>
 
@@ -448,7 +515,7 @@ function UploadFileBtn({ variant = "default" }: { variant?: "default" | "sidebar
                   Uploading...
                 </>
               ) : (
-                "Submit Document"
+                'Submit Document'
               )}
             </Button>
           </DialogFooter>
