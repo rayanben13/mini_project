@@ -148,21 +148,21 @@ export const FileCard = memo(({
         switch (status) {
             case "pending":
                 return (
-                    <div className="absolute top-4 right-4 z-20 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2.5 py-1 rounded-md text-[9px] font-bold tracking-wider uppercase flex items-center gap-1.5 backdrop-blur-md">
+                    <div className="absolute top-4 right-4 z-20 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-3 py-1 rounded-xl text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 backdrop-blur-md">
                         <Clock className="w-3 h-3 animate-spin" />
                         <span>Pending</span>
                     </div>
                 );
             case "accepted":
                 return (
-                    <div className="absolute top-4 right-4 z-20 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2.5 py-1 rounded-md text-[9px] font-bold tracking-wider uppercase flex items-center gap-1.5 backdrop-blur-md">
+                    <div className="absolute top-4 right-4 z-20 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-3 py-1 rounded-xl text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 backdrop-blur-md">
                         <CheckCircle className="w-3 h-3" />
                         <span>Accepted</span>
                     </div>
                 );
             case "rejected":
                 return (
-                    <div className="absolute top-4 right-4 z-20 bg-rose-500/10 text-rose-500 border border-rose-500/20 px-2.5 py-1 rounded-md text-[9px] font-bold tracking-wider uppercase flex items-center gap-1.5 backdrop-blur-md">
+                    <div className="absolute top-4 right-4 z-20 bg-rose-500/10 text-rose-500 border border-rose-500/20 px-3 py-1 rounded-xl text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 backdrop-blur-md">
                         <AlertTriangle className="w-3 h-3" />
                         <span>Rejected</span>
                     </div>
@@ -174,75 +174,69 @@ export const FileCard = memo(({
 
     const cardContent = (
         <>
-            {/* Upper Section - Preview */}
+            {/* Upper Section - Preview Area */}
             <div
                 onClick={(e) => { e.stopPropagation(); onNavigate(); }}
-                className="h-36 bg-slate-50 dark:bg-slate-800/50 relative overflow-hidden rounded-t-2xl border-b border-slate-100 dark:border-slate-800"
+                className="h-40 bg-slate-50 dark:bg-slate-800/30 relative overflow-hidden border-b border-slate-100 dark:border-slate-800/60"
             >
-                {/* Background Glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-[#ae1ce9]/5"></div>
+                <Image
+                    src={previewUrl}
+                    alt={file.title}
+                    fill
+                    className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://placehold.co/400x600/e2e8f0/64748b?text=No+Preview";
+                    }}
+                />
 
-                {/* Preview Image */}
-                <div className="h-44 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                    <Image
-                        src={previewUrl}
-                        alt={file.title}
-                        fill
-                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = "https://placehold.co/400x600/e2e8f0/64748b?text=No+Preview";
-                        }}
-                    />
+                {/* Aesthetic decorative gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 group-hover:opacity-0 transition-opacity" />
 
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
+                {/* Status indicator */}
+                {showStatus && getStatusBadge(file.status)}
 
-                    {/* Status Badge */}
-                    {showStatus && getStatusBadge(file.status)}
-
-                    {/* Rejection Hover Tooltip Overlay (Stunning Glassmorphism) */}
-                    {showStatus && file.status === "rejected" && (
-                        <div className="absolute inset-0 bg-slate-950/85 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-center items-center p-4 text-center z-30 backdrop-blur-sm">
-                            <AlertCircle className="w-5 h-5 text-rose-500 mb-1.5 animate-bounce" />
-                            <span className="text-[9px] font-extrabold uppercase tracking-widest text-rose-400">Rejection Reason</span>
-                            <div className="max-h-16 overflow-y-auto mt-1 px-1 w-full custom-scrollbar">
-                                <p className="text-[11px] text-slate-100 font-medium leading-relaxed">
-                                    {file.reason_rejected || "No reason specified by administrator."}
-                                </p>
-                            </div>
-                            <span className="text-[8px] text-slate-400/80 mt-2 font-semibold uppercase tracking-wider">Hover out to view details</span>
+                {/* Rejection Hover Tooltip Overlay (Stunning Glassmorphism) */}
+                {showStatus && file.status === "rejected" && (
+                    <div className="absolute inset-0 bg-slate-950/85 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-center items-center p-5 text-center z-30 backdrop-blur-sm">
+                        <AlertCircle className="w-6 h-6 text-rose-500 mb-2 animate-bounce" />
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-rose-400">Rejection Reason</span>
+                        <div className="max-h-20 overflow-y-auto mt-2 px-1 w-full custom-scrollbar">
+                            <p className="text-xs text-slate-100 font-medium leading-relaxed">
+                                {file.reason_rejected || "No reason specified by administrator."}
+                            </p>
                         </div>
-                    )}
-                </div>
+                        <span className="text-[8px] text-slate-400/80 mt-3 font-semibold uppercase tracking-wider">Hover out to view details</span>
+                    </div>
+                )}
             </div>
 
-            {/* Lower Section - Details */}
+            {/* Lower Section - Card Content Details */}
             <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase text-[#ae1ce9] bg-[#ae1ce9]/10 px-2.5 py-1 rounded-md">
+                        <span className="text-[9px] font-extrabold uppercase text-[#0975e6] bg-[#0975e6]/10 px-2.5 py-1 rounded-lg">
                             {file.major || "General"}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-medium uppercase">
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider">
                             {file.type || "Other"}
                         </span>
                     </div>
 
-                    <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-[#ae1ce9] transition-colors">
+                    <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2 group-hover:text-[#0975e6] transition-colors leading-snug">
                         {file.title}
                     </h3>
-
-                    <div className="flex items-center gap-2 mt-2 text-slate-500 dark:text-slate-400">
-                        <span className="text-xs font-medium truncate max-w-[150px]">{file.course || "No Course"}</span>
-                    </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
+                {/* Divider & Footer stats */}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60 text-slate-500 dark:text-slate-400 text-xs">
+                    <span className="font-bold truncate max-w-[140px] text-slate-600 dark:text-slate-300">
+                        {file.course || "No Course"}
+                    </span>
                     {file.likes_count !== undefined && file.likes_count > 0 && (
-                        <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                            <span className="text-red-500">❤️</span>
-                            <span className="font-bold text-slate-700 dark:text-slate-300">{file.likes_count}</span>
+                        <p className="text-[11px] text-slate-400 flex items-center gap-1.5 shrink-0 bg-rose-500/5 px-2 py-0.5 rounded-md font-bold">
+                            <span className="text-rose-500">❤️</span>
+                            <span className="text-rose-600 dark:text-rose-400">{file.likes_count}</span>
                         </p>
                     )}
                 </div>
@@ -252,7 +246,7 @@ export const FileCard = memo(({
 
     return (
         <div onClick={onNavigate} className="block h-full">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer group h-full relative overflow-hidden flex flex-col justify-between">
+            <div className="group bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800/80 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer h-full relative overflow-hidden flex flex-col justify-between">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/[0.02] dark:to-white/[0.02] pointer-events-none" />
                 {cardContent}
             </div>
