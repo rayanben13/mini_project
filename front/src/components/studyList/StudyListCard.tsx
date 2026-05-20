@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import useStudyListStore from "@/Store/user/studyListStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText, Folder, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { FileText, Folder, MoreVertical, Pencil, Trash2, Edit3, Globe, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Textarea } from "../ui/textarea";
@@ -159,51 +159,107 @@ export default function StudyListCard({
 
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent data-stop onClick={(e) => e.stopPropagation()}
-                    className="sm:max-w-[425px] rounded-[2rem] bg-white dark:bg-slate-900 border-none shadow-2xl" >
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-black tracking-tight">Edit Study List</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-6 py-4">
+                    className="sm:max-w-[425px] rounded-[2rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-6 md:p-8 space-y-6 relative" >
+                    
+                    {/* Header */}
+                    <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#0975e6] dark:text-blue-400 flex items-center justify-center shrink-0">
+                            <Edit3 className="w-5 h-5" strokeWidth={2.2} />
+                        </div>
+                        <div className="space-y-0.5">
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
+                                Edit Study List
+                            </h2>
+                            <p className="text-xs text-slate-400 dark:text-slate-500">
+                                Update your study list details
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Form Fields */}
+                    <div className="space-y-5 py-2">
                         <div className="space-y-2">
-                            <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-400">Name</Label>
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                List Name
+                            </label>
                             <Input
                                 id="name"
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
-                                className="rounded-xl border-slate-200 dark:border-slate-800"
+                                className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-100/50 dark:border-slate-800/50 dark:text-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#0975e6] text-sm h-auto transition-all"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-slate-400">Description</Label>
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                Description
+                            </label>
                             <Textarea
                                 id="description"
                                 value={editDesc}
                                 onChange={(e) => setEditDesc(e.target.value)}
-                                className="rounded-xl border-slate-200 dark:border-slate-800 min-h-[100px]"
+                                className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-100/50 dark:border-slate-800/50 dark:text-slate-100 rounded-xl px-4 py-3 min-h-[110px] resize-none outline-none focus:ring-2 focus:ring-[#0975e6] text-sm transition-all"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="privacy" className="text-xs font-black uppercase tracking-widest text-slate-400">Privacy</Label>
-                            <Select value={editPrivacy} onValueChange={(val: any) => setEditPrivacy(val)}>
-                                <SelectTrigger className="rounded-xl border-slate-200 dark:border-slate-800">
-                                    <SelectValue placeholder="Select privacy" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    <SelectItem value="public">Public</SelectItem>
-                                    <SelectItem value="private">Private</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
                     </div>
-                    <DialogFooter>
-                        <Button
-                            onClick={onSaveEdit}
-                            disabled={loading}
-                            className="w-full bg-[#0975e6] hover:bg-[#0866c9] text-white py-6 rounded-2xl font-black uppercase tracking-widest text-sm"
+
+                    {/* Visibility Card */}
+                    <div className="bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl p-4 flex items-center justify-between border border-slate-100/50 dark:border-slate-800/50">
+                        <div className="flex items-center gap-3">
+                            <Globe className="w-5 h-5 text-slate-400 shrink-0" strokeWidth={1.8} />
+                            <div className="space-y-0.5">
+                                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                    Public Visibility
+                                </h4>
+                                <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-none">
+                                    Allow other students to see this list
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Custom Blue sliding toggle switch */}
+                        <button
+                            type="button"
+                            onClick={() => setEditPrivacy(editPrivacy === "public" ? "private" : "public")}
+                            className={`w-11 h-6 rounded-full relative transition-colors duration-200 shrink-0 ${
+                                editPrivacy === "public" ? "bg-[#0975e6]" : "bg-slate-200 dark:bg-slate-700"
+                            }`}
                         >
-                            {loading ? "Saving..." : "Save Changes"}
-                        </Button>
-                    </DialogFooter>
+                            <div className={`w-4 h-4 rounded-full bg-white absolute top-1 left-1 transition-transform duration-200 shadow-sm ${
+                                editPrivacy === "public" ? "translate-x-5" : "translate-x-0"
+                            }`} />
+                        </button>
+                    </div>
+
+                    {/* Symmetrical Action Buttons */}
+                    <div className="flex items-center justify-between gap-4 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsEditModalOpen(false)}
+                            className="w-[48%] py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-355 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={onSaveEdit}
+                            disabled={loading || !editName}
+                            className={`w-[48%] py-3.5 rounded-xl text-white font-bold text-sm shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                                loading || !editName
+                                    ? "bg-blue-400 dark:bg-blue-800 cursor-not-allowed"
+                                    : "bg-[#0975e6] hover:bg-[#0866c9] hover:shadow"
+                            }`}
+                        >
+                            {loading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span>Saving...</span>
+                                </>
+                            ) : (
+                                <span>Save Changes</span>
+                            )}
+                        </button>
+                    </div>
                 </DialogContent>
             </Dialog>
 
