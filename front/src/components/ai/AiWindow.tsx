@@ -12,6 +12,7 @@ export default function AiWindow() {
   const [file, setFile] = useState<File | null>(null);
   const [localFileName, setLocalFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedLang, setSelectedLang] = useState<"en" | "fr" | "ar">("ar");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Active Document State
@@ -58,9 +59,9 @@ export default function AiWindow() {
 
     try {
       if (libraryFileId) {
-        await sendAiWithId(messageToSend, libraryFileId, "en");
+        await sendAiWithId(messageToSend, libraryFileId, selectedLang);
       } else {
-        await sendAiWithFile(messageToSend, fileToSend || new File([], "empty.pdf", { type: "application/pdf" }), "en");
+        await sendAiWithFile(messageToSend, fileToSend || new File([], "empty.pdf", { type: "application/pdf" }), selectedLang);
       }
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -104,7 +105,7 @@ export default function AiWindow() {
           onClick={(e) => e.stopPropagation()} // Prevent clicking inside dialog from closing it
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 gap-4">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-2xl bg-primary/10 dark:bg-blue-500/10 flex items-center justify-center">
                 <Bot className="w-5 h-5 text-primary dark:text-blue-400" />
@@ -114,7 +115,26 @@ export default function AiWindow() {
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Ask questions about your documents</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 self-end sm:self-center">
+              {/* Language Selector */}
+              <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+                {(["ar", "en", "fr"] as const).map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => setSelectedLang(lang)}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                      selectedLang === lang
+                        ? "bg-white dark:bg-slate-700 text-primary dark:text-blue-400 shadow-sm"
+                        : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    {lang === "ar" ? "العربية" : lang === "en" ? "EN" : "FR"}
+                  </button>
+                ))}
+              </div>
+
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
+
               <button
                 onClick={() => {
                   clearMessages();
@@ -181,34 +201,48 @@ export default function AiWindow() {
                 )}
               </div>
             ) : (
-              messages.map((msg: any, idx: number) => (
-                <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                    msg.role === 'user' 
-                      ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300' 
-                      : 'bg-primary text-white'
-                  }`}>
-                    {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
-                  </div>
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm overflow-hidden ${
-                    msg.role === 'user'
-                      ? 'bg-primary text-white rounded-tr-sm'
-                      : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm'
-                  }`}>
-                    {msg.role === 'user' ? (
-                      <div className="whitespace-pre-wrap text-sm leading-relaxed font-medium">
-                        {msg.content}
-                      </div>
-                    ) : (
-                      <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent prose-li:marker:text-primary">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              messages.map((msg: any, idx: number) => {
+                const isRtl = selectedLang === 'ar';
+                const isUser = msg.role === 'user';
+                
+                // User is always on right, AI always on left
+                const flexRowClass = isUser ? 'flex-row-reverse' : '';
+                const roundedCornerClass = isUser ? 'rounded-tr-sm' : 'rounded-tl-sm';
+                // Only make the bubble text RTL if it's an AI message and Arabic is selected
+                const bubbleDir = (!isUser && isRtl) ? 'rtl' : 'ltr';
+
+                return (
+                  <div key={idx} className={`flex gap-3 ${flexRowClass}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      isUser 
+                        ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300' 
+                        : 'bg-primary text-white'
+                    }`}>
+                      {isUser ? <User size={16} /> : <Bot size={16} />}
+                    </div>
+                    <div 
+                      className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm overflow-hidden ${
+                        isUser
+                          ? 'bg-primary text-white'
+                          : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-200'
+                      } ${roundedCornerClass}`}
+                      dir={bubbleDir}
+                    >
+                      {isUser ? (
+                        <div className="whitespace-pre-wrap text-sm leading-relaxed font-medium">
                           {msg.content}
-                        </ReactMarkdown>
-                      </div>
-                    )}
+                        </div>
+                      ) : (
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent prose-li:marker:text-primary">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
             
             {loading && (
@@ -216,9 +250,14 @@ export default function AiWindow() {
                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 text-white">
                   <Bot size={16} />
                 </div>
-                <div className="rounded-2xl px-4 py-3 shadow-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-tl-sm flex items-center gap-3">
+                <div 
+                  className={`rounded-2xl px-4 py-3 shadow-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center gap-3 rounded-tl-sm`}
+                  dir={selectedLang === 'ar' ? 'rtl' : 'ltr'}
+                >
                   <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Thinking...</span>
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                    {selectedLang === 'ar' ? 'جاري التفكير...' : selectedLang === 'fr' ? 'Réflexion...' : 'Thinking...'}
+                  </span>
                 </div>
               </div>
             )}

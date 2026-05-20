@@ -21,9 +21,19 @@ export const sendMessageToAi = async (req, res) => {
       }
     }
 
-    const lang = req.query.lang || 'en';
+    let lang = req.query.lang || 'en';
     const id_file = req.params.id_file ? Number(req.params.id_file) : null;
     const file_upload = req.file;
+
+    // Normalizing the language query
+    const normalized = String(lang).toLowerCase().trim();
+    if (normalized === 'eng' || normalized === 'english' || normalized === 'en') {
+      lang = 'en';
+    } else if (normalized === 'fr' || normalized === 'french') {
+      lang = 'fr';
+    } else if (normalized === 'arbic' || normalized === 'arabic' || normalized === 'ar') {
+      lang = 'ar';
+    }
 
     const langChoices = ['en', 'ar', 'fr'];
 
