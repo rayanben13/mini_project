@@ -45,7 +45,7 @@ const icons = [Library, BookOpen, FlaskConical, Microscope, Shapes];
 const SubjectCard = memo(({ subject, index }: { subject: any; index: number }) => {
     // ✅ اختيار الثيم والأيقونة بناءً على الـ index (يتكرر تلقائياً)
     const theme = themes[index % themes.length];
-    const Icon = icons[index % icons.length];
+    const Icon = Library;
 
     return (
         <Link
