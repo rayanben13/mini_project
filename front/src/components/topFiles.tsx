@@ -17,8 +17,7 @@ export default function TopFilesSlider({
     isLoadingMore = false,
     itemKey = "id_file",
     renderItem,
-    onFileClick,
-    hideCardLikes = false,
+    onFileClick, // ✅ جديد: دالة عند النقر (اختيارية)
 }: {
     readonly data: any[],
     readonly title: string,
@@ -28,8 +27,7 @@ export default function TopFilesSlider({
     readonly isLoadingMore?: boolean,
     readonly itemKey?: string,
     readonly renderItem?: (item: any, index: number) => React.ReactNode,
-    readonly onFileClick?: (fileId: string | number) => void,
-    readonly hideCardLikes?: boolean,
+    readonly onFileClick?: (fileId: string | number) => void, // ✅ جديد
 }) {
     const [emblaRef, emblaApi] = useEmblaCarousel({
         align: "start",
@@ -122,7 +120,7 @@ export default function TopFilesSlider({
                         >
                             {renderItem
                                 ? renderItem(item, index)
-                                : <FileCard file={item} showStatus={false} hideLikes={hideCardLikes} onNavigate={() => onFileClick?.(item[itemKey])} />
+                                : <FileCard file={item} showStatus={true} onNavigate={() => onFileClick?.(item[itemKey])} />
                             }
                         </div>
                     ))}
@@ -136,12 +134,10 @@ export const FileCard = memo(({
     file,
     onNavigate,
     showStatus = false,
-    hideLikes = false,
 }: {
     file: any;
     onNavigate: () => void;
     showStatus?: boolean;
-    hideLikes?: boolean;
 }) => {
     const previewUrl = getPdfPreview(file.file_path);
 
@@ -241,7 +237,7 @@ export const FileCard = memo(({
                 </div>
 
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
-                    {!hideLikes && file.likes_count !== undefined && file.likes_count > 0 && (
+                    {file.likes_count !== undefined && file.likes_count > 0 && (
                         <p className="text-xs text-slate-400 flex items-center gap-1.5">
                             <span className="text-red-500">❤️</span>
                             <span className="font-bold text-slate-700 dark:text-slate-300">{file.likes_count}</span>
