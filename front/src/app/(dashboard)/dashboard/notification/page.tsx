@@ -350,8 +350,7 @@ function NotificationsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col p-4 md:p-8 xl:p-12 overflow-y-auto transition-colors duration-300">
-      <div className="max-w-4xl w-full mx-auto md:pb-20">
+    <div className="w-full space-y-6 md:pb-20">
         {/* 🔵 Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white/60 dark:bg-slate-900/60 p-6 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-800/40 backdrop-blur-lg shadow-sm">
           <div className="flex items-center gap-4">
@@ -533,7 +532,6 @@ function NotificationsPage() {
             )}
           </>
         )}
-      </div>
     </div>
   );
 }
