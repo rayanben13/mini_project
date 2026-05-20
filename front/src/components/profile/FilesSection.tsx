@@ -113,8 +113,8 @@ const ProfileFileCard = ({ file, onNavigate }: { file: any; onNavigate: () => vo
                             <span className="text-[10px] font-bold uppercase text-[#ae1ce9] bg-[#ae1ce9]/10 px-2.5 py-1 rounded-md">
                                 {file.major || "General"}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-medium">
-                                {file.type ?? "PDF"}
+                            <span className="text-[10px] text-slate-400 font-medium uppercase">
+                                {file.type || "Other"}
                             </span>
                         </div>
 
@@ -128,13 +128,11 @@ const ProfileFileCard = ({ file, onNavigate }: { file: any; onNavigate: () => vo
                     </div>
 
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
-                        {file.likes_count !== undefined && file.likes_count > 0 ? (
+                        {file.likes_count !== undefined && file.likes_count > 0 && (
                             <p className="text-xs text-slate-400 flex items-center gap-1.5">
                                 <span className="text-red-500">❤️</span>
                                 <span className="font-bold text-slate-700 dark:text-slate-300">{file.likes_count}</span>
                             </p>
-                        ) : (
-                            <span className="text-[10px] text-slate-300 dark:text-slate-600 font-semibold uppercase">No Likes</span>
                         )}
                     </div>
                 </div>
