@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useFullUserData } from "@/hooks/useUserInformation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Bell, BookOpen, Clock } from "lucide-react";
+import { ArrowRight, Bell, BookOpen, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -111,59 +111,62 @@ export default function ReminderDialog() {
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl overflow-hidden p-0">
-                <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6">
-                    <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 animate-bounce">
-                        <Bell className="w-8 h-8 text-primary" />
+            <DialogContent className="max-w-[390px] w-full rounded-[2rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-6 space-y-5" >
+                
+                {/* Centered Header */}
+                <div className="flex flex-col items-center justify-center text-center space-y-3.5 pt-2">
+                    <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#0975e6] dark:text-blue-400 flex items-center justify-center shrink-0 animate-bounce">
+                        <Bell className="w-6 h-6 animate-pulse" strokeWidth={2.2} />
                     </div>
-
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <div className="space-y-1">
+                        <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
                             Study Reminder! ⏰
                         </DialogTitle>
-                        <DialogDescription className="text-slate-600 dark:text-slate-400 text-lg mt-2">
-                            {activeReminder.message || activeReminder.content}
+                        <DialogDescription className="text-xs text-slate-400 dark:text-slate-500">
+                            Time to focus and build your future
                         </DialogDescription>
-                    </DialogHeader>
-                </div>
-
-                <div className="px-6 py-4 space-y-4 bg-white dark:bg-slate-900">
-                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                            <BookOpen className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Target</p>
-                            <p className="text-slate-800 dark:text-white font-semibold">Time to Study Now!</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                            <Clock className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Status</p>
-                            <p className="text-slate-800 dark:text-white font-semibold">Active Session</p>
-                        </div>
                     </div>
                 </div>
 
-                <DialogFooter className="p-6 bg-slate-50 dark:bg-slate-800/30 flex flex-col sm:flex-row gap-3">
-                    <Button
-                        variant="outline"
+                {/* Message Content */}
+                <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-4 border border-slate-100/50 dark:border-slate-800/50 text-center">
+                    <p className="text-sm font-semibold text-slate-705 dark:text-slate-200 leading-relaxed">
+                        "{activeReminder.message || activeReminder.content}"
+                    </p>
+                </div>
+
+                {/* Quick Info Grid */}
+                <div className="grid grid-cols-2 gap-3 py-1">
+                    <div className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100/50 dark:border-slate-800/50 text-center">
+                        <BookOpen className="w-5 h-5 text-blue-500 mb-1.5" />
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Target</p>
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-250">Study List</p>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100/50 dark:border-slate-800/50 text-center">
+                        <Clock className="w-5 h-5 text-emerald-500 mb-1.5" />
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Status</p>
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-250">Active Now</p>
+                    </div>
+                </div>
+
+                {/* Action Footer Buttons matching mockup layout exactly */}
+                <div className="flex items-center justify-between gap-4 pt-2">
+                    <button
                         onClick={() => setIsOpen(false)}
-                        className="rounded-xl border-slate-200 dark:border-slate-700 h-12 flex-1"
+                        className="w-[48%] py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
                     >
                         Dismiss
-                    </Button>
-                    <Button
+                    </button>
+
+                    <button
                         onClick={handleGoToStudyList}
-                        className="rounded-xl bg-primary hover:bg-primary/90 h-12 flex-1 shadow-lg shadow-primary/20"
+                        className="w-[48%] py-3.5 rounded-xl text-white bg-[#0975e6] hover:bg-[#0866c9] font-bold text-sm shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
                     >
-                        Start Studying
-                    </Button>
-                </DialogFooter>
+                        <span>Start Now</span>
+                        <ArrowRight className="w-4 h-4" />
+                    </button>
+                </div>
             </DialogContent>
         </Dialog>
     );

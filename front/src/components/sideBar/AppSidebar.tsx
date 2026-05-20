@@ -23,6 +23,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
+import { House } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import UploadFileBtn from '../profile/uploadFileBtn';
@@ -30,11 +31,11 @@ import useAiStore from '@/Store/ai/aiStore';
 import { useMyNotificationsList } from '@/hooks/useNotifications';
 
 const items = [
-  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'My Library', url: '/dashboard/study-list', icon: BookOpen },
-  { title: 'AI Assistant', url: '/dashboard/ai', icon: Bot },
-  { title: 'My Profile', url: '/dashboard/profile', icon: UserCircle },
-  { title: 'Notifications', url: '/dashboard/notification', icon: Bell },
+  { title: 'Home', url: '/Home', icon: House },
+  { title: 'My Library', url: '/Home/study-list', icon: BookOpen },
+  { title: 'AI Assistant', url: '/Home/ai', icon: Bot },
+  { title: 'My Profile', url: '/Home/profile', icon: UserCircle },
+  { title: 'Notifications', url: '/Home/notification', icon: Bell },
 ];
 
 const adminItems = [
@@ -62,7 +63,7 @@ export function AppSidebar() {
       <SidebarHeader className="flex items-center justify-between px-4 py-5">
         {state === 'expanded' && (
           <span className="text-lg font-semibold text-primary dark:text-blue-400">
-            {isAdmin ? 'Admin Console' : 'My App'}
+            Study Share
           </span>
         )}
         <SidebarTrigger className="hover:bg-sidebar-accent rounded-md transition-colors" />

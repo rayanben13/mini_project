@@ -48,6 +48,11 @@ export const yourSubjects = async (req, res) => {
                 },
               },
             },
+            study_lists: {
+              where: {
+                privacy: 'public',
+              },
+            },
           },
         },
       },
