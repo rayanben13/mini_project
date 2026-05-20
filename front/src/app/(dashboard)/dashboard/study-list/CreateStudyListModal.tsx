@@ -50,6 +50,7 @@ export function CreateStudyListModal({
 
     if (!isOpen) return null;
 
+    return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 animate-in fade-in duration-200">
             <div className="bg-white dark:bg-slate-950 w-full max-w-[390px] rounded-[2rem] shadow-2xl p-6 space-y-5 border border-slate-100 dark:border-slate-900 relative">
                 
