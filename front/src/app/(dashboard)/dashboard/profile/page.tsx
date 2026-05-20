@@ -37,15 +37,14 @@ export default function UserProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <Loader2 className="w-10 h-10 animate-spin text-[#0975e6]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 lg:p-12">
-      <div className="max-w-6xl mx-auto space-y-10">
+    <div className="w-full max-w-6xl mx-auto space-y-10">
         {/* ===== Profile Header ===== */}
         <ProfileHeader
           user={user}
@@ -94,7 +93,6 @@ export default function UserProfile() {
           onClose={() => setIsEditModalOpen(false)}
           currentData={editData}
         />
-      </div>
     </div>
   );
 }
