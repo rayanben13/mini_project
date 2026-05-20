@@ -62,14 +62,14 @@ export function CreateStudyListModal({
                     <X className="w-5 h-5" />
                 </button>
 
-                {/* ===== Header ===== */}
-                <div className="flex items-center gap-4">
+                {/* ===== Centered Header ===== */}
+                <div className="flex flex-col items-center justify-center text-center space-y-3.5 pt-2">
                     {/* Pencil icon with soft blue background matching mockup */}
-                    <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#0975e6] dark:text-blue-400 flex items-center justify-center shrink-0">
-                        <Edit3 className="w-5 h-5" strokeWidth={2.2} />
+                    <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#0975e6] dark:text-blue-400 flex items-center justify-center shrink-0">
+                        <Edit3 className="w-6 h-6" strokeWidth={2.2} />
                     </div>
 
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
                             Create Study List
                         </h2>

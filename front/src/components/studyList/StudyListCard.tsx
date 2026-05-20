@@ -161,12 +161,12 @@ export default function StudyListCard({
                 <DialogContent data-stop onClick={(e) => e.stopPropagation()}
                     className="sm:max-w-[425px] rounded-[2rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-6 md:p-8 space-y-6 relative" >
                     
-                    {/* Header */}
-                    <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#0975e6] dark:text-blue-400 flex items-center justify-center shrink-0">
-                            <Edit3 className="w-5 h-5" strokeWidth={2.2} />
+                    {/* Centered Header */}
+                    <div className="flex flex-col items-center justify-center text-center space-y-3.5 pt-2">
+                        <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#0975e6] dark:text-blue-400 flex items-center justify-center shrink-0">
+                            <Edit3 className="w-6 h-6" strokeWidth={2.2} />
                         </div>
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                             <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
                                 Edit Study List
                             </h2>
