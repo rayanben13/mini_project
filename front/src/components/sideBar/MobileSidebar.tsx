@@ -6,6 +6,7 @@ import {
   Bot,
   File,
   FileWarning,
+  GraduationCap,
   LayoutDashboard,
   Menu,
   ShieldCheck,
@@ -100,7 +101,7 @@ export function MobileSidebar() {
                 "
               >
                 <div className="absolute inset-0 bg-white/10 animate-pulse" />
-                <BookOpen className="size-5 text-white relative z-10" />
+                <GraduationCap className="size-5 text-white relative z-10" />{" "}
               </div>
 
               <div>

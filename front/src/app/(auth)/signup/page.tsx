@@ -13,8 +13,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { authSignupSchema } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
@@ -25,6 +27,9 @@ type SignupFormValues = z.infer<typeof authSignupSchema>;
 export default function SignupPage() {
   const router = useRouter();
   const { signup, loading } = useAuthStore();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(authSignupSchema),
@@ -134,18 +139,30 @@ export default function SignupPage() {
             </div>
 
             {/* PASSWORD */}
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Password
               </label>
 
               <Input
                 {...form.register("password")}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 disabled={loading}
-                className="dark:bg-gray-900 dark:border-gray-700"
+                className="dark:bg-gray-900 dark:border-gray-700 pr-10"
               />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
 
               {form.formState.errors.password && (
                 <p className="text-red-500 text-sm">
@@ -155,18 +172,30 @@ export default function SignupPage() {
             </div>
 
             {/* CONFIRM PASSWORD */}
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Confirm Password
               </label>
 
               <Input
                 {...form.register("confirmPassword")}
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
                 disabled={loading}
-                className="dark:bg-gray-900 dark:border-gray-700"
+                className="dark:bg-gray-900 dark:border-gray-700 pr-10"
               />
+
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
 
               {form.formState.errors.confirmPassword && (
                 <p className="text-red-500 text-sm">

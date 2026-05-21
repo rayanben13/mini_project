@@ -13,8 +13,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { authLoginSchema } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
@@ -35,6 +37,7 @@ export default function LoginForm() {
       password: "",
     },
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
@@ -124,19 +127,33 @@ export default function LoginForm() {
           </div>
 
           {/* PASSWORD */}
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Password
             </label>
 
             <Input
               {...form.register("password")}
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               disabled={loading}
-              className="dark:bg-gray-900 dark:border-gray-700"
+              className="dark:bg-gray-900 dark:border-gray-700 pr-10"
             />
 
+            {/* toggle button */}
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-[30px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              {showPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+
+            {/* error */}
             {form.formState.errors.password && (
               <p className="text-sm text-red-500">
                 {form.formState.errors.password.message}

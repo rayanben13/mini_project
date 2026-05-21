@@ -1,10 +1,12 @@
 "use client";
 
 import SetReminder from "@/components/studyList/SetReminder";
+import { useProfileDropdownData } from "@/hooks/useUserInformation";
 import useStudyListStore from "@/Store/user/studyListStore";
 import { getPdfPreview } from "@/utils/cloudinary";
 import { Bell, FileText, Heart, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -19,6 +21,7 @@ export default function StudyListDetailPage() {
     deleteFileFromStudyList,
     addSetReminder,
   } = useStudyListStore();
+  const { data } = useProfileDropdownData();
 
   const [details, setDetails] = useState<any>(null);
   const [loadingReminder, setLoadingReminder] = useState(false);
@@ -182,7 +185,15 @@ export default function StudyListDetailPage() {
                     Created by:
                   </span>
 
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                  <Link
+                    href={
+                      details.studyListCard.users?.id_user ===
+                      data?.profileData?.id_user
+                        ? "/dashboard/profile"
+                        : `/dashboard/user/${details.studyListCard.users?.id_user}`
+                    }
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
+                  >
                     {/* Avatar */}
                     <div className="w-7 h-7 rounded-full bg-[#0975e6]/10 text-[#0975e6] flex items-center justify-center text-xs font-black uppercase">
                       {details.studyListCard.users?.fullname?.charAt(0)}
@@ -192,7 +203,7 @@ export default function StudyListDetailPage() {
                     <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                       {details.studyListCard.users?.fullname}
                     </span>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -275,7 +286,7 @@ export default function StudyListDetailPage() {
               <div className="flex-1 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-2">
                   <span className="inline-block px-2 py-0.5 rounded-md bg-[#0975e6]/10 text-[10px] font-black tracking-wider uppercase text-[#0975e6]">
-                    {file.type || "FILE"}
+                    {file?.subjects?.major || "Unknown course"}
                   </span>
 
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight line-clamp-2">

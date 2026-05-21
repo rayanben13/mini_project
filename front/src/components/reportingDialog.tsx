@@ -2,7 +2,7 @@
 
 import useFilesStore from "@/Store/user/filesStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Flag, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -116,10 +116,20 @@ export default function ReportDialog({
     <>
       {/* Trigger Button */}
       <button
+        title="add report"
         onClick={handleOpenReport}
-        className="p-2 border border-border rounded-xl text-red-500 hover:bg-red-500/10 transition flex items-center gap-2 font-medium"
+        className="border border-border rounded-xl text-red-500 hover:bg-red-500/10 transition"
       >
-        Report
+        {/* Mobile */}
+        <span className="flex items-center justify-center p-2 xl:hidden">
+          <Flag className="size-5" />
+        </span>
+
+        {/* Desktop */}
+        <span className="hidden xl:flex items-center gap-2 px-4 py-2 font-medium">
+          <Flag className="size-4" />
+          Report
+        </span>
       </button>
 
       {/* Dialog */}

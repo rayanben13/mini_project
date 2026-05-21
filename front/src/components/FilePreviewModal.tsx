@@ -8,7 +8,7 @@ import FileActions from "./fileAction";
 
 import { useProfileDropdownData } from "@/hooks/useUserInformation";
 import useAiStore from "@/Store/ai/aiStore";
-import { Loader2 } from "lucide-react";
+import { Download, Loader2, Share2 } from "lucide-react";
 import ReportDialog from "./reportingDialog";
 
 export default function FilePreviewModal({ file }: { file: any }) {
@@ -67,22 +67,39 @@ export default function FilePreviewModal({ file }: { file: any }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => getDownloadFiles(file.id_file)}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition"
+              className="bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition"
             >
-              Download
+              {/* Mobile */}
+              <span className="flex items-center justify-center p-2.5 xl:hidden">
+                <Download className="size-5" />
+              </span>
+
+              {/* Desktop */}
+              <span className="hidden xl:flex items-center gap-2 px-3 py-2.5 font-bold">
+                <Download className="size-4" />
+                Download
+              </span>
             </button>
 
             <button
               onClick={handleShare}
-              className="p-2 border border-border rounded-xl hover:bg-muted transition"
+              className="border border-border rounded-xl hover:bg-muted transition"
             >
-              Share
+              <span className="flex items-center justify-center p-2.5 xl:hidden">
+                <Share2 className="size-5" />
+              </span>
+              <span className="hidden xl:flex items-center gap-2 px-3 py-2.5 font-bold">
+                <Share2 className="size-4" />
+                Share
+              </span>
             </button>
 
-            <ReportDialog
-              file={file}
-              userInfo_role={userInfo?.profileData?.role}
-            />
+            {!isAdmin && (
+              <ReportDialog
+                file={file}
+                userInfo_role={userInfo?.profileData?.role}
+              />
+            )}
           </div>
         </div>
 
@@ -178,7 +195,7 @@ export default function FilePreviewModal({ file }: { file: any }) {
             <div>
               <p className="text-sm text-slate-400 mb-2">Subject</p>
 
-              <span className="inline-flex px-3 py-1 rounded-full bg-fuchsia-100 text-fuchsia-700 text-sm font-semibold">
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
                 {subject?.course}
               </span>
             </div>

@@ -6,6 +6,7 @@ import {
   Bot,
   File,
   FileWarning,
+  GraduationCap,
   Home,
   ShieldCheck,
   UserCircle,
@@ -68,7 +69,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <div className="relative size-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-md shadow-primary/20 overflow-hidden">
             <div className="absolute inset-0 opacity-30 animate-pulse bg-white/20" />
-            <BookOpen className="size-5 text-white relative z-10" />
+            <GraduationCap className="size-5 text-white relative z-10" />{" "}
           </div>
 
           {state === "expanded" && (
