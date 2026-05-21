@@ -12,16 +12,16 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   return (
     <TooltipProvider delayDuration={100}>
-      <SidebarProvider style={
-        {
-          "--sidebar-width": "15rem",       // ≈ w-56
-          "--sidebar-width-icon": "3rem",   // collapsed
-        } as React.CSSProperties
-      }>
-
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "15rem", // ≈ w-56
+            "--sidebar-width-icon": "4rem", // collapsed
+          } as React.CSSProperties
+        }
+      >
         <AppSidebar />
 
         <SidebarInset className="flex flex-col min-w-0 relative">
@@ -31,9 +31,7 @@ export default function DashboardLayout({
               داخل الـ Flexbox بدلاً من دفع الحواف للخارج.
           */}
           <main className="flex-1 p-4 md:p-6 w-full max-w-full overflow-x-hidden">
-            <div className="mx-auto max-w-full lg:max-w-7xl">
-              {children}
-            </div>
+            <div className="mx-auto max-w-full lg:max-w-7xl">{children}</div>
           </main>
         </SidebarInset>
       </SidebarProvider>

@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import allActurStore from '@/Store/allActurStore';
-import Image from 'next/image';
-import Link from 'next/link';
-import { toast } from 'sonner';
-import FileActions from './fileAction';
+import allActurStore from "@/Store/allActurStore";
+import Image from "next/image";
+import Link from "next/link";
+import { toast } from "sonner";
+import FileActions from "./fileAction";
 
-import { useProfileDropdownData } from '@/hooks/useUserInformation';
-import useAiStore from '@/Store/ai/aiStore';
-import ReportDialog from './reportingDialog';
+import { useProfileDropdownData } from "@/hooks/useUserInformation";
+import useAiStore from "@/Store/ai/aiStore";
+import ReportDialog from "./reportingDialog";
 
 export default function FilePreviewModal({ file }: { file: any }) {
   const { getShareLink, getDownloadFiles } = allActurStore();
   const { data: userInfo } = useProfileDropdownData();
   const { openAiWindow } = useAiStore();
-  const isAdmin = userInfo?.profileData?.role === 'admin';
+  const isAdmin = userInfo?.profileData?.role === "admin";
 
   if (!file) return <p>Loading...</p>;
 
@@ -25,9 +25,9 @@ export default function FilePreviewModal({ file }: { file: any }) {
     if (res.success) {
       const shareUrl = res.data.link || res.data; // Handle both direct string and object
       navigator.clipboard.writeText(shareUrl);
-      toast.success('Share link copied to clipboard!');
+      toast.success("Share link copied to clipboard!");
     } else {
-      toast.error(res.message || 'Failed to get share link');
+      toast.error(res.message || "Failed to get share link");
     }
   };
 
@@ -41,14 +41,14 @@ export default function FilePreviewModal({ file }: { file: any }) {
             <h1 className="text-2xl lg:text-3xl font-black">{file.title}</h1>
 
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span>📅 {file.approved_at || 'Not approved yet'}</span>
+              <span>📅 {file.approved_at || "Not approved yet"}</span>
               <span>📄 {file.type}</span>
-              {file.status !== 'accepted' && (
+              {file.status !== "accepted" && (
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
-                    file.status === 'pending'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-red-100 text-red-700'
+                    file.status === "pending"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-red-100 text-red-700"
                   }`}
                 >
                   {file.status}
@@ -73,9 +73,10 @@ export default function FilePreviewModal({ file }: { file: any }) {
               Share
             </button>
 
-            {userInfo?.profileData?.role === 'user' && (
-              <ReportDialog file={file} />
-            )}
+            <ReportDialog
+              file={file}
+              userInfo_role={userInfo?.profileData?.role}
+            />
           </div>
         </div>
 
@@ -89,7 +90,7 @@ export default function FilePreviewModal({ file }: { file: any }) {
 
         {/* Interaction */}
         <FileActions
-          userRole={userInfo?.profileData?.role || ''}
+          userRole={userInfo?.profileData?.role || ""}
           fileId={file.id_file}
           initialLikes={file.like || 0}
           initialDislikes={file.dislike || 0}
@@ -99,7 +100,7 @@ export default function FilePreviewModal({ file }: { file: any }) {
 
       {/* ================= SIDEBAR ================= */}
       <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-card flex flex-col gap-6">
-        {userInfo?.profileData?.role === 'user' && (
+        {userInfo?.profileData?.role === "user" && (
           <button
             onClick={() => openAiWindow(file.id_file)}
             className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-sm"
@@ -119,11 +120,14 @@ export default function FilePreviewModal({ file }: { file: any }) {
             <>
               <div>
                 <p className="text-sm text-slate-400 mb-3">Submitted by</p>
-
                 <Link
-                  href={`/dashboard/user/${file.users?.id_user}`}
+                  href={
+                    !userInfo
+                      ? `/login?from=modal&file_id=${file.id_file}`
+                      : `/dashboard/user/${file.users?.id_user}`
+                  }
                   onClick={(e) => {
-                    if (file.users?.role === 'admin') {
+                    if (file.users?.role === "admin") {
                       e.preventDefault();
                       toast.error("You can't see this profile");
                     }
@@ -135,7 +139,7 @@ export default function FilePreviewModal({ file }: { file: any }) {
                     {file.users?.img_user ? (
                       <Image
                         src={file.users?.img_user}
-                        alt={file.users?.fullname || 'User'}
+                        alt={file.users?.fullname || "User"}
                         fill
                         className="object-cover"
                         unoptimized
@@ -150,11 +154,11 @@ export default function FilePreviewModal({ file }: { file: any }) {
                   {/* User Info */}
                   <div>
                     <p className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-fuchsia-600 transition-colors">
-                      {file.users?.fullname || 'Unknown user'}
+                      {file.users?.fullname || "Unknown user"}
                     </p>
 
                     <p className="text-xs text-slate-400">
-                      @{file.users?.username || 'unknown'}
+                      @{file.users?.username || "unknown"}
                     </p>
                   </div>
                 </Link>

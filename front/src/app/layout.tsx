@@ -19,9 +19,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
-
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
@@ -34,9 +31,7 @@ export default function RootLayout({
           </Providers>
         </ReactQueryProvider>
 
-        <Toaster
-          position="bottom-right"
-        />
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );

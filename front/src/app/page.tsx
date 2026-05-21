@@ -19,13 +19,6 @@ export default function Home() {
 
       {/* ===== Hero Section ===== */}
       <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pt-2 pb-20 text-center">
-
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-sm font-semibold mb-5">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-          Join 10,000+ students already studying smarter
-        </div>
-
         {/* Title */}
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-4 tracking-tight text-slate-900 dark:text-white leading-tight">
           Grow smarter{" "}
@@ -36,24 +29,30 @@ export default function Home() {
 
         {/* Subtitle */}
         <p className="text-lg sm:text-xl md:text-2xl text-slate-500 dark:text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-          Find top-rated study notes from students taking the same courses as you.
+          Find top-rated study notes from students taking the same courses as
+          you.
         </p>
 
         <div className="w-full max-w-2xl mx-auto mb-9 group">
           <div className="relative transition-all duration-300 transform group-focus-within:-translate-y-1 group-focus-within:shadow-2xl rounded-2xl">
-            <SearchBar isGuest={true} externalQuery={searchTerm}
-            />
+            <SearchBar isGuest={true} externalQuery={searchTerm} />
           </div>
         </div>
 
         {/* Search Suggestions */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
           <span className="text-sm text-slate-400">Try:</span>
-          {["Algorithmique", "Electronique", "Algebre 1", "Systeme d'exploitation"].map((term) => (
+          {[
+            "Algorithmique",
+            "Electronique",
+            "Algebre 1",
+            "Systeme d'exploitation",
+          ].map((term) => (
             <button
               key={term}
               className="px-3 py-1 text-xs font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              onClick={() => setSearchTerm(term)}>
+              onClick={() => setSearchTerm(term)}
+            >
               {term}
             </button>
           ))}
@@ -76,9 +75,6 @@ export default function Home() {
           </Link>
         </div>
       </section>
-
-
-
     </main>
   );
 }

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Bell,
@@ -6,10 +6,10 @@ import {
   Bot,
   File,
   FileWarning,
-  LayoutDashboard,
+  Home,
   ShieldCheck,
   UserCircle,
-} from 'lucide-react';
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -21,74 +21,93 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
   useSidebar,
-} from '@/components/ui/sidebar';
+} from "@/components/ui/sidebar";
 
-import { House } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import UploadFileBtn from '../profile/uploadFileBtn';
-import useAiStore from '@/Store/ai/aiStore';
-import { useMyNotificationsList } from '@/hooks/useNotifications';
+import useAiStore from "@/Store/ai/aiStore";
+import { useMyNotificationsList } from "@/hooks/useNotifications";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import UploadFileBtn from "../profile/uploadFileBtn";
 
 const items = [
-  { title: 'Home', url: '/dashboard', icon: House },
-  { title: 'My Library', url: '/dashboard/study-list', icon: BookOpen },
-  { title: 'AI Assistant', url: '/dashboard/ai', icon: Bot },
-  { title: 'My Profile', url: '/dashboard/profile', icon: UserCircle },
-  { title: 'Notifications', url: '/dashboard/notification', icon: Bell },
+  { title: "Home", url: "/dashboard", icon: Home },
+  { title: "My Library", url: "/dashboard/study-list", icon: BookOpen },
+  { title: "AI Assistant", url: "/dashboard/ai", icon: Bot },
+  { title: "My Profile", url: "/dashboard/profile", icon: UserCircle },
+  { title: "Notifications", url: "/dashboard/notification", icon: Bell },
 ];
 
 const adminItems = [
-  { title: 'Admin Panel', url: '/admin', icon: ShieldCheck },
-  { title: 'Files', url: '/admin/files', icon: File },
-  { title: 'Reports', url: '/admin/reports', icon: FileWarning },
+  { title: "Admin Panel", url: "/admin", icon: ShieldCheck },
+  { title: "Files", url: "/admin/files", icon: File },
+  { title: "Reports", url: "/admin/reports", icon: FileWarning },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const pathname = usePathname();
   const { openAiWindow } = useAiStore();
+
   const { data: notifData } = useMyNotificationsList(1, 50);
+
   const unreadCount =
     notifData?.data?.filter((n: any) => !n.is_read).length || 0;
 
-  const isAdmin = pathname.startsWith('/admin');
+  const isAdmin = pathname.startsWith("/admin");
   const currentItems = isAdmin ? adminItems : items;
+
+  const isCollapsed = state === "collapsed";
 
   return (
     <Sidebar
       collapsible="icon"
-      className="bg-sidebar border-r border-sidebar-border"
+      className="bg-background/95 backdrop-blur-xl border-r border-border/60"
     >
+      {/* HEADER */}
       <SidebarHeader className="flex items-center justify-between px-4 py-5">
-        {state === 'expanded' && (
-          <span className="text-lg font-semibold text-primary dark:text-blue-400">
-            Study Share
-          </span>
-        )}
-        <SidebarTrigger className="hover:bg-sidebar-accent rounded-md transition-colors" />
+        <div className="flex items-center gap-3">
+          <div className="relative size-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-md shadow-primary/20 overflow-hidden">
+            <div className="absolute inset-0 opacity-30 animate-pulse bg-white/20" />
+            <BookOpen className="size-5 text-white relative z-10" />
+          </div>
+
+          {state === "expanded" && (
+            <div className="flex flex-col leading-tight">
+              <span className="font-black text-lg bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+                StudyShare
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                Smart Learning Platform
+              </span>
+            </div>
+          )}
+        </div>
+
+        <SidebarTrigger className="hover:bg-muted rounded-lg transition" />
       </SidebarHeader>
 
+      {/* CONTENT */}
       <SidebarContent className="px-2">
         <SidebarMenu className="space-y-2">
           {currentItems.map((item) => {
             const isActive =
-              item.url === '/dashboard' || item.url === '/admin'
+              item.url === "/dashboard" || item.url === "/admin"
                 ? pathname === item.url ||
                   (pathname.startsWith(`${item.url}/`) &&
                     !currentItems.some(
                       (other) =>
-                        other.url !== item.url && pathname.startsWith(other.url)
+                        other.url !== item.url &&
+                        pathname.startsWith(other.url),
                     ))
                 : pathname.startsWith(item.url);
 
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
-                  asChild={item.title !== 'AI Assistant'}
+                  asChild={item.title !== "AI Assistant"}
                   tooltip={item.title}
                   onClick={
-                    item.title === 'AI Assistant'
+                    item.title === "AI Assistant"
                       ? (e) => {
                           e.preventDefault();
                           openAiWindow();
@@ -96,21 +115,40 @@ export function AppSidebar() {
                       : undefined
                   }
                   className={`
-                    group rounded-xl px-3 py-2
-                    transition-all duration-200
+                    group relative overflow-hidden
+                    rounded-2xl h-12
+                    flex items-center
+                    transition-all duration-300
                     cursor-pointer
+                    border border-transparent
+
+                    ${isCollapsed ? "justify-center px-0" : "px-3"}
+
+                    hover:bg-muted/60
+                    hover:shadow-sm
+                    hover:-translate-y-[1px]
+
                     ${
-                      isActive && item.title !== 'AI Assistant'
-                        ? 'bg-primary/10 text-primary dark:bg-blue-500/20 dark:text-blue-400'
-                        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                      isActive && item.title !== "AI Assistant"
+                        ? `
+                          bg-gradient-to-r from-primary/15 to-primary/5
+                          text-primary
+                          border-primary/15
+                        `
+                        : "text-muted-foreground hover:text-foreground"
                     }
                   `}
                 >
-                  {item.title === 'AI Assistant' ? (
-                    <div className="flex items-center gap-2">
-                      <item.icon className="w-5 h-5 transition-transform group-hover:scale-110" />
-                      {state === 'expanded' && (
-                        <span className="font-medium">{item.title}</span>
+                  {item.title === "AI Assistant" ? (
+                    <div className="flex items-center gap-3">
+                      <div className="size-9 rounded-xl flex items-center justify-center bg-muted/50 group-hover:bg-background transition">
+                        <item.icon className="size-[18px] group-hover:scale-110 group-hover:rotate-3 transition" />
+                      </div>
+
+                      {state === "expanded" && (
+                        <span className="text-sm font-medium">
+                          {item.title}
+                        </span>
                       )}
                     </div>
                   ) : (
@@ -118,32 +156,57 @@ export function AppSidebar() {
                       href={item.url}
                       className="flex items-center justify-between w-full"
                     >
-                      <div className="flex items-center gap-2 relative">
-                        <div className="relative">
-                          <item.icon
-                            className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive ? 'text-primary dark:text-blue-400' : ''}`}
-                          />
-                          {item.title === 'Notifications' &&
-                            unreadCount > 0 &&
-                            state === 'icon' && (
-                              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white dark:border-slate-900 shrink-0" />
-                            )}
+                      <div className="flex items-center gap-3 w-full">
+                        {/* ICON */}
+                        <div
+                          className={`
+                            size-9 rounded-xl
+                            flex items-center justify-center
+                            transition
+                            ${
+                              isActive
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted/50 text-muted-foreground group-hover:bg-background"
+                            }
+                            ${isCollapsed ? "mx-auto" : ""}
+                          `}
+                        >
+                          <item.icon className="size-[18px] transition group-hover:scale-110 group-hover:rotate-3" />
                         </div>
-                        {state === 'expanded' && (
+
+                        {/* TEXT */}
+                        {state === "expanded" && (
                           <span
-                            className={`font-medium ${isActive ? 'font-bold' : ''}`}
+                            className={`
+                              text-sm whitespace-nowrap transition
+                              ${
+                                isActive
+                                  ? "font-semibold text-foreground"
+                                  : "font-medium text-muted-foreground group-hover:text-foreground"
+                              }
+                            `}
                           >
                             {item.title}
                           </span>
                         )}
                       </div>
-                      {item.title === 'Notifications' &&
-                        unreadCount > 0 &&
-                        state === 'expanded' && (
-                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shrink-0 min-w-5 h-5 flex items-center justify-center animate-pulse">
-                            {unreadCount}
-                          </span>
-                        )}
+
+                      {/* BADGE */}
+                      {item.title === "Notifications" && unreadCount > 0 && (
+                        <span
+                          className={`
+                            absolute right-2 top-2
+                            min-w-5 h-5 px-1.5
+                            flex items-center justify-center
+                            rounded-full text-[10px] font-bold text-white
+                            bg-gradient-to-r from-red-500 to-rose-500
+                            shadow-lg
+                            ${isCollapsed ? "scale-90" : ""}
+                          `}
+                        >
+                          {unreadCount}
+                        </span>
+                      )}
                     </Link>
                   )}
                 </SidebarMenuButton>
@@ -153,20 +216,43 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
+      {/* FOOTER */}
       {!isAdmin && (
-        <SidebarFooter className="p-3 border-t border-sidebar-border">
-          <SidebarMenuButton
-            asChild
-            tooltip="Upload File"
-            className="
-              rounded-xl px-3 py-2
-              bg-primary text-primary-foreground
-              hover:opacity-90
-              transition
-              dark:bg-blue-600 dark:hover:bg-blue-700
-            "
-          >
-            <UploadFileBtn variant="sidebar" />
+        <SidebarFooter className="p-3 border-t border-border/60">
+          <SidebarMenuButton asChild tooltip="Upload File">
+            <div
+              className="
+                group relative w-full
+                h-12 rounded-2xl
+                overflow-hidden
+                cursor-pointer
+
+                bg-gradient-to-r from-primary via-blue-500 to-indigo-500
+                text-white
+
+                shadow-md shadow-primary/20
+                hover:shadow-xl hover:shadow-primary/30
+
+                transition-all duration-300 ease-out
+                hover:-translate-y-[2px]
+                active:translate-y-0
+              "
+            >
+              {/* glow */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-white/10 blur-xl" />
+
+              {/* content */}
+              <div className="relative flex items-center justify-center gap-2 font-semibold text-sm h-full">
+                <span className="text-lg group-hover:scale-110 group-hover:rotate-6 transition">
+                  +
+                </span>
+
+                <UploadFileBtn variant="sidebar" />
+              </div>
+
+              {/* bottom line */}
+              <div className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full transition-all duration-500 bg-white/40" />
+            </div>
           </SidebarMenuButton>
         </SidebarFooter>
       )}

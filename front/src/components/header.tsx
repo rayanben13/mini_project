@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { useProfileDropdownData } from '@/hooks/useUserInformation';
+import { Button } from "@/components/ui/button";
+import { useProfileDropdownData } from "@/hooks/useUserInformation";
 
-import useAuthStore from '@/Store/AuthStore';
-import DarkModeStore from '@/Store/darkModSroe';
+import useAuthStore from "@/Store/AuthStore";
+import DarkModeStore from "@/Store/darkModSroe";
 
-import { LogOut, Moon, Search, Sun, X } from 'lucide-react';
+import { BookOpen, LogOut, Moon, Search, Sun, X } from "lucide-react";
 
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from "next/image";
+import Link from "next/link";
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
-import SearchBar from './SearchBar';
-import { MobileSidebar } from './sideBar/MobileSidebar';
+import SearchBar from "./SearchBar";
+import { MobileSidebar } from "./sideBar/MobileSidebar";
 
 export default function Header() {
   const router = useRouter();
@@ -50,34 +50,34 @@ export default function Header() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
 
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Escape close
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setOpen(false);
         setMobileSearchOpen(false);
       }
     };
 
-    document.addEventListener('keydown', handleEsc);
+    document.addEventListener("keydown", handleEsc);
 
-    return () => document.removeEventListener('keydown', handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
   }, []);
 
   // Logout
   const handleLogout = () => {
     setOpen(false);
 
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
 
     logout();
 
-    router.push('/login');
+    router.push("/login");
   };
 
   // Merge user info
@@ -120,8 +120,42 @@ export default function Header() {
 
           {/* Logo */}
           {!isAuthenticated && (
-            <Link href="/" className="font-bold text-lg sm:text-xl shrink-0">
-              Study Share
+            <Link
+              href="/"
+              className="
+    flex items-center gap-3
+    font-bold text-lg sm:text-xl
+    shrink-0
+    group
+  "
+            >
+              <div
+                className="
+      relative size-10 rounded-xl
+      bg-gradient-to-br from-primary to-blue-600
+      flex items-center justify-center
+      shadow-md shadow-primary/20
+      overflow-hidden
+      transition-all duration-300
+      group-hover:scale-105
+      group-hover:rotate-3
+    "
+              >
+                <div className="absolute inset-0 opacity-30 animate-pulse bg-white/20" />
+
+                <BookOpen className="size-5 text-white relative z-10" />
+              </div>
+
+              <span
+                className="
+      bg-gradient-to-r from-primary to-blue-500
+      bg-clip-text text-transparent
+      tracking-tight
+      font-black
+    "
+              >
+                Study Share
+              </span>
             </Link>
           )}
 
@@ -165,15 +199,23 @@ export default function Header() {
                 className="rounded-full cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
               >
                 {displayUser?.img_user ? (
-                  <Image
-                    src={displayUser.img_user}
-                    alt="avatar"
-                    width={36}
-                    height={36}
-                    className="rounded-full border-2 border-slate-200 dark:border-slate-700 object-cover"
-                  />
+                  <div className="relative w-9 h-9">
+                    <Image
+                      src={displayUser.img_user}
+                      alt="avatar"
+                      fill
+                      sizes="36px"
+                      className="
+        rounded-full
+        object-cover
+        object-center
+        border border-slate-200 dark:border-slate-700
+        shadow-sm
+      "
+                    />
+                  </div>
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm relative">
+                  <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm relative shadow-sm">
                     {displayUser?.username?.charAt(0).toUpperCase()}
 
                     {isFetching && (
@@ -202,7 +244,7 @@ export default function Header() {
                     </p>
 
                     <p className="text-xs text-gray-400 truncate mt-0.5">
-                      {displayUser?.email || ''}
+                      {displayUser?.email || ""}
                     </p>
                   </div>
 
