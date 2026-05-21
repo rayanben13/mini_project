@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { resetPasswordSchema } from "@/lib/validations/auth";
-import useAuthStore from "@/Store/AuthStore";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
-import z from "zod";
+import { resetPasswordSchema } from '@/lib/validations/auth';
+import useAuthStore from '@/Store/AuthStore';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff } from 'lucide-react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import z from 'zod';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 
 type FormValues = z.infer<typeof resetPasswordSchema>;
 
@@ -31,30 +31,35 @@ export default function ResetPasswordPage() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const token = params.token as string;
-  const email = searchParams.get("email");
+  const email = searchParams.get('email');
 
   const { resetPassword, loading } = useAuthStore();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      password: "",
-      confirmPassword: "",
+      password: '',
+      confirmPassword: '',
     },
   });
 
   const onSubmit = async (values: FormValues) => {
     if (!token || !email) {
-      return toast.error("Invalid or expired link");
+      return toast.error('Invalid or expired link');
     }
 
-    const result = await resetPassword(email, values.password, token);
+    const result = await resetPassword({
+      email,
+      password: values.password,
+      confirmPassword: values.confirmPassword,
+      token,
+    });
 
     if (result.success) {
-      toast.success("Password updated! Redirecting...");
-      setTimeout(() => router.push("/login"), 1200);
+      toast.success('Password updated! Redirecting...');
+      setTimeout(() => router.push('/login'), 1200);
     } else {
-      toast.error(result.message || "Failed to reset password");
+      toast.error(result.message || 'Failed to reset password');
     }
   };
 
@@ -92,9 +97,9 @@ export default function ResetPasswordPage() {
 
               <div className="relative">
                 <Input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  {...form.register("password")}
+                  {...form.register('password')}
                   disabled={loading}
                   className="dark:bg-gray-900 dark:border-gray-700 pr-10"
                 />
@@ -123,9 +128,9 @@ export default function ResetPasswordPage() {
 
               <div className="relative">
                 <Input
-                  type={showConfirm ? "text" : "password"}
+                  type={showConfirm ? 'text' : 'password'}
                   placeholder="••••••••"
-                  {...form.register("confirmPassword")}
+                  {...form.register('confirmPassword')}
                   disabled={loading}
                   className="dark:bg-gray-900 dark:border-gray-700 pr-10"
                 />
@@ -152,7 +157,7 @@ export default function ResetPasswordPage() {
               className="w-full bg-primary hover:bg-primary/90 text-white"
               disabled={loading}
             >
-              {loading ? "Resetting..." : "Reset Password"}
+              {loading ? 'Resetting...' : 'Reset Password'}
             </Button>
           </form>
         </CardContent>
