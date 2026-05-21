@@ -8,6 +8,7 @@ import FileActions from "./fileAction";
 
 import { useProfileDropdownData } from "@/hooks/useUserInformation";
 import useAiStore from "@/Store/ai/aiStore";
+import { Loader2 } from "lucide-react";
 import ReportDialog from "./reportingDialog";
 
 export default function FilePreviewModal({ file }: { file: any }) {
@@ -16,9 +17,14 @@ export default function FilePreviewModal({ file }: { file: any }) {
   const { openAiWindow } = useAiStore();
   const isAdmin = userInfo?.profileData?.role === "admin";
 
-  if (!file) return <p>Loading...</p>;
+  if (!file)
+    return (
+      <p className="flex items-center justify-center gap-2 text-muted-foreground">
+        <Loader2 className="w-5 h-5 animate-spin" />
+      </p>
+    );
 
-  const subject = file.subjects;
+  const subject = file?.subjects;
 
   const handleShare = async () => {
     const res = await getShareLink(file.id_file);
