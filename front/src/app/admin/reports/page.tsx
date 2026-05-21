@@ -1,34 +1,33 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import useReportedFilesStore from '@/Store/admin/reportedFilesStore';
-import { ReportDetailsModal } from '@/components/admin/ReportDetailsModal';
-import {
-  Loader2,
-  AlertTriangle,
-  ShieldCheck,
-  FileWarning,
-  Eye,
-  Trash2,
-  EyeOff,
-  ChevronLeft,
-  ChevronRight,
-  Info,
-} from 'lucide-react';
-import { toast } from 'sonner';
+import useReportedFilesStore from "@/Store/admin/reportedFilesStore";
+import { ReportDetailsModal } from "@/components/admin/ReportDetailsModal";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  EyeOff,
+  FileWarning,
+  Info,
+  Loader2,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function ReportsPage() {
   const [page, setPage] = useState(1);
-  const [section, setSection] = useState('all');
+  const [section, setSection] = useState("all");
   const limit = 10;
 
   const {
@@ -45,7 +44,7 @@ export default function ReportsPage() {
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteFileId, setDeleteFileId] = useState<number | null>(null);
-  const [deleteReason, setDeleteReason] = useState('');
+  const [deleteReason, setDeleteReason] = useState("");
   const [isActionPending, setIsActionPending] = useState(false);
 
   useEffect(() => {
@@ -63,33 +62,34 @@ export default function ReportsPage() {
 
   const handleIgnore = async (fileId: number) => {
     setIsActionPending(true);
-    const res = await deleteOrIgnoreReportedFile(fileId, 'ignore');
+    const res = await deleteOrIgnoreReportedFile(fileId, "ignore");
     setIsActionPending(false);
     if (res.success) {
-      toast.success('File reports ignored successfully.');
+      toast.success("File reports ignored successfully.");
     } else {
-      toast.error(res.message || 'Failed to ignore reports.');
+      toast.error(res.message || "Failed to ignore reports.");
     }
   };
 
   const handleDeleteSubmit = async () => {
     if (!deleteFileId || deleteReason.trim().length < 3) {
-      toast.error('Reason must be at least 3 characters.');
+      toast.error("Reason must be at least 3 characters.");
       return;
     }
     setIsActionPending(true);
     const res = await deleteOrIgnoreReportedFile(
       deleteFileId,
-      'delete',
-      deleteReason
+      "delete",
+      deleteReason,
     );
+    console.log("Delete response:", res);
     setIsActionPending(false);
     if (res.success) {
-      toast.success('File deleted successfully.');
+      toast.success("File deleted successfully.");
       setDeleteFileId(null);
-      setDeleteReason('');
+      setDeleteReason("");
     } else {
-      toast.error(res.message || 'Failed to delete file.');
+      toast.error(res.message || "Failed to delete file.");
     }
   };
 
@@ -176,46 +176,46 @@ export default function ReportsPage() {
       <div className="flex border-b border-gray-200 mb-6 gap-8 overflow-x-auto no-scrollbar">
         <button
           onClick={() => {
-            setSection('all');
+            setSection("all");
             setPage(1);
           }}
-          className={`pb-4 text-sm whitespace-nowrap ${section === 'all' ? 'font-bold text-primary border-b-2 border-primary' : 'font-semibold text-neutral hover:text-gray-800 transition-colors'}`}
+          className={`pb-4 text-sm whitespace-nowrap ${section === "all" ? "font-bold text-primary border-b-2 border-primary" : "font-semibold text-neutral hover:text-gray-800 transition-colors"}`}
         >
           All Reports
         </button>
 
         <button
           onClick={() => {
-            setSection('highRisk_Reports');
+            setSection("highRisk_Reports");
             setPage(1);
           }}
-          className={`pb-4 text-sm whitespace-nowrap ${section === 'highRisk_Reports' ? 'font-bold text-primary border-b-2 border-primary' : 'font-semibold text-neutral hover:text-gray-800 transition-colors'}`}
+          className={`pb-4 text-sm whitespace-nowrap ${section === "highRisk_Reports" ? "font-bold text-primary border-b-2 border-primary" : "font-semibold text-neutral hover:text-gray-800 transition-colors"}`}
         >
           High Risk
         </button>
       </div>
 
       {/* Main Table Container */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-8">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden mb-8 transition-colors">
         <div className="overflow-x-auto">
           <table className="w-full text-left min-w-[800px]">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800 transition-colors">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold text-neutral uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-bold text-neutral dark:text-slate-400 uppercase tracking-wider">
                   File Name
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-bold text-neutral dark:text-slate-400 uppercase tracking-wider">
                   File Owner
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-bold text-neutral dark:text-slate-400 uppercase tracking-wider">
                   Reports
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral uppercase tracking-wider text-right">
+                <th className="px-6 py-4 text-xs font-bold text-neutral dark:text-slate-400 uppercase tracking-wider text-right">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900 transition-colors">
               {loading ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-24">
@@ -230,28 +230,31 @@ export default function ReportsPage() {
                   const ownerName =
                     item.file?.users?.fullname ||
                     item.file?.users?.username ||
-                    'Unknown';
+                    "Unknown";
                   const initials = ownerName.substring(0, 2).toUpperCase();
                   const reportsCount = item.reports_count || 0;
                   const percent = Math.min((reportsCount / 10) * 100, 100);
                   const progressColor =
-                    reportsCount >= 5 ? 'bg-red-500' : 'bg-amber-500';
-                  const avatarBg = 'bg-blue-100 text-blue-600';
+                    reportsCount >= 5 ? "bg-red-500" : "bg-amber-500";
+
+                  // جعل خلفية الـ Avatar متناسقة مع الوضع الداكن
+                  const avatarBg =
+                    "bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400";
 
                   return (
                     <tr
                       key={item.id_file}
-                      className="hover:bg-gray-50/80 transition-colors"
+                      className="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition-colors"
                     >
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
-                          <FileWarning className="w-5 h-5 text-gray-400" />
+                          <FileWarning className="w-5 h-5 text-gray-400 dark:text-slate-500" />
                           <button
                             onClick={(e) => {
                               e.preventDefault();
                               handleViewDetails(String(item.id_file));
                             }}
-                            className="text-sm font-semibold text-gray-900 hover:text-primary transition-colors underline-offset-4 decoration-primary hover:underline text-left"
+                            className="text-sm font-semibold text-gray-900 dark:text-slate-100 hover:text-primary dark:hover:text-primary transition-colors underline-offset-4 decoration-primary hover:underline text-left"
                           >
                             {fileName}
                           </button>
@@ -260,11 +263,11 @@ export default function ReportsPage() {
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${avatarBg}`}
+                            className={`w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 border border-transparent dark:border-blue-900/30 ${avatarBg}`}
                           >
                             {initials}
                           </div>
-                          <span className="text-sm font-medium text-gray-700">
+                          <span className="text-sm font-medium text-gray-700 dark:text-slate-300">
                             {ownerName}
                           </span>
                         </div>
@@ -276,11 +279,11 @@ export default function ReportsPage() {
                               e.preventDefault();
                               handleViewDetails(String(item.id_file));
                             }}
-                            className="text-sm font-bold text-gray-900 hover:text-primary transition-colors underline-offset-4 decoration-primary hover:underline text-left w-[70px]"
+                            className="text-sm font-bold text-gray-900 dark:text-slate-100 hover:text-primary dark:hover:text-primary transition-colors underline-offset-4 decoration-primary hover:underline text-left w-[70px]"
                           >
                             {reportsCount} reports
                           </button>
-                          <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden flex-shrink-0">
+                          <div className="w-16 h-1.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden flex-shrink-0">
                             <div
                               className={`h-full ${progressColor} rounded-full`}
                               style={{ width: `${percent}%` }}
@@ -293,7 +296,7 @@ export default function ReportsPage() {
                           <button
                             onClick={() => setDeleteFileId(item.id_file)}
                             disabled={isActionPending}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-xs font-bold disabled:opacity-50"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors text-xs font-bold disabled:opacity-50"
                           >
                             <Trash2 className="w-[16px] h-[16px]" />
                             Delete
@@ -301,7 +304,7 @@ export default function ReportsPage() {
                           <button
                             onClick={() => handleIgnore(item.id_file)}
                             disabled={isActionPending}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-xs font-bold disabled:opacity-50"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-xs font-bold disabled:opacity-50"
                           >
                             <EyeOff className="w-[16px] h-[16px]" />
                             Ignore
@@ -316,7 +319,7 @@ export default function ReportsPage() {
                 <tr>
                   <td
                     colSpan={4}
-                    className="px-6 py-12 text-center text-gray-500"
+                    className="px-6 py-12 text-center text-gray-500 dark:text-slate-400"
                   >
                     No reported files found.
                   </td>
@@ -328,25 +331,25 @@ export default function ReportsPage() {
 
         {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="text-sm text-neutral font-medium">
+          <div className="px-6 py-4 bg-gray-50 dark:bg-slate-800/30 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors">
+            <span className="text-sm text-neutral dark:text-slate-400 font-medium">
               Showing Page {page} of {totalPages}
             </span>
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 text-gray-400 hover:bg-white hover:text-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 dark:border-slate-700 text-gray-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-sm font-bold text-gray-700 mx-2">
+              <span className="text-sm font-bold text-gray-700 dark:text-slate-300 mx-2">
                 {page}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-white hover:text-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

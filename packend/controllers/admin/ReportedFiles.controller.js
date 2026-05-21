@@ -1,17 +1,16 @@
-import prisma from '../../lib/prisma.js';
-import dayjs from '../../config/dayjsTime.js';
-import { algeriaTime } from '../../config/dayjsTime.js';
-import { cloudinary, GetPublicId } from '../../config/Cloudinary.js';
+import { cloudinary, GetPublicId } from "../../config/Cloudinary.js";
+import dayjs, { algeriaTime } from "../../config/dayjsTime.js";
+import prisma from "../../lib/prisma.js";
 
-import { io } from '../../config/socket.js';
+import { io } from "../../config/socket.js";
 
-let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
+let isDevelopment = process.env.NODE_ENV?.trim() === "development";
 
 export const reportedFilesStatus = async (req, res) => {
   try {
     const now = dayjs().utc();
-    const startOfDay = now.startOf('day');
-    const endOfDay = now.endOf('day');
+    const startOfDay = now.startOf("day");
+    const endOfDay = now.endOf("day");
     const ReportRisk = 2;
 
     const [
@@ -21,17 +20,17 @@ export const reportedFilesStatus = async (req, res) => {
     ] = await Promise.all([
       // 🔵 عدد الملفات اللي عندها reports pending (بدون تكرار)
       prisma.file_reports.groupBy({
-        by: ['id_file'],
+        by: ["id_file"],
         where: {
-          status: 'pending',
+          status: "pending",
         },
       }),
 
       // 🟢 عدد الملفات اللي تم مراجعتها اليوم (بدون تكرار)
       prisma.file_reports.groupBy({
-        by: ['id_file'],
+        by: ["id_file"],
         where: {
-          status: { in: ['reviewed', 'ignored'] },
+          status: { in: ["reviewed", "ignored"] },
           handled_at: {
             gte: startOfDay.toDate(),
             lte: endOfDay.toDate(),
@@ -41,9 +40,9 @@ export const reportedFilesStatus = async (req, res) => {
 
       // 🔴 الملفات الخطيرة (7 بلاغات أو أكثر)
       prisma.file_reports.groupBy({
-        by: ['id_file'],
+        by: ["id_file"],
         where: {
-          status: 'pending',
+          status: "pending",
         },
         having: {
           id_file: {
@@ -63,7 +62,7 @@ export const reportedFilesStatus = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      error: 'Internal server error',
+      error: "Internal server error",
     });
   }
 };
@@ -153,18 +152,18 @@ export const showFilesReported = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const section = req.query.section;
-    const allowedSections = ['all', 'highRisk_Reports'];
+    const allowedSections = ["all", "highRisk_Reports"];
     const riskLevel = 2;
 
     if (!allowedSections.includes(section)) {
-      return res.status(400).json({ error: 'Invalid section' });
+      return res.status(400).json({ error: "Invalid section" });
     }
 
     // 1️⃣ Group reports by file (stats only)
     const groupedReports = await prisma.file_reports.groupBy({
-      by: ['id_file'],
+      by: ["id_file"],
       where: {
-        status: 'pending',
+        status: "pending",
       },
       _count: {
         _all: true,
@@ -180,7 +179,7 @@ export const showFilesReported = async (req, res) => {
         id_file: {
           in: fileIds,
         },
-        status: 'accepted',
+        status: "accepted",
       },
       select: {
         id_file: true,
@@ -220,14 +219,14 @@ export const showFilesReported = async (req, res) => {
     // Filter out null values (files that don't exist)
     result = result.filter((r) => r !== null);
 
-    if (section === 'all') {
+    if (section === "all") {
       result = result.sort((a, b) => {
         return new Date(b.file.created_at) - new Date(a.file.created_at);
       });
     }
 
     // 5️⃣ High risk filter
-    if (section === 'highRisk_Reports' && result !== null) {
+    if (section === "highRisk_Reports" && result !== null) {
       result = result
         .filter((r) => r.reports_count >= riskLevel)
         .sort((a, b) => b.reports_count - a.reports_count);
@@ -251,7 +250,7 @@ export const showFilesReported = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      error: 'Internal server error',
+      error: "Internal server error",
     });
   }
 };
@@ -262,27 +261,27 @@ export const showReportedDetails = async (req, res) => {
 
     if (!id_file) {
       return res.status(400).json({
-        error: 'enter the file id',
+        error: "enter the file id",
       });
     }
 
     const fileExists = await prisma.files.findUnique({
       where: {
         id_file: id_file,
-        status: 'accepted',
+        status: "accepted",
       },
     });
 
     if (!fileExists) {
       return res.status(404).json({
-        error: 'File not found',
+        error: "File not found",
       });
     }
 
     const file = await prisma.file_reports.findMany({
       where: {
         id_file: id_file,
-        status: 'pending',
+        status: "pending",
       },
       select: {
         id_file: true,
@@ -300,13 +299,13 @@ export const showReportedDetails = async (req, res) => {
     });
     if (file.length === 0) {
       return res.status(404).json({
-        error: 'This file has no reports or already reviewed',
+        error: "This file has no reports or already reviewed",
       });
     }
 
     const mappedFiles = file.map((file) => ({
       ...file,
-      created_at: algeriaTime(file.created_at).format('MMM DD, YYYY'),
+      created_at: algeriaTime(file.created_at).format("MMM DD, YYYY"),
     }));
 
     return res.status(200).json({
@@ -315,7 +314,7 @@ export const showReportedDetails = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      error: 'Internal server error',
+      error: "Internal server error",
     });
   }
 };
@@ -324,37 +323,37 @@ export const DeleteOrIgnoreReportedFile = async (req, res) => {
   try {
     const id_file = Number(req.params.id_file);
     const action = req.query.action;
-    const allowedActions = ['delete', 'ignore'];
+    const allowedActions = ["delete", "ignore"];
     const reason = req.body?.reason || null;
 
     //validate reason only when delete action
-    if (action === 'delete') {
+    if (action === "delete") {
       if (!reason) {
         return res.status(400).json({
-          error: 'Reason is required',
+          error: "Reason is required",
         });
       }
       if (reason.length < 3 || reason.length > 500) {
         return res.status(400).json({
-          error: 'Reason must be between 3 and 500 characters',
+          error: "Reason must be between 3 and 500 characters",
         });
       }
     }
     if (!allowedActions.includes(action)) {
       return res.status(400).json({
-        error: 'Invalid action',
+        error: "Invalid action",
       });
     }
     if (!id_file) {
       return res.status(400).json({
-        error: 'File not found',
+        error: "File not found",
       });
     }
 
     const fileExists = await prisma.files.findFirst({
       where: {
         id_file: id_file,
-        status: 'accepted',
+        status: "accepted",
       },
       select: {
         file_path: true,
@@ -372,61 +371,69 @@ export const DeleteOrIgnoreReportedFile = async (req, res) => {
         },
       },
     });
-    if (
-      !fileExists ||
-      fileExists.file_path === '/deleted' ||
-      fileExists.file_path === null ||
-      fileExists.file_reports[0].status !== 'pending'
-    ) {
-      return res.status(404).json({
-        error: 'File not found or already deleted or no pending reports',
-      });
+
+    const hasPendingReport = fileExists.file_reports?.some(
+      (r) => r.status === "pending",
+    );
+
+    if (!fileExists) {
+      return res.status(404).json({ error: "File not found" });
     }
 
-    if (action === 'ignore') {
+    if (fileExists.file_path === "/deleted") {
+      return res.status(400).json({ error: "File already deleted" });
+    }
+
+    if (!hasPendingReport) {
+      return res
+        .status(400)
+        .json({ error: "No pending reports for this file" });
+    }
+
+    if (action === "ignore") {
       const file = await prisma.file_reports.updateMany({
         where: {
           id_file: id_file,
-          status: 'pending',
+          status: "pending",
         },
         data: {
-          status: 'ignored',
+          status: "ignored",
           handled_at: new Date(),
         },
       });
       return res.status(200).json({
-        message: 'file ignored successfully',
+        message: "file ignored successfully",
       });
     }
 
-    if (action === 'delete') {
+    if (action === "delete") {
       // 1️⃣ حذف من Cloud
       if (!isDevelopment) {
         const publicId = GetPublicId(fileExists.file_path);
         console.log(publicId);
 
         const result = await cloudinary.uploader.destroy(publicId, {
-          resource_type: 'image',
+          resource_type: "image",
         });
 
         console.log(result);
 
-        if (result.result !== 'ok' && result.result !== 'not found') {
-          throw new Error('Cloudinary delete failed');
+        if (result.result !== "ok" && result.result !== "not found") {
+          throw new Error("Cloudinary delete failed");
         }
       } else {
-        console.log('delete file in cloduinary');
+        console.log("delete file in cloduinary");
       }
       // 2️⃣ تحديث DB
       await prisma.$transaction([
         prisma.file_reports.updateMany({
           where: {
             id_file,
-            status: 'pending',
+            status: "pending",
           },
           data: {
-            status: 'reviewed',
-            action: 'removed',
+            status: "reviewed",
+            action: "removed",
             handled_at: new Date(),
           },
         }),
@@ -434,42 +441,43 @@ export const DeleteOrIgnoreReportedFile = async (req, res) => {
         prisma.files.update({
           where: { id_file },
           data: {
-            file_path: '/deleted',
+            file_path: "/deleted",
           },
         }),
       ]);
+      let message = `Your file "${fileExists.title}" has been removed by the admin. Reason: ${reason}`;
 
       const newNotification = await prisma.notifications.create({
         data: {
           id_user: fileExists.users.id_user,
           message,
           related_id: id_file,
-          related_type: 'file',
+          related_type: "file",
         },
       });
 
-      io.to(String(fileExists.users.id_user)).emit('notification', {
+      io.to(String(fileExists.users.id_user)).emit("notification", {
         ...newNotification,
-        message,
+        message: `Your file "${fileExists.title}" has been removed by the admin. Reason: ${reason}`,
         related_id: id_file,
-        related_type: 'file',
+        related_type: "file",
       });
 
       console.log({
-        'send notification to user': fileExists.users.id_user,
+        "send notification to user": fileExists.users.id_user,
         message,
         related_id: id_file,
-        related_type: 'file',
+        related_type: "file",
       });
 
       return res.status(200).json({
-        message: 'file deleted successfully',
+        message: "file deleted successfully",
       });
     }
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      error: 'Internal server error',
+      error: error.message || "Internal server error",
     });
   }
 };
