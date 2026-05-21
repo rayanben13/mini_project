@@ -6,7 +6,7 @@ import { useProfileDropdownData } from "@/hooks/useUserInformation";
 import useAuthStore from "@/Store/AuthStore";
 import DarkModeStore from "@/Store/darkModSroe";
 
-import { BookOpen, LogOut, Moon, Search, Sun, X } from "lucide-react";
+import { GraduationCap, LogOut, Moon, Search, Sun, X } from "lucide-react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -142,8 +142,7 @@ export default function Header() {
     "
               >
                 <div className="absolute inset-0 opacity-30 animate-pulse bg-white/20" />
-
-                <BookOpen className="size-5 text-white relative z-10" />
+                <GraduationCap className="size-5 text-white relative z-10" />{" "}
               </div>
 
               <span
@@ -229,7 +228,7 @@ export default function Header() {
               {open && (
                 <div
                   className="
-                  absolute right-0 mt-2 z-50
+                  absolute right-0 mt-2 z-999
                   w-56
                   bg-white dark:bg-gray-800
                   border border-slate-200 dark:border-slate-700

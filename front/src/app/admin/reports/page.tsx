@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Trash2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -29,6 +30,7 @@ export default function ReportsPage() {
   const [page, setPage] = useState(1);
   const [section, setSection] = useState("all");
   const limit = 10;
+  const router = useRouter();
 
   const {
     reportedFilesStatusData: statusData,
@@ -252,7 +254,7 @@ export default function ReportsPage() {
                           <button
                             onClick={(e) => {
                               e.preventDefault();
-                              handleViewDetails(String(item.id_file));
+                              router.push(`/admin/files/${item.id_file}`);
                             }}
                             className="text-sm font-semibold text-gray-900 dark:text-slate-100 hover:text-primary dark:hover:text-primary transition-colors underline-offset-4 decoration-primary hover:underline text-left"
                           >
