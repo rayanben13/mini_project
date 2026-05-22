@@ -242,6 +242,7 @@ export default function SubjectDetailPage() {
               {study_lists.map((list: any) => (
                 <div
                   key={list.id_stuList || list.id_list}
+                  className="cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() =>
                     router.push(
                       `/dashboard/study_list/${list.id_stuList || list.id_list}`
