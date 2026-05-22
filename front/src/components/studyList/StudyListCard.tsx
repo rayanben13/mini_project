@@ -184,6 +184,8 @@ export default function StudyListCard({
           onClick={(e) => e.stopPropagation()}
           className="max-w-[320px] w-full rounded-[1.75rem] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-900 shadow-2xl p-5 space-y-4"
         >
+          <DialogTitle className="sr-only">Edit Study List</DialogTitle>
+
           {/* Centered Header */}
           <div className="flex flex-col items-center justify-center text-center space-y-3 pt-1">
             <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#0975e6] dark:text-blue-400 flex items-center justify-center shrink-0">

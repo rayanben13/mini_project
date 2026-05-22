@@ -1,5 +1,15 @@
 'use client';
 
+<<<<<<< HEAD
+import { resetPasswordSchema } from "@/lib/validations/auth";
+import useAuthStore from "@/Store/AuthStore";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import z from "zod";
+=======
 import { resetPasswordSchema } from '@/lib/validations/auth';
 import useAuthStore from '@/Store/AuthStore';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +18,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
+>>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
 
 import { Button } from '@/components/ui/button';
 import {
@@ -51,10 +62,15 @@ export default function ResetPasswordPage() {
     const result = await resetPassword({
       email,
       password: values.password,
+<<<<<<< HEAD
+      token,
+    });
+=======
       confirmPassword: values.confirmPassword,
       token,
     });
 
+>>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
     if (result.success) {
       toast.success('Password updated! Redirecting...');
       setTimeout(() => router.push('/login'), 1200);
