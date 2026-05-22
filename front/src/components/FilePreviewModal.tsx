@@ -18,7 +18,7 @@ export default function FilePreviewModal({ file }: { file: any }) {
   const router = useRouter();
   const { getShareLink, getDownloadFiles } = allActurStore();
   const { data: userInfo } = useProfileDropdownData();
-  const { openAiWindow } = useAiStore();
+  const { activateLibraryDocument, activationLoading } = useAiStore();
   const isAdmin = userInfo?.profileData?.role === 'admin';
   const isGuest = !userInfo || userInfo?.profileData?.role === 'guest';
 
@@ -179,10 +179,20 @@ export default function FilePreviewModal({ file }: { file: any }) {
       <aside className="w-full lg:w-[380px] p-4 lg:p-6 border-l border-border bg-card flex flex-col gap-6">
         {userInfo?.profileData?.role === 'user' && (
           <button
-            onClick={() => openAiWindow(file.id_file)}
-            className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-sm"
+            onClick={() => activateLibraryDocument(file.id_file, file.title)}
+            disabled={activationLoading}
+            className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-sm disabled:opacity-75 disabled:cursor-not-allowed"
           >
-            <span className="text-xl">✨</span> Use AI with this document
+            {activationLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Activating AI...</span>
+              </>
+            ) : (
+              <>
+                <span className="text-xl">✨</span> Use AI with this document
+              </>
+            )}
           </button>
         )}
 

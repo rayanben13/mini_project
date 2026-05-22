@@ -7,18 +7,26 @@ import useFilesStore from "@/Store/user/filesStore";
 import { Bot, Paperclip, Send, User, X, Loader2, FolderOpen } from "lucide-react";
 
 function AiAssistantContent() {
-  const { messages, loading, sendAiWithFile, sendAiWithId, clearMessages } = useAiStore();
+  const {
+    messages,
+    loading,
+    activeDocument,
+    activationLoading,
+    sendAiWithFile,
+    sendAiWithId,
+    clearMessages,
+    activateLibraryDocument,
+    activateLocalDocument,
+    clearActiveDocument,
+  } = useAiStore();
   const { showMyFiles, loading: filesLoading } = useFilesStore();
   const [input, setInput] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [localFileName, setLocalFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Library Modal State
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
-  const [selectedLibraryFile, setSelectedLibraryFile] = useState<any | null>(null);
   const [libraryFiles, setLibraryFiles] = useState<any[]>([]);
 
   // URL params
@@ -31,7 +39,10 @@ function AiAssistantContent() {
 
   useEffect(() => {
     if (fileIdParam) {
-      setSelectedLibraryFile({ id_file: fileIdParam, title: "Document from Library" });
+      const currentActiveId = activeDocument?.type === 'library' ? activeDocument.id : null;
+      if (Number(fileIdParam) !== Number(currentActiveId)) {
+        activateLibraryDocument(Number(fileIdParam), "Document from Library");
+      }
     }
   }, [fileIdParam]);
 
@@ -59,29 +70,24 @@ function AiAssistantContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() && !file && !selectedLibraryFile && !localFileName) return;
+    if (!input.trim() || !activeDocument) return;
 
     const messageToSend = input;
-    const fileToSend = file;
-    const libraryFileId = selectedLibraryFile?.id_file;
-
     setInput("");
-    setFile(null); // Clear the actual File object so we don't re-upload
-    // Do NOT clear selectedLibraryFile or localFileName so they persist in UI
     setError(null);
 
     try {
-      if (libraryFileId) {
-        await sendAiWithId(messageToSend, libraryFileId, "en");
+      if (activeDocument.type === "library") {
+        await sendAiWithId(messageToSend, activeDocument.id, "en");
       } else {
-        await sendAiWithFile(messageToSend, fileToSend || new File([], "empty.pdf", { type: "application/pdf" }), "en");
+        await sendAiWithFile(messageToSend, null, "en");
       }
     } catch (error) {
       console.error("Failed to send message:", error);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -101,9 +107,12 @@ function AiAssistantContent() {
         return;
       }
       
-      setFile(selectedFile);
-      setLocalFileName(selectedFile.name);
-      setSelectedLibraryFile(null); // Clear library file if local is selected
+      try {
+        await activateLocalDocument(selectedFile);
+      } catch (err) {
+        console.error(err);
+      }
+      e.target.value = '';
     }
   };
 
@@ -122,10 +131,8 @@ function AiAssistantContent() {
         </div>
         <button
           onClick={() => {
+            clearActiveDocument();
             clearMessages();
-            setFile(null);
-            setLocalFileName(null);
-            setSelectedLibraryFile(null);
           }}
           className="text-xs font-bold text-slate-500 hover:text-red-500 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10"
         >
@@ -147,7 +154,7 @@ function AiAssistantContent() {
             <div>
               <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">How can I help you today?</h3>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 max-w-sm mx-auto leading-relaxed px-4">
-                Upload a document and ask me any questions about it. I'll read through and find the answers for you.
+                Please upload a document or select one from your library first. I'll read through it and help you find the answers.
               </p>
             </div>
           </div>
@@ -202,19 +209,15 @@ function AiAssistantContent() {
           </div>
         )}
         
-        {(localFileName || selectedLibraryFile) && (
+        {activeDocument && (
           <div className="mb-3 flex items-center gap-2 bg-slate-100 dark:bg-slate-800 w-fit px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
             <Paperclip className="w-4 h-4 text-primary" />
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[200px]">
-              {localFileName ? localFileName : selectedLibraryFile?.title}
+              {activeDocument.type === "local" ? activeDocument.name : activeDocument.title}
             </span>
             <button 
               type="button"
-              onClick={() => {
-                setFile(null);
-                setLocalFileName(null);
-                setSelectedLibraryFile(null);
-              }}
+              onClick={clearActiveDocument}
               className="ml-2 text-slate-400 hover:text-red-500 transition-colors"
             >
               <X className="w-4 h-4" />
@@ -230,6 +233,7 @@ function AiAssistantContent() {
               onClick={() => setIsLibraryModalOpen(true)}
               className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700"
               title="Select from My Library"
+              disabled={activationLoading}
             >
               <FolderOpen className="w-5 h-5" />
             </button>
@@ -240,28 +244,33 @@ function AiAssistantContent() {
               className="hidden"
               onChange={handleFileChange}
               accept=".pdf"
+              disabled={activationLoading}
             />
             <label 
               htmlFor="file-upload"
-              className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700"
+              className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50"
               title="Upload PDF File"
             >
-              <Paperclip className="w-5 h-5" />
+              {activationLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              ) : (
+                <Paperclip className="w-5 h-5" />
+              )}
             </label>
             
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me anything about your document..."
+              placeholder={!activeDocument ? "Please select a file first..." : "Ask me anything about your document..."}
               className="flex-1 bg-transparent border-none py-4 px-3 text-sm font-medium focus:outline-none focus:ring-0 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
-              disabled={loading}
+              disabled={loading || !activeDocument || activationLoading}
             />
           </div>
           
           <button
             type="submit"
-            disabled={(!input.trim() && !file && !selectedLibraryFile && !localFileName) || loading}
+            disabled={!input.trim() || loading || !activeDocument || activationLoading}
             className="h-[52px] px-6 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
@@ -300,9 +309,7 @@ function AiAssistantContent() {
                     <button
                       key={fileItem.id_file}
                       onClick={() => {
-                        setSelectedLibraryFile(fileItem);
-                        setFile(null); // Clear local file if any
-                        setLocalFileName(null);
+                        activateLibraryDocument(fileItem.id_file, fileItem.title || fileItem.file_path?.split('/').pop());
                         setIsLibraryModalOpen(false);
                       }}
                       className="w-full text-left p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:bg-primary/5 transition-all flex items-center gap-3 group"

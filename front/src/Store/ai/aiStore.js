@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import axios from 'axios';
 import { API_CONFIG } from '../../constants/apiConfig';
 import { tokenManager } from '../../utils/tokenManager';
+import { toast } from 'sonner';
 
 const API_BASE_URL = `${API_CONFIG.BASE_URL}/api/ai`;
 
@@ -13,6 +14,8 @@ const useAiStore = create(
       loading: false,
       isAiWindowOpen: false,
       activeFileId: null,
+      activeDocument: null,
+      activationLoading: false,
 
       openAiWindow: (fileId = null) => {
         set({ isAiWindowOpen: true });
@@ -23,6 +26,75 @@ const useAiStore = create(
       closeAiWindow: () => set({ isAiWindowOpen: false }),
       toggleAiWindow: () => set((state) => ({ isAiWindowOpen: !state.isAiWindowOpen })),
       setActiveFileId: (id) => set({ activeFileId: id }),
+
+      activateLibraryDocument: async (id_file, title) => {
+        set({ activationLoading: true });
+        try {
+          const token = tokenManager.get();
+          const response = await axios.post(
+            `${API_BASE_URL}/activate/${id_file}`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (response.data.success) {
+            set({
+              activeDocument: { type: 'library', id: id_file, title: title },
+              activeFileId: id_file,
+              isAiWindowOpen: true,
+            });
+            toast.success(`AI activated for: ${title}`);
+          }
+          return response.data;
+        } catch (error) {
+          console.error('activateLibraryDocument error:', error);
+          toast.error(error.response?.data?.error || 'Failed to activate document in AI');
+          throw error;
+        } finally {
+          set({ activationLoading: false });
+        }
+      },
+
+      activateLocalDocument: async (file) => {
+        set({ activationLoading: true });
+        try {
+          const token = tokenManager.get();
+          const formData = new FormData();
+          formData.append('file', file);
+          const response = await axios.post(
+            `${API_BASE_URL}/activate-local`,
+            formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (response.data.success) {
+            set({
+              activeDocument: { type: 'local', name: file.name, file },
+              activeFileId: null,
+            });
+            toast.success(`Local document loaded: ${file.name}`);
+          }
+          return response.data;
+        } catch (error) {
+          console.error('activateLocalDocument error:', error);
+          toast.error(error.response?.data?.error || 'Failed to load local document');
+          throw error;
+        } finally {
+          set({ activationLoading: false });
+        }
+      },
+
+      clearActiveDocument: () => {
+        set({ activeDocument: null, activeFileId: null });
+        toast.info('AI document context cleared');
+      },
 
       sendAiWithFile: async (message, file, lang = 'en') => {
         set({ loading: true });
@@ -54,6 +126,19 @@ const useAiStore = create(
               { role: 'ai', content: aiResponse },
             ],
           }));
+
+          const isOutsideAiDialog = !get().isAiWindowOpen && typeof window !== 'undefined' && window.location.pathname !== '/dashboard/ai';
+          if (isOutsideAiDialog) {
+            toast('New AI assistant response', {
+              description: aiResponse.substring(0, 60) + (aiResponse.length > 60 ? '...' : ''),
+              action: {
+                label: 'Open Chat',
+                onClick: () => {
+                  get().openAiWindow();
+                }
+              }
+            });
+          }
           return aiResponse;
         } catch (error) {
           console.error('sendAiWithFile error:', error);
@@ -85,6 +170,19 @@ const useAiStore = create(
               { role: 'ai', content: aiResponse },
             ],
           }));
+
+          const isOutsideAiDialog = !get().isAiWindowOpen && typeof window !== 'undefined' && window.location.pathname !== '/dashboard/ai';
+          if (isOutsideAiDialog) {
+            toast('New AI assistant response', {
+              description: aiResponse.substring(0, 60) + (aiResponse.length > 60 ? '...' : ''),
+              action: {
+                label: 'Open Chat',
+                onClick: () => {
+                  get().openAiWindow();
+                }
+              }
+            });
+          }
           return aiResponse;
         } catch (error) {
           console.error('sendAiWithId error:', error);

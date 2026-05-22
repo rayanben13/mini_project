@@ -201,3 +201,63 @@ Rewrite the following answer strictly in ${lang}.
     return res.status(500).json({ error: 'Server error' });
   }
 };
+
+export const activateLibraryDocument = async (req, res) => {
+  try {
+    const userId = req.user.id_user;
+    const id_file = req.params.id_file ? Number(req.params.id_file) : null;
+
+    if (!id_file) {
+      return res.status(400).json({ error: 'id_file parameter is required' });
+    }
+
+    const fileExist = await prisma.files.findUnique({
+      where: {
+        id_file,
+        status: 'accepted',
+        file_reports: { none: { status: 'reviewed' } },
+      },
+    });
+
+    if (!fileExist) {
+      return res.status(404).json({ error: 'File not found or not processed' });
+    }
+
+    const buffer = await downloadPDF(fileExist.file_path);
+    const text = await extractText(buffer);
+    userFileCache.set(userId, { text, id_file });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Document activated successfully in AI context',
+      id_file,
+      title: fileExist.title,
+    });
+  } catch (error) {
+    console.error('activateLibraryDocument error:', error);
+    return res.status(500).json({ error: 'Server error while activating document' });
+  }
+};
+
+export const activateLocalDocument = async (req, res) => {
+  try {
+    const userId = req.user.id_user;
+    const file_upload = req.file;
+
+    if (!file_upload || file_upload.buffer.length === 0) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const text = await extractText(file_upload.buffer);
+    userFileCache.set(userId, { text, id_file: null });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Local document activated successfully in AI context',
+    });
+  } catch (error) {
+    console.error('activateLocalDocument error:', error);
+    return res.status(500).json({ error: 'Server error while parsing and activating local document' });
+  }
+};
+

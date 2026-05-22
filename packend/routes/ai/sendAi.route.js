@@ -1,6 +1,5 @@
 import express from 'express';
-
-import { sendMessageToAi } from '../../controllers/ai/sendAiController.js';
+import { sendMessageToAi, activateLibraryDocument, activateLocalDocument } from '../../controllers/ai/sendAiController.js';
 import { UploadFiles } from '../../config/Cloudinary.js';
 import { requireUser } from '../../middleware/checkUserInformation.js';
 import validate from '../../middleware/validate.js';
@@ -25,5 +24,21 @@ router.post(
   validate(schemaChatAi),
   sendMessageToAi
 );
+
+router.post(
+  '/activate/:id_file',
+  passport.authenticate('jwt', { session: false }),
+  requireUser,
+  activateLibraryDocument
+);
+
+router.post(
+  '/activate-local',
+  passport.authenticate('jwt', { session: false }),
+  requireUser,
+  UploadFiles.single('file'),
+  activateLocalDocument
+);
+
 
 export default router;
