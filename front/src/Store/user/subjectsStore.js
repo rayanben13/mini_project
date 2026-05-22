@@ -2,7 +2,7 @@ import axios from 'axios';
 import { create } from 'zustand';
 import AuthStore from '../AuthStore.js';
 
-const SUBJECTS_API_URL = 'https://mini-project-1-tcp9.onrender.com/api/subjects';
+const SUBJECTS_API_URL = 'https://mini-project-44.onrender.com/api/subjects';
 
 const useSubjectsStore = create((set, get) => ({
   loading: false,

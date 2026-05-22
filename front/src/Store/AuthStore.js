@@ -1,7 +1,8 @@
-import axios from "axios";
-import { create } from "zustand";
+import axios from 'axios';
+import { create } from 'zustand';
+import Cookies from 'js-cookie';
 
-const API_URL = "https://mini-project-1-tcp9.onrender.com/api/auth";
+const API_URL = 'https://mini-project-44.onrender.com/api/auth';
 
 const AuthStore = create((set, get) => ({
   user: null,
@@ -13,9 +14,9 @@ const AuthStore = create((set, get) => ({
 
   // 🔥 INIT AUTH (runs on app start)
   initAuth: () => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
 
     set({
       token,
@@ -37,7 +38,11 @@ const AuthStore = create((set, get) => ({
 
       const { accessToken, role } = response.data;
 
-      localStorage.setItem("token", accessToken);
+      localStorage.setItem('token', accessToken);
+
+      // Save cookies for Next.js middleware (Front-end domain cookies)
+      Cookies.set('accessToken', accessToken, { expires: 7 });
+      Cookies.set('role', role, { expires: 7 });
 
       set({
         token: accessToken,
@@ -55,7 +60,7 @@ const AuthStore = create((set, get) => ({
 
       return {
         success: false,
-        message: serverError || "Server error",
+        message: serverError || 'Server error',
       };
     } finally {
       set({ loading: false });
@@ -79,11 +84,11 @@ const AuthStore = create((set, get) => ({
         email: res.data.email, // مفيد لتوجيه المستخدم لصفحة التحقق
       };
     } catch (error) {
-      console.error("Signup error:", error.response?.data?.error);
+      console.error('Signup error:', error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || "خطأ في عملية التسجيل",
+        message: error.response?.data?.error || 'خطأ في عملية التسجيل',
       };
     } finally {
       set({ loading: false });
@@ -91,7 +96,7 @@ const AuthStore = create((set, get) => ({
   },
   verifyEmail: async ({ email, code }) => {
     try {
-      console.log("Verifying email:", email, "with code:", code);
+      console.log('Verifying email:', email, 'with code:', code);
       set({ loading: true });
 
       const response = await axios.post(
@@ -100,10 +105,13 @@ const AuthStore = create((set, get) => ({
           email,
           code,
         },
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       localStorage.setItem("token", response.data.accessToken);
+      // Save cookies for Next.js middleware (Front-end domain cookies)
+      Cookies.set("accessToken", response.data.accessToken, { expires: 7 });
+
       set({
         token: response.data.accessToken,
         isAuthenticated: true,
@@ -113,11 +121,11 @@ const AuthStore = create((set, get) => ({
       });
       return { success: true };
     } catch (error) {
-      console.error("Login error:", error.response?.data?.error);
+      console.error('Login error:', error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || "Server error",
+        message: error.response?.data?.error || 'Server error',
       };
     } finally {
       set({ loading: false });
@@ -134,11 +142,11 @@ const AuthStore = create((set, get) => ({
 
       return { success: true };
     } catch (error) {
-      console.error("Login error:", error.response?.data?.error);
+      console.error('Login error:', error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || "Server error",
+        message: error.response?.data?.error || 'Server error',
       };
     } finally {
       set({ loading: false });
@@ -155,11 +163,11 @@ const AuthStore = create((set, get) => ({
 
       return { success: true };
     } catch (error) {
-      console.error("Upload error:", error.response?.data?.error);
+      console.error('Upload error:', error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || "Server error",
+        message: error.response?.data?.error || 'Server error',
       };
     } finally {
       set({ loading: false });
@@ -177,11 +185,11 @@ const AuthStore = create((set, get) => ({
 
       return { success: true };
     } catch (error) {
-      console.error("Upload error:", error.response?.data?.error);
+      console.error('Upload error:', error.response?.data?.error);
 
       return {
         success: false,
-        message: error.response?.data?.error || "Server error",
+        message: error.response?.data?.error || 'Server error',
       };
     } finally {
       set({ loading: false });
@@ -215,8 +223,8 @@ const AuthStore = create((set, get) => ({
       return { success: true, data: response.data };
     } catch (error) {
       console.error(
-        "Search error:",
-        error.response?.data?.error || error.response?.data?.message,
+        'Search error:',
+        error.response?.data?.error || error.response?.data?.message
       );
 
       return {
@@ -224,7 +232,7 @@ const AuthStore = create((set, get) => ({
         message:
           error.response?.data?.error ||
           error.response?.data?.message ||
-          "Server error",
+          'Server error',
       };
     } finally {
       set({ loading: false });
@@ -234,40 +242,46 @@ const AuthStore = create((set, get) => ({
   addedUserInformation: async ({ univ, major, specialty, academic_year }) => {
     try {
       set({ loading: true });
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
 
       if (!token) {
-        return { success: false, message: "Token not found" };
+        return { success: false, message: 'Token not found' };
       }
 
       const payload = {
         univ,
         major,
-        academic_year
+        academic_year,
       };
 
       // إضافة التخصص فقط في حالة الماستر
-      if (["M1", "M2"].includes(academic_year)) {
-        payload.specialty = specialty && specialty.trim().length >= 2 ? specialty : "General";
+      if (['M1', 'M2'].includes(academic_year)) {
+        payload.specialty =
+          specialty && specialty.trim().length >= 2 ? specialty : 'General';
       }
-
 
       const response = await axios.post(
         `${API_URL}/addedUserInformation`,
         payload,
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       return { success: true, data: response.data };
     } catch (error) {
       console.error(
-        "Save info error:",
-        error.response?.data?.details || error.response?.data?.error || error.response?.data?.message,
+        'Save info error:',
+        error.response?.data?.details ||
+          error.response?.data?.error ||
+          error.response?.data?.message
       );
 
       return {
         success: false,
-        message: error.response?.data?.details || error.response?.data?.error || error.response?.data?.message || "Server error",
+        message:
+          error.response?.data?.details ||
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          'Server error',
       };
     } finally {
       set({ loading: false });
@@ -280,10 +294,13 @@ const AuthStore = create((set, get) => ({
       const response = await axios.post(
         `${API_URL}/token`,
         {},
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
-      localStorage.setItem("token", response.data.accessToken);
+      localStorage.setItem('token', response.data.accessToken);
+
+      // Update Next.js middleware cookie
+      Cookies.set("accessToken", response.data.accessToken, { expires: 7 });
 
       set((state) => ({
         user: {
@@ -294,18 +311,20 @@ const AuthStore = create((set, get) => ({
 
       return { success: true, accessToken: response.data.accessToken };
     } catch (error) {
-      console.error("Refresh token error:", error.response?.data?.error);
+      console.error('Refresh token error:', error.response?.data?.error);
 
       // If refresh token fails, we should probably logout or clear state
       set({
-        user: { token: "" },
+        user: { token: '' },
         statusUser: { statusUS: false },
       });
-      localStorage.removeItem("token");
+      localStorage.removeItem('token');
+      Cookies.remove("accessToken");
+      Cookies.remove("role");
 
       return {
         success: false,
-        message: error.response?.data?.error || "Server error",
+        message: error.response?.data?.error || 'Server error',
       };
     } finally {
       set({ loading: false });
@@ -313,12 +332,14 @@ const AuthStore = create((set, get) => ({
   },
 
   logout: async () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
+    Cookies.remove("accessToken");
+    Cookies.remove("role");
 
     try {
       await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
     } catch (error) {
-      console.error("Logout error:", error.response?.data?.error);
+      console.error('Logout error:', error.response?.data?.error);
       // Even if the server call fails, we still log the user out locally
     } finally {
       // Always clear all auth state
@@ -330,8 +351,8 @@ const AuthStore = create((set, get) => ({
       });
 
       // Force a full page reload to /login so the middleware re-evaluates cookies
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
       }
     }
   },

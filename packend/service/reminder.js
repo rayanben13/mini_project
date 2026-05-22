@@ -65,15 +65,20 @@ cron.schedule('* * * * *', async () => {
         );
 
         //send to email
-
-        isDevelopment
-          ? console.log(
+        try {
+          if (isDevelopment) {
+            console.log(
               `Reminder to study ${reminder.study_lists.name} sent to user in email ${reminder.users.email} and his name is ${reminder.users.fullname}`
-            )
-          : await sendReminderEmail(
+            );
+          } else {
+            await sendReminderEmail(
               reminder.users.email,
               reminder.users.fullname
             );
+          }
+        } catch (emailErr) {
+          console.error(`⚠️ Failed to send reminder email to ${reminder.users.email}, but continuing:`, emailErr.message);
+        }
 
         // Delete processed reminder
 

@@ -226,14 +226,22 @@ export const login = async (req, res) => {
         `🎉 Welcome again Admin : ${email} and his token ${accessToken}`
       );
     } else {
-      isDevelopment
-        ? console.log(
-            `🎉 Welcome again email : ${email} and his token ${accessToken}`
-          )
-        : await sendWelcomeEmail(email, user.username);
+      if (isDevelopment) {
+        console.log(`🎉 Welcome again email : ${email} and his token ${accessToken}`);
+      } else {
+        try {
+          await sendWelcomeEmail(email, user.username);
+        } catch (emailError) {
+          console.error("⚠️ Failed to send welcome email, but continuing login:", emailError.message);
+        }
+      }
     }
 
-    return res.status(201).json({ accessToken, role: user.role });
+    return res.status(200).json({
+      message: 'Login successful',
+      accessToken,
+      role: user.role,
+    });
   } catch (error) {
     console.log('Error : ', error);
     process.env.NODE_ENV === 'development' &&

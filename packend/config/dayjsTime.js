@@ -10,9 +10,9 @@ dayjs.extend(timezone);
 export default dayjs;
 
 export const reminder_time_input = (date, time) =>
-  dayjs(`${date} ${time}`).toDate();
+  dayjs.tz(`${date} ${time}`, 'Africa/Algiers').toDate();
 
 export const reminder_time_output = (date) =>
-  dayjs(date).format('YYYY-MM-DD HH:mm');
+  dayjs(date).tz('Africa/Algiers').format('YYYY-MM-DD HH:mm');
 
 export const algeriaTime = (date) => dayjs(date).tz('Africa/Algiers');
