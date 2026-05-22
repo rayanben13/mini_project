@@ -244,12 +244,12 @@ export default function Home() {
           <motion.span
             animate={{ opacity: [1, 0, 1] }}
             transition={{ repeat: Infinity, duration: 0.8 }}
-            className="inline-block ml-2 w-[3px] md:w-[5px] h-[1em] bg-blue-600 dark:bg-blue-400 align-middle"
+            className="inline-block ml-1.5 w-[3px] md:w-[5px] h-[1em] bg-blue-600 dark:bg-blue-400 align-middle"
           />
         </motion.h1>
 
         {/* Subtitle */}
-        <p className="text-lg sm:text-xl md:text-2xl text-slate-500 dark:text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg sm:text-xl md:text-2xl text-slate-500 dark:text-slate-400 mb-7 max-w-2xl mx-auto leading-relaxed">
           Find top-rated study notes from students taking the same courses as
           you.
         </p>
