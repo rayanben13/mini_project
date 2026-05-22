@@ -1,13 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import useAiStore from "@/Store/ai/aiStore";
 import useFilesStore from "@/Store/user/filesStore";
-import { Bot, Paperclip, Send, User, X, Loader2, FolderOpen } from "lucide-react";
+import {
+  Bot,
+  FolderOpen,
+  Loader2,
+  Paperclip,
+  Send,
+  User,
+  X,
+} from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 function AiAssistantContent() {
-  const { messages, loading, sendAiWithFile, sendAiWithId, clearMessages } = useAiStore();
+  const { messages, loading, sendAiWithFile, sendAiWithId, clearMessages } =
+    useAiStore();
   const { showMyFiles, loading: filesLoading } = useFilesStore();
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -18,7 +27,9 @@ function AiAssistantContent() {
 
   // Library Modal State
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
-  const [selectedLibraryFile, setSelectedLibraryFile] = useState<any | null>(null);
+  const [selectedLibraryFile, setSelectedLibraryFile] = useState<any | null>(
+    null,
+  );
   const [libraryFiles, setLibraryFiles] = useState<any[]>([]);
 
   // URL params
@@ -31,7 +42,10 @@ function AiAssistantContent() {
 
   useEffect(() => {
     if (fileIdParam) {
-      setSelectedLibraryFile({ id_file: fileIdParam, title: "Document from Library" });
+      setSelectedLibraryFile({
+        id_file: fileIdParam,
+        title: "Document from Library",
+      });
     }
   }, [fileIdParam]);
 
@@ -48,10 +62,12 @@ function AiAssistantContent() {
   useEffect(() => {
     if (isLibraryModalOpen && libraryFiles.length === 0) {
       // Fetch files when modal opens
-      showMyFiles().then(res => {
+      showMyFiles().then((res: unknown) => {
         if (res?.files) {
           // Filter to only allow PDFs if that's what the backend supports
-          setLibraryFiles(res.files.filter((f: any) => f.file_path?.endsWith('.pdf') || true));
+          setLibraryFiles(
+            res.files.filter((f: any) => f.file_path?.endsWith(".pdf") || true),
+          );
         }
       });
     }
@@ -59,7 +75,8 @@ function AiAssistantContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() && !file && !selectedLibraryFile && !localFileName) return;
+    if (!input.trim() && !file && !selectedLibraryFile && !localFileName)
+      return;
 
     const messageToSend = input;
     const fileToSend = file;
@@ -74,7 +91,11 @@ function AiAssistantContent() {
       if (libraryFileId) {
         await sendAiWithId(messageToSend, libraryFileId, "en");
       } else {
-        await sendAiWithFile(messageToSend, fileToSend || new File([], "empty.pdf", { type: "application/pdf" }), "en");
+        await sendAiWithFile(
+          messageToSend,
+          fileToSend || new File([], "empty.pdf", { type: "application/pdf" }),
+          "en",
+        );
       }
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -85,22 +106,22 @@ function AiAssistantContent() {
     setError(null);
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      
+
       // Validation: Check if it's a PDF
       if (selectedFile.type !== "application/pdf") {
         setError("Only PDF files are supported");
-        e.target.value = ''; // Reset input
+        e.target.value = ""; // Reset input
         return;
       }
-      
+
       // Validation: Check file size (e.g., max 5MB)
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (selectedFile.size > maxSize) {
         setError("File size exceeds 5MB limit");
-        e.target.value = ''; // Reset input
+        e.target.value = ""; // Reset input
         return;
       }
-      
+
       setFile(selectedFile);
       setLocalFileName(selectedFile.name);
       setSelectedLibraryFile(null); // Clear library file if local is selected
@@ -116,8 +137,12 @@ function AiAssistantContent() {
             <Bot className="w-5 h-5 text-primary dark:text-blue-400" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">AI Assistant</h1>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Ask questions about your documents</p>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              AI Assistant
+            </h1>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Ask questions about your documents
+            </p>
           </div>
         </div>
         <button
@@ -145,30 +170,40 @@ function AiAssistantContent() {
               <Bot className="w-10 h-10 text-primary/40 dark:text-blue-400/40" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">How can I help you today?</h3>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                How can I help you today?
+              </h3>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 max-w-sm mx-auto leading-relaxed px-4">
-                Upload a document and ask me any questions about it. I'll read through and find the answers for you.
+                Upload a document and ask me any questions about it. I&apos;ll
+                read through and find the answers for you.
               </p>
             </div>
           </div>
         ) : (
           messages.map((msg: any, idx: number) => (
-            <div key={idx} className={`flex gap-3 sm:gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+            <div
+              key={idx}
+              className={`flex gap-3 sm:gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+            >
               {/* Avatar */}
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                msg.role === 'user' 
-                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300' 
-                  : 'bg-primary text-white'
-              }`}>
-                {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                  msg.role === "user"
+                    ? "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                    : "bg-primary text-white"
+                }`}
+              >
+                {msg.role === "user" ? <User size={16} /> : <Bot size={16} />}
               </div>
-              
+
               {/* Message Bubble */}
-              <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 shadow-sm ${
-                msg.role === 'user'
-                  ? 'bg-primary text-white rounded-tr-sm'
-                  : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm'
-              }`}>
+              <div
+                className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 shadow-sm ${
+                  msg.role === "user"
+                    ? "bg-primary text-white rounded-tr-sm"
+                    : "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm"
+                }`}
+              >
                 <div className="whitespace-pre-wrap text-sm leading-relaxed font-medium">
                   {msg.content}
                 </div>
@@ -176,7 +211,7 @@ function AiAssistantContent() {
             </div>
           ))
         )}
-        
+
         {loading && (
           <div className="flex gap-3 sm:gap-4">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 text-white">
@@ -184,7 +219,9 @@ function AiAssistantContent() {
             </div>
             <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 sm:px-5 py-3 sm:py-4 shadow-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-tl-sm flex items-center gap-3">
               <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Thinking...</span>
+              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                Thinking...
+              </span>
             </div>
           </div>
         )}
@@ -196,19 +233,22 @@ function AiAssistantContent() {
         {error && (
           <div className="mb-3 flex items-center justify-between bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-2 rounded-lg border border-red-200 dark:border-red-500/20">
             <span className="text-sm font-medium">{error}</span>
-            <button onClick={() => setError(null)} className="hover:text-red-800 dark:hover:text-red-200">
+            <button
+              onClick={() => setError(null)}
+              className="hover:text-red-800 dark:hover:text-red-200"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
         )}
-        
+
         {(localFileName || selectedLibraryFile) && (
           <div className="mb-3 flex items-center gap-2 bg-slate-100 dark:bg-slate-800 w-fit px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
             <Paperclip className="w-4 h-4 text-primary" />
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[200px]">
               {localFileName ? localFileName : selectedLibraryFile?.title}
             </span>
-            <button 
+            <button
               type="button"
               onClick={() => {
                 setFile(null);
@@ -221,10 +261,9 @@ function AiAssistantContent() {
             </button>
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit} className="flex items-end gap-3">
           <div className="relative flex-1 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all flex items-center pl-2">
-            
             <button
               type="button"
               onClick={() => setIsLibraryModalOpen(true)}
@@ -241,14 +280,14 @@ function AiAssistantContent() {
               onChange={handleFileChange}
               accept=".pdf"
             />
-            <label 
+            <label
               htmlFor="file-upload"
               className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700"
               title="Upload PDF File"
             >
               <Paperclip className="w-5 h-5" />
             </label>
-            
+
             <input
               type="text"
               value={input}
@@ -258,14 +297,26 @@ function AiAssistantContent() {
               disabled={loading}
             />
           </div>
-          
+
           <button
             type="submit"
-            disabled={(!input.trim() && !file && !selectedLibraryFile && !localFileName) || loading}
+            disabled={
+              (!input.trim() &&
+                !file &&
+                !selectedLibraryFile &&
+                !localFileName) ||
+              loading
+            }
             className="h-[52px] px-6 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-            <span className="hidden sm:inline">{loading ? "Sending..." : "Send"}</span>
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
+            <span className="hidden sm:inline">
+              {loading ? "Sending..." : "Send"}
+            </span>
           </button>
         </form>
       </div>
@@ -275,15 +326,17 @@ function AiAssistantContent() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[80vh]">
             <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Select from Library</h3>
-              <button 
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                Select from Library
+              </h3>
+              <button
                 onClick={() => setIsLibraryModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors bg-slate-100 dark:bg-slate-800 p-2 rounded-full"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-4 flex-1 overflow-y-auto">
               {filesLoading ? (
                 <div className="flex justify-center items-center py-10">
@@ -311,8 +364,13 @@ function AiAssistantContent() {
                         <Paperclip className="w-5 h-5" />
                       </div>
                       <div className="overflow-hidden">
-                        <p className="font-bold text-slate-700 dark:text-slate-200 truncate">{fileItem.title || fileItem.file_path?.split('/').pop()}</p>
-                        <p className="text-xs text-slate-400 truncate">{fileItem.file_path}</p>
+                        <p className="font-bold text-slate-700 dark:text-slate-200 truncate">
+                          {fileItem.title ||
+                            fileItem.file_path?.split("/").pop()}
+                        </p>
+                        <p className="text-xs text-slate-400 truncate">
+                          {fileItem.file_path}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -328,11 +386,13 @@ function AiAssistantContent() {
 
 export default function AiAssistantPage() {
   return (
-    <Suspense fallback={
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
+        </div>
+      }
+    >
       <AiAssistantContent />
     </Suspense>
   );

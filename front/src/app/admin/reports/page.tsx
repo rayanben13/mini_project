@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ChevronLeft,
@@ -31,6 +32,7 @@ export default function ReportsPage() {
   const [section, setSection] = useState("all");
   const limit = 10;
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     reportedFilesStatusData: statusData,
@@ -90,6 +92,9 @@ export default function ReportsPage() {
       toast.success("File deleted successfully.");
       setDeleteFileId(null);
       setDeleteReason("");
+      queryClient.invalidateQueries({ queryKey: ["topFilesForUser"] });
+      queryClient.invalidateQueries({ queryKey: ["filesLikes"] });
+      queryClient.invalidateQueries({ queryKey: ["myFiles"] });
     } else {
       toast.error(res.message || "Failed to delete file.");
     }
@@ -394,7 +399,12 @@ export default function ReportsPage() {
       {/* Delete Reason Modal */}
       <Dialog
         open={!!deleteFileId}
-        onOpenChange={(open) => !open && setDeleteFileId(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteFileId(null);
+            setDeleteReason("");
+          }
+        }}
       >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -415,7 +425,10 @@ export default function ReportsPage() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setDeleteFileId(null)}
+              onClick={() => {
+                setDeleteFileId(null);
+                setDeleteReason("");
+              }}
               disabled={isActionPending}
             >
               Cancel

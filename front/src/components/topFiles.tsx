@@ -121,26 +121,32 @@ export default function TopFilesSlider({
         </div>
       </div>
 
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
-          {data?.map((item: any, index: number) => (
-            <div
-              key={item[itemKey]}
-              className="flex-[0_0_85%] md:flex-[0_0_50%] lg:flex-[0_0_25%] pl-4"
-            >
-              {renderItem ? (
-                renderItem(item, index)
-              ) : (
-                <FileCard
-                  file={item}
-                  showStatus={true}
-                  onNavigate={() => onFileClick?.(item[itemKey])}
-                />
-              )}
-            </div>
-          ))}
+      {data?.length === 0 ? (
+        <p className="flex items-center justify-center gap-2 text-muted-foreground">
+          No files available
+        </p>
+      ) : (
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex">
+            {data?.map((item: any, index: number) => (
+              <div
+                key={item[itemKey]}
+                className="flex-[0_0_85%] md:flex-[0_0_50%] lg:flex-[0_0_25%] pl-4"
+              >
+                {renderItem ? (
+                  renderItem(item, index)
+                ) : (
+                  <FileCard
+                    file={item}
+                    showStatus={true}
+                    onNavigate={() => onFileClick?.(item[itemKey])}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

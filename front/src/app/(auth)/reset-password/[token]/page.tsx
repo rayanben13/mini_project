@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -48,8 +48,11 @@ export default function ResetPasswordPage() {
       return toast.error("Invalid or expired link");
     }
 
-    const result = await resetPassword(email, values.password, token);
-
+    const result = await resetPassword({
+      email,
+      password: values.password,
+      token,
+    });
     if (result.success) {
       toast.success("Password updated! Redirecting...");
       setTimeout(() => router.push("/login"), 1200);
