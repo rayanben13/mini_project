@@ -42,62 +42,56 @@ export default function FilePreviewModal({ file }: { file: any }) {
       {/* ================= MAIN ================= */}
       <div className="flex flex-1 flex-col p-4 lg:p-6 gap-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl lg:text-3xl font-black">{file.title}</h1>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white break-words leading-tight">
+              {file.title}
+            </h1>
 
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mt-2">
               <span>📅 {file.approved_at || "Not approved yet"}</span>
+              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
               <span>📄 {file.type}</span>
               {file.status !== "accepted" && (
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
-                    file.status === "pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {file.status}
-                </span>
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
+                      file.status === "pending"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {file.status}
+                  </span>
+                </>
               )}
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center">
             <button
               onClick={() => getDownloadFiles(file.id_file)}
-              className="bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition"
+              className="flex items-center justify-center w-11 h-11 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition duration-200 active:scale-95 cursor-pointer"
+              title="Download file"
             >
-              {/* Mobile */}
-              <span className="flex items-center justify-center p-2.5 xl:hidden">
-                <Download className="size-5" />
-              </span>
-
-              {/* Desktop */}
-              <span className="hidden xl:flex items-center gap-2 px-3 py-2.5 font-bold">
-                <Download className="size-4" />
-                Download
-              </span>
+              <Download className="size-5" />
             </button>
 
             <button
               onClick={handleShare}
-              className="border border-border rounded-xl hover:bg-muted transition"
+              className="flex items-center justify-center w-11 h-11 border border-border rounded-xl hover:bg-muted transition duration-200 active:scale-95 cursor-pointer"
+              title="Share file"
             >
-              <span className="flex items-center justify-center p-2.5 xl:hidden">
-                <Share2 className="size-5" />
-              </span>
-              <span className="hidden xl:flex items-center gap-2 px-3 py-2.5 font-bold">
-                <Share2 className="size-4" />
-                Share
-              </span>
+              <Share2 className="size-5" />
             </button>
 
             {!isAdmin && (
               <ReportDialog
                 file={file}
                 userInfo_role={userInfo?.profileData?.role}
+                onlyIcon={true}
               />
             )}
           </div>
