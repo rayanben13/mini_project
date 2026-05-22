@@ -1,7 +1,7 @@
 import axios from "axios";
 import { create } from "zustand";
 
-const API_URL = "https://mini-project-44.onrender.com/api/admin/dashboard";
+const API_URL = "http://localhost:5000/api/admin/dashboard";
 
 const useDashboardStore = create((set) => ({
   dashboardStatisData: null,

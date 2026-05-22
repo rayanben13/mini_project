@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  BASE_URL: "https://mini-project-44.onrender.com",
+  BASE_URL: "http://localhost:5000",
   ENDPOINTS: {
     LOGIN: "/api/auth/login",
     REGISTER: "/api/auth/register",

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { create } from 'zustand';
 import Cookies from 'js-cookie';
 
-const API_URL = 'https://mini-project-44.onrender.com/api/auth';
+const API_URL = 'http://localhost:5000/api/auth';
 
 const AuthStore = create((set, get) => ({
   user: null,

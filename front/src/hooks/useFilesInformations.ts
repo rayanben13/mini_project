@@ -4,7 +4,7 @@ import useFilesStore from "@/Store/user/filesStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-const API_URL = "https://mini-project-44.onrender.com/api";
+const API_URL = "http://localhost:5000/api";
 
 export function showTopFilesForUser(page: number, limit: number) {
     const { showTopFilesForUser } = useFilesStore();
