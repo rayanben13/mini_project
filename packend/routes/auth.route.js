@@ -29,23 +29,20 @@ router.post(
   '/register',
   authLimiter,
   validate(authSchema),
-  register,
-  authLimiter
+  register
 );
 router.post(
   '/resendVerificationCode',
   authLimiter,
-  resendVerificationCode,
-  authLimiter
+  resendVerificationCode
 );
-router.post('/verify', authLimiter, verify, authLimiter);
+router.post('/verify', authLimiter, verify);
 
-router.post('/login', authLimiter, validate(shemaPassword), login, authLimiter);
+router.post('/login', authLimiter, validate(shemaPassword), login);
 router.post(
   '/forgotPassword',
   validate(schemaEmail),
-  forgotPassword,
-  authLimiter
+  forgotPassword
 );
 
 router.patch(
