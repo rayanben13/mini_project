@@ -240,7 +240,7 @@ function UploadFileBtn({
                       Click or drag to upload
                     </p>
                     <p className="text-xs text-slate-400 mt-1">
-                      PDF, DOCX, PNG up to 10MB
+                      PDF, DOCX, up to 10MB
                     </p>
                   </>
                 )}
