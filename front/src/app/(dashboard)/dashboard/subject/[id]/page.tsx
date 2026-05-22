@@ -137,7 +137,7 @@ export default function SubjectDetailPage() {
           <Button
             onClick={() => router.back()}
             variant="ghost"
-            className="text-slate-400  hover:text-white hover:bg-white/10 rounded-full px-4 -ml-2"
+            className="text-slate-400  hover:text-slate-500 hover:cursor-pointer hover:bg-white/10 rounded-full px-4 -ml-2"
           >
             <ChevronLeft className="w-5 h-5 mr-1 " /> Back
           </Button>
@@ -157,8 +157,8 @@ export default function SubjectDetailPage() {
               <strong className="text-black dark:text-white">
                 {subject?.course}
               </strong>{' '}
-              . Filter through lectures, practicals, and exams curated by your
-              peers.
+              {subject?.course_description ||
+                ' . Filter through lectures, practicals, and exams curated by your peers.'}
             </p>
           </div>
 
