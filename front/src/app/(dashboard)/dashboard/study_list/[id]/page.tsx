@@ -16,6 +16,7 @@ import {
   Share2,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -217,7 +218,14 @@ export default function StudyListForDashboard() {
                     Created by:
                   </span>
 
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                  <Link
+                    href={
+                      studyList.isOwner
+                        ? "/dashboard/profile"
+                        : `/dashboard/user/${studyList.users?.id_user}`
+                    }
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-[#0975e6] dark:hover:text-[#0975e6] transition-all duration-200 cursor-pointer active:scale-95"
+                  >
                     {/* Avatar */}
                     <div className="w-7 h-7 rounded-full bg-[#0975e6]/10 text-[#0975e6] flex items-center justify-center text-xs font-black uppercase">
                       {studyList.users?.fullname?.charAt(0)}
@@ -227,7 +235,7 @@ export default function StudyListForDashboard() {
                     <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                       {studyList.users?.fullname}
                     </span>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </div>
