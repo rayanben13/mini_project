@@ -1,7 +1,7 @@
 import axios from "axios";
 import { create } from "zustand";
 
-const API_URL = "http://localhost:5000/api/admin/filesStatus";
+const API_URL = "https://mini-project-1-tcp9.onrender.com/api/admin/filesStatus";
 
 const useFilesStatusStore = create((set, get) => ({
   filesStatusData: null,

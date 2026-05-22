@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:5001';
+const SOCKET_URL = 'https://mini-project-1-tcp9.onrender.com';
 
 const useNotificationSocketStore = create((set, get) => ({
   socket: null,
