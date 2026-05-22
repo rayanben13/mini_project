@@ -87,6 +87,9 @@ const useReportedFilesStore = create((set, get) => ({
         reportedDetails: null
       }));
 
+      // Fetch the updated stats
+      get().fetchReportedFilesStatus();
+
       return { success: true, message: response.data.message || response.data.succes };
     } catch (error) {
       const message = error.response?.data?.error || error.response?.data?.message || "Server error";

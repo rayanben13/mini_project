@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Loader2, AlertOctagon, X, Info } from "lucide-react";
-import { toast } from "sonner";
-import useReportedFilesStore from "@/Store/admin/reportedFilesStore";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Loader2, AlertOctagon, X, Info } from 'lucide-react';
+import { toast } from 'sonner';
+import useReportedFilesStore from '@/Store/admin/reportedFilesStore';
 
 interface ReportDetailsModalProps {
   fileId: number | null;
@@ -18,7 +18,11 @@ interface ReportDetailsModalProps {
   onClose: () => void;
 }
 
-export function ReportDetailsModal({ fileId, isOpen, onClose }: ReportDetailsModalProps) {
+export function ReportDetailsModal({
+  fileId,
+  isOpen,
+  onClose,
+}: ReportDetailsModalProps) {
   const {
     reportedDetails,
     reportedFiles,
@@ -38,13 +42,13 @@ export function ReportDetailsModal({ fileId, isOpen, onClose }: ReportDetailsMod
   const handleDismissAll = async () => {
     if (!fileId) return;
     setIsActionPending(true);
-    const res = await deleteOrIgnoreReportedFile(fileId, "ignore");
+    const res = await deleteOrIgnoreReportedFile(fileId, 'ignore');
     setIsActionPending(false);
     if (res.success) {
-      toast.success("All reports dismissed successfully.");
+      toast.success('All reports dismissed successfully.');
       onClose();
     } else {
-      toast.error(res.message || "Failed to dismiss reports");
+      toast.error(res.message || 'Failed to dismiss reports');
     }
   };
 
@@ -54,7 +58,8 @@ export function ReportDetailsModal({ fileId, isOpen, onClose }: ReportDetailsMod
   const getReasonStyles = (reason: string) => {
     const r = reason.toLowerCase();
     if (r.includes('copyright')) return 'bg-red-100 text-red-700';
-    if (r.includes('spam') || r.includes('misleading')) return 'bg-blue-100 text-blue-700';
+    if (r.includes('spam') || r.includes('misleading'))
+      return 'bg-blue-100 text-blue-700';
     if (r.includes('inappropriate')) return 'bg-blue-100 text-blue-700';
     return 'bg-gray-100 text-gray-700';
   };
@@ -95,31 +100,45 @@ export function ReportDetailsModal({ fileId, isOpen, onClose }: ReportDetailsMod
           ) : (
             <div className="space-y-4">
               {reportedDetails.map((report: any, index: number) => {
-                const reporterName = report.users?.fullname || report.users?.username || "Unknown User";
+                const reporterName =
+                  report.users?.fullname ||
+                  report.users?.username ||
+                  'Unknown User';
                 const initials = reporterName.substring(0, 2).toUpperCase();
-                const reasonLabel = report.reason || "OTHER";
-                const date = new Date(report.created_at).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                }).toUpperCase();
+                const reasonLabel = report.reason || 'OTHER';
+                const date = new Date(report.created_at)
+                  .toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                  .toUpperCase();
 
                 return (
-                  <div 
+                  <div
                     key={index}
                     className="p-5 rounded-xl border border-gray-200 bg-white shadow-sm space-y-3"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                          {/* If we had an avatar URL we'd use it, otherwise initials */}
-                          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${reporterName}`} alt={reporterName} className="w-full h-full rounded-full" />
+                        <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold shrink-0 overflow-hidden">
+                          {report.users?.img_user ? (
+                            <img
+                              src={report.users.img_user}
+                              alt={reporterName}
+                              className="w-full h-full rounded-full object-cover"
+                            />
+                          ) : (
+                            initials
+                          )}
                         </div>
                         <div>
                           <div className="font-bold text-sm text-gray-900">
                             {reporterName}
                           </div>
-                          <div className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getReasonStyles(reasonLabel)}`}>
+                          <div
+                            className={`mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getReasonStyles(reasonLabel)}`}
+                          >
                             {reasonLabel}
                           </div>
                         </div>
@@ -128,7 +147,7 @@ export function ReportDetailsModal({ fileId, isOpen, onClose }: ReportDetailsMod
                         {date}
                       </div>
                     </div>
-                    
+
                     {report.details && (
                       <p className="text-sm text-gray-700 leading-relaxed pt-1">
                         {report.details}
@@ -148,16 +167,20 @@ export function ReportDetailsModal({ fileId, isOpen, onClose }: ReportDetailsMod
             {reportedDetails?.length || 0} total reports for this file
           </div>
           <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="text-gray-700 font-semibold hover:bg-gray-100"
               onClick={handleDismissAll}
-              disabled={isActionPending || detailsLoading || !reportedDetails?.length}
+              disabled={
+                isActionPending || detailsLoading || !reportedDetails?.length
+              }
             >
-              {isActionPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {isActionPending && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
               Dismiss All
             </Button>
-            <Button 
+            <Button
               className="bg-[#0f62fe] hover:bg-[#0353e9] text-white font-semibold px-6"
               onClick={onClose}
             >
