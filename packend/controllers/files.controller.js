@@ -603,6 +603,7 @@ export const UplodeNewFile = async (req, res) => {
         specialization: infoExist.specialization,
         academic_year: infoExist.academic_year,
         course: infoExist.course,
+        course_description: infoExist.course_description,
       },
     });
 
@@ -619,13 +620,14 @@ export const UplodeNewFile = async (req, res) => {
       file_path = cloudinaryResult.secure_url;
     } else if (
       mime === 'application/msword' ||
-      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      mime ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ) {
       const tempFilePath = path.join(
         os.tmpdir(),
         `${Date.now()}-${req.file.originalname}`
       );
-      
+
       try {
         await fs.promises.writeFile(tempFilePath, req.file.buffer);
 
@@ -647,9 +649,11 @@ export const UplodeNewFile = async (req, res) => {
           },
         });
 
-        const uploadTask = job.tasks.find((task) => task.name === 'import-my-file');
+        const uploadTask = job.tasks.find(
+          (task) => task.name === 'import-my-file'
+        );
         const inputFile = fs.createReadStream(tempFilePath);
-        
+
         await cloudConvert.tasks.upload(
           uploadTask,
           inputFile,
@@ -660,17 +664,20 @@ export const UplodeNewFile = async (req, res) => {
         const exportNode = exportedTask.tasks.find(
           (task) => task.name === 'export-my-file'
         );
-        
+
         if (!exportNode || !exportNode.result || !exportNode.result.files) {
           throw new Error('CloudConvert failed to generate export URL');
         }
 
         const exportedFile = exportNode.result.files[0];
 
-        const cloudinaryResult = await cloudinary.uploader.upload(exportedFile.url, {
-          folder: 'files',
-          resource_type: 'auto',
-        });
+        const cloudinaryResult = await cloudinary.uploader.upload(
+          exportedFile.url,
+          {
+            folder: 'files',
+            resource_type: 'auto',
+          }
+        );
 
         file_path = cloudinaryResult.secure_url;
       } finally {
