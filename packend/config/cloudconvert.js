@@ -1,4 +1,4 @@
-import { CloudConvert } from 'cloudconvert';
+import CloudConvert from 'cloudconvert';
 import dotenv from 'dotenv';
 
 dotenv.config();

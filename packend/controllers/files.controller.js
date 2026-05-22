@@ -7,6 +7,10 @@ import {
 import { io } from '../config/socket.js';
 import prisma from '../lib/prisma.js';
 import { getUniversities } from '../service/univAPI.js';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import cloudConvert from '../config/cloudconvert.js';
 
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
@@ -602,13 +606,85 @@ export const UplodeNewFile = async (req, res) => {
       },
     });
 
-    // 4. Upload file to cloud
-    const cloudinaryResult = await uploadBufferToCloudinary(req.file.buffer);
+    // 4. Upload file to cloud (and convert DOCX if needed)
+    let file_path = null;
+    const mime = req.file.mimetype;
 
-    if (!cloudinaryResult?.secure_url) {
-      throw new Error('Upload failed');
+    if (mime === 'application/pdf' || mime.startsWith('image/')) {
+      const cloudinaryResult = await uploadBufferToCloudinary(req.file.buffer);
+
+      if (!cloudinaryResult?.secure_url) {
+        throw new Error('Upload failed');
+      }
+      file_path = cloudinaryResult.secure_url;
+    } else if (
+      mime === 'application/msword' ||
+      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
+      const tempFilePath = path.join(
+        os.tmpdir(),
+        `${Date.now()}-${req.file.originalname}`
+      );
+      
+      try {
+        await fs.promises.writeFile(tempFilePath, req.file.buffer);
+
+        const job = await cloudConvert.jobs.create({
+          tasks: {
+            'import-my-file': {
+              operation: 'import/upload',
+            },
+            'convert-my-file': {
+              operation: 'convert',
+              input: 'import-my-file',
+              input_format: mime === 'application/msword' ? 'doc' : 'docx',
+              output_format: 'pdf',
+            },
+            'export-my-file': {
+              operation: 'export/url',
+              input: 'convert-my-file',
+            },
+          },
+        });
+
+        const uploadTask = job.tasks.find((task) => task.name === 'import-my-file');
+        const inputFile = fs.createReadStream(tempFilePath);
+        
+        await cloudConvert.tasks.upload(
+          uploadTask,
+          inputFile,
+          req.file.originalname
+        );
+
+        const exportedTask = await cloudConvert.jobs.wait(job.id);
+        const exportNode = exportedTask.tasks.find(
+          (task) => task.name === 'export-my-file'
+        );
+        
+        if (!exportNode || !exportNode.result || !exportNode.result.files) {
+          throw new Error('CloudConvert failed to generate export URL');
+        }
+
+        const exportedFile = exportNode.result.files[0];
+
+        const cloudinaryResult = await cloudinary.uploader.upload(exportedFile.url, {
+          folder: 'files',
+          resource_type: 'auto',
+        });
+
+        file_path = cloudinaryResult.secure_url;
+      } finally {
+        try {
+          if (fs.existsSync(tempFilePath)) {
+            await fs.promises.unlink(tempFilePath);
+          }
+        } catch (cleanupErr) {
+          console.error('Failed to cleanup temp file:', cleanupErr);
+        }
+      }
+    } else {
+      return res.status(400).json({ message: 'Unsupported file type' });
     }
-    const file_path = cloudinaryResult.secure_url;
 
     // 5. Create file
     const file = await prisma.files.create({

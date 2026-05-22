@@ -1,5 +1,5 @@
 import express from 'express';
-
+import authLimiter from '../config/rateLimit.js';
 import validate from '../middleware/validate.js';
 import {
   authSchema,
@@ -19,19 +19,34 @@ import {
   SharchMoreInformation,
   addedUserInformation,
 } from '../controllers/auth.controller.js';
-import authLimiter from '../config/rateLimit.js';
 
 import '../config/passport.js';
 import passport from 'passport';
 
 const router = express.Router();
 
-router.post('/register', authLimiter, validate(authSchema), register);
-router.post('/resendVerificationCode', authLimiter, resendVerificationCode);
-router.post('/verify', authLimiter, verify);
+router.post(
+  '/register',
+  authLimiter,
+  validate(authSchema),
+  register,
+  authLimiter
+);
+router.post(
+  '/resendVerificationCode',
+  authLimiter,
+  resendVerificationCode,
+  authLimiter
+);
+router.post('/verify', authLimiter, verify, authLimiter);
 
-router.post('/login', authLimiter, validate(shemaPassword), login);
-router.post('/forgotPassword', validate(schemaEmail), forgotPassword);
+router.post('/login', authLimiter, validate(shemaPassword), login, authLimiter);
+router.post(
+  '/forgotPassword',
+  validate(schemaEmail),
+  forgotPassword,
+  authLimiter
+);
 
 router.patch(
   '/resetPassword/:resetTokenURL',
