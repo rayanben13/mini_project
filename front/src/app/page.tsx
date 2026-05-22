@@ -1,12 +1,19 @@
 // app/page.tsx (أو app/(public)/page.tsx)
-"use client";
+'use client';
 
-import SearchBar from "@/components/SearchBar";
-import { ArrowRight, BookOpen, GraduationCap, FileText, Lightbulb, Trophy } from "lucide-react";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { cn } from "@/lib/utils";
+import SearchBar from '@/components/SearchBar';
+import {
+  ArrowRight,
+  BookOpen,
+  GraduationCap,
+  FileText,
+  Lightbulb,
+  Trophy,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface FloatingItemProps {
   icon: React.ReactNode;
@@ -37,7 +44,7 @@ function FloatingItem({
   bg,
   shadow,
   springX,
-  springY
+  springY,
 }: FloatingItemProps) {
   const x = useTransform(springX, (val: number) => val * factorX);
   const y = useTransform(springY, (val: number) => val * factorY);
@@ -45,7 +52,7 @@ function FloatingItem({
   return (
     <motion.div
       style={{
-        position: "absolute",
+        position: 'absolute',
         top,
         left,
         right,
@@ -61,10 +68,10 @@ function FloatingItem({
       transition={{
         duration: 6 + Math.random() * 4,
         repeat: Infinity,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       }}
       className={cn(
-        "flex rounded-[1.5rem] md:rounded-[2rem] backdrop-blur-xl border border-white/60 dark:border-slate-800/40 p-3 md:p-5 items-center justify-center transition-all duration-300 hover:scale-110",
+        'flex rounded-[1.5rem] md:rounded-[2rem] backdrop-blur-xl border border-white/60 dark:border-slate-800/40 p-3 md:p-5 items-center justify-center transition-all duration-300 hover:scale-110',
         size,
         bg,
         shadow
@@ -79,8 +86,8 @@ function FloatingItem({
 }
 
 export default function Home() {
-  const [searchTerm, setSearchTerm] = useState("");
-  
+  const [searchTerm, setSearchTerm] = useState('');
+
   // Motion values for tracking mouse position
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -91,85 +98,95 @@ export default function Home() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) - 0.5;
-      const y = (e.clientY / window.innerHeight) - 0.5;
+      const x = e.clientX / window.innerWidth - 0.5;
+      const y = e.clientY / window.innerHeight - 0.5;
       mouseX.set(x);
       mouseY.set(y);
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [mouseX, mouseY]);
 
   const floatingItems = [
     {
-      icon: <GraduationCap className="w-12 h-12 text-blue-600 dark:text-blue-400" />,
+      icon: (
+        <GraduationCap className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+      ),
       factorX: 60,
       factorY: 60,
       rotate: 15,
-      top: "18%",
-      left: "8%",
-      size: "w-24 h-24",
-      bg: "bg-gradient-to-br from-blue-500/10 to-blue-600/5",
-      shadow: "shadow-[0_20px_50px_rgba(59,130,246,0.12)]"
+      top: '18%',
+      left: '8%',
+      size: 'w-24 h-24',
+      bg: 'bg-gradient-to-br from-blue-500/10 to-blue-600/5',
+      shadow: 'shadow-[0_20px_50px_rgba(59,130,246,0.12)]',
     },
     {
-      icon: <BookOpen className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />,
+      icon: (
+        <BookOpen className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
+      ),
       factorX: -45,
       factorY: 70,
       rotate: -15,
-      top: "22%",
-      right: "12%",
-      size: "w-20 h-20",
-      bg: "bg-gradient-to-br from-indigo-500/10 to-indigo-600/5",
-      shadow: "shadow-[0_20px_50px_rgba(99,102,241,0.12)]"
+      top: '22%',
+      right: '12%',
+      size: 'w-20 h-20',
+      bg: 'bg-gradient-to-br from-indigo-500/10 to-indigo-600/5',
+      shadow: 'shadow-[0_20px_50px_rgba(99,102,241,0.12)]',
     },
     {
-      icon: <FileText className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />,
+      icon: (
+        <FileText className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+      ),
       factorX: 75,
       factorY: -45,
       rotate: 8,
-      bottom: "25%",
-      left: "12%",
-      size: "w-20 h-20",
-      bg: "bg-gradient-to-br from-emerald-500/10 to-emerald-600/5",
-      shadow: "shadow-[0_20px_50px_rgba(16,185,129,0.12)]"
+      bottom: '25%',
+      left: '12%',
+      size: 'w-20 h-20',
+      bg: 'bg-gradient-to-br from-emerald-500/10 to-emerald-600/5',
+      shadow: 'shadow-[0_20px_50px_rgba(16,185,129,0.12)]',
     },
     {
-      icon: <Lightbulb className="w-10 h-10 text-amber-600 dark:text-amber-400" />,
+      icon: (
+        <Lightbulb className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+      ),
       factorX: -60,
       factorY: -60,
       rotate: -10,
-      bottom: "28%",
-      right: "10%",
-      size: "w-20 h-20",
-      bg: "bg-gradient-to-br from-amber-500/10 to-amber-600/5",
-      shadow: "shadow-[0_20px_50px_rgba(245,158,11,0.12)]"
+      bottom: '28%',
+      right: '10%',
+      size: 'w-20 h-20',
+      bg: 'bg-gradient-to-br from-amber-500/10 to-amber-600/5',
+      shadow: 'shadow-[0_20px_50px_rgba(245,158,11,0.12)]',
     },
     {
-      icon: <Trophy className="w-12 h-12 text-purple-600 dark:text-purple-400" />,
+      icon: (
+        <Trophy className="w-12 h-12 text-purple-600 dark:text-purple-400" />
+      ),
       factorX: 35,
       factorY: -80,
       rotate: 20,
-      top: "52%",
-      left: "4%",
-      size: "w-22 h-22",
-      bg: "bg-gradient-to-br from-purple-500/10 to-purple-600/5",
-      shadow: "shadow-[0_20px_50px_rgba(168,85,247,0.12)]"
-    }
+      top: '52%',
+      left: '4%',
+      size: 'w-22 h-22',
+      bg: 'bg-gradient-to-br from-purple-500/10 to-purple-600/5',
+      shadow: 'shadow-[0_20px_50px_rgba(168,85,247,0.12)]',
+    },
   ];
 
   return (
     <main className="relative min-h-screen flex flex-col overflow-x-hidden bg-transparent">
       {/* ===== Background Decoration ===== */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10 bg-[#fcfdff] dark:bg-slate-950">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.25] dark:opacity-[0.08] transition-opacity duration-500" 
-          style={{ backgroundImage: "url('/landing_bg_3d.png')" }} 
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.25] dark:opacity-[0.08] transition-opacity duration-500"
+          style={{ backgroundImage: "url('/landing_bg_3d.png')" }}
         />
         {/* Soft overlay to blend it cleanly */}
         <div className="absolute inset-0 bg-gradient-to-tr from-[#fcfdff]/40 via-transparent to-[#fcfdff]/30 dark:from-slate-950/40 dark:to-slate-950/30" />
-        
+
         {/* Interactive Floating University Objects */}
         {floatingItems.map((item, idx) => (
           <FloatingItem
@@ -183,13 +200,53 @@ export default function Home() {
 
       {/* ===== Hero Section ===== */}
       <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pt-2 pb-20 text-center">
-        {/* Title */}
-        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-4 tracking-tight text-slate-900 dark:text-white leading-tight">
-          Grow smarter{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-            together
+        {/* Title with Typewriter Animation */}
+        <motion.h1
+          variants={{
+            hidden: { opacity: 1 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.08,
+              },
+            },
+          }}
+          initial="hidden"
+          animate="visible"
+          className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-4 tracking-tight text-slate-900 dark:text-white leading-tight min-h-[1.2em]"
+        >
+          {'Grow smarter '.split('').map((char, idx) => (
+            <motion.span
+              key={`char1-${idx}`}
+              variants={{
+                hidden: { opacity: 0, display: 'none' },
+                visible: { opacity: 1, display: 'inline-block' },
+              }}
+            >
+              {char === ' ' ? '\u00A0' : char}
+            </motion.span>
+          ))}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 inline-block">
+            {'together'.split('').map((char, idx) => (
+              <motion.span
+                key={`char2-${idx}`}
+                variants={{
+                  hidden: { opacity: 0, display: 'none' },
+                  visible: { opacity: 1, display: 'inline-block' },
+                }}
+              >
+                {char}
+              </motion.span>
+            ))}
           </span>
-        </h1>
+
+          {/* Typing Cursor */}
+          <motion.span
+            animate={{ opacity: [1, 0, 1] }}
+            transition={{ repeat: Infinity, duration: 0.8 }}
+            className="inline-block ml-2 w-[3px] md:w-[5px] h-[1em] bg-blue-600 dark:bg-blue-400 align-middle"
+          />
+        </motion.h1>
 
         {/* Subtitle */}
         <p className="text-lg sm:text-xl md:text-2xl text-slate-500 dark:text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
@@ -207,9 +264,9 @@ export default function Home() {
         <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
           <span className="text-sm text-slate-400">Try:</span>
           {[
-            "Algorithmique",
-            "Electronique",
-            "Algebre 1",
+            'Algorithmique',
+            'Electronique',
+            'Algebre 1',
             "Systeme d'exploitation",
           ].map((term) => (
             <button
