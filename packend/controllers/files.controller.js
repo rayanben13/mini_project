@@ -1,14 +1,14 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 import {
   cloudinary,
   GetPublicId,
   uploadBufferToCloudinary,
-} from "../config/Cloudinary.js";
-import { io } from "../config/socket.js";
-import prisma from "../lib/prisma.js";
-import { getUniversities } from "../service/univAPI.js";
+} from '../config/Cloudinary.js';
+import { io } from '../config/socket.js';
+import prisma from '../lib/prisma.js';
+import { getUniversities } from '../service/univAPI.js';
 
-let isDevelopment = process.env.NODE_ENV?.trim() === "development";
+let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
 export const showTopFilesForUser = async (req, res) => {
   try {
@@ -23,10 +23,10 @@ export const showTopFilesForUser = async (req, res) => {
 
     const total_files = await prisma.files.count({
       where: {
-        status: "accepted",
+        status: 'accepted',
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
         subjects: {
@@ -150,7 +150,7 @@ OFFSET ${skip};
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -164,12 +164,12 @@ export const showfilesLikes = async (req, res) => {
     const total_files = await prisma.files_likes.count({
       where: {
         id_user: Me.id_user,
-        type: "LIKE",
+        type: 'LIKE',
         files: {
-          status: "accepted",
+          status: 'accepted',
           file_reports: {
             none: {
-              status: "reviewed",
+              status: 'reviewed',
             },
           },
         },
@@ -179,12 +179,12 @@ export const showfilesLikes = async (req, res) => {
     const filesLiked = await prisma.files_likes.findMany({
       where: {
         id_user: Me.id_user,
-        type: "LIKE",
+        type: 'LIKE',
         files: {
-          status: "accepted",
+          status: 'accepted',
           file_reports: {
             none: {
-              status: "reviewed",
+              status: 'reviewed',
             },
           },
         },
@@ -246,7 +246,7 @@ export const showfilesLikes = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -257,22 +257,22 @@ export const showMyFiles = async (req, res) => {
     const page = Math.max(Number(req.query.page) || 1, 1);
     const skip = (page - 1) * limit;
     let show_status = req.query.show;
-    const validStatus = ["pending", "accepted", "rejected", "all"];
+    const validStatus = ['pending', 'accepted', 'rejected', 'all'];
 
     if (show_status && !validStatus.includes(show_status)) {
-      return res.status(400).json({ error: "Invalid status" });
+      return res.status(400).json({ error: 'Invalid status' });
     }
     if (!show_status) {
-      show_status = "all";
+      show_status = 'all';
     }
 
     const total_files = await prisma.files.count({
       where: {
         id_user: Me.id_user,
-        ...(show_status !== "all" && { status: show_status }),
+        ...(show_status !== 'all' && { status: show_status }),
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
@@ -281,10 +281,10 @@ export const showMyFiles = async (req, res) => {
     const files = await prisma.files.findMany({
       where: {
         id_user: Me.id_user,
-        ...(show_status !== "all" && { status: show_status }),
+        ...(show_status !== 'all' && { status: show_status }),
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
@@ -333,7 +333,7 @@ export const showMyFiles = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -346,13 +346,13 @@ export const showFilesUserById = async (req, res) => {
     const skip = (page - 1) * limit;
 
     if (!id_user) {
-      return res.status(400).json({ error: "User ID is required" });
+      return res.status(400).json({ error: 'User ID is required' });
     }
 
     const userExists = await prisma.users.findUnique({
       where: {
         id_user,
-        role: "user",
+        role: 'user',
         is_active: true,
         user_information: {
           isNot: null,
@@ -361,16 +361,16 @@ export const showFilesUserById = async (req, res) => {
     });
 
     if (!userExists) {
-      return res.status(404).json({ error: "user not found" });
+      return res.status(404).json({ error: 'user not found' });
     }
 
     const total_files = await prisma.files.count({
       where: {
         id_user,
-        status: "accepted",
+        status: 'accepted',
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
@@ -379,10 +379,10 @@ export const showFilesUserById = async (req, res) => {
     const files = await prisma.files.findMany({
       where: {
         id_user,
-        status: "accepted",
+        status: 'accepted',
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
@@ -430,7 +430,7 @@ export const showFilesUserById = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -440,19 +440,19 @@ export const showDetailFile = async (req, res) => {
     const Me = req.user;
 
     if (!id_file) {
-      return res.status(400).json({ error: "File ID is required" });
+      return res.status(400).json({ error: 'File ID is required' });
     }
 
-    const isAdmin = Me.role === "admin";
+    const isAdmin = Me.role === 'admin';
 
     // ✅ جلب الملف مرة واحدة فقط
     let file = await prisma.files.findUnique({
       where: {
         id_file,
-        ...(isAdmin ? {} : { status: "accepted" }),
+        ...(isAdmin ? {} : { status: 'accepted' }),
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
@@ -482,7 +482,7 @@ export const showDetailFile = async (req, res) => {
             role: true,
           },
         },
-        ...(Me.role === "user" && {
+        ...(Me.role === 'user' && {
           files_likes: {
             where: {
               id_user: Me.id_user,
@@ -496,15 +496,18 @@ export const showDetailFile = async (req, res) => {
     });
 
     if (!file) {
-      return res.status(404).json({ error: "File not found" });
+      return res.status(404).json({ error: 'File not found' });
     }
-    file.approved_at = dayjs(file.approved_at).fromNow();
+    // ✅ تحويل التاريخ لـ relative time
+    if (file.approved_at) {
+      file.approved_at = dayjs(file.approved_at).fromNow();
+    }
 
     const isOwner = file.users.id_user === Me.id_user;
-    if (file.status !== "accepted" && !isAdmin && !isOwner) {
+    if (file.status !== 'accepted' && !isAdmin && !isOwner) {
       return res
         .status(403)
-        .json({ error: "Access denied: File is not accepted yet" });
+        .json({ error: 'Access denied: File is not accepted yet' });
     }
 
     // ✅ likes
@@ -514,17 +517,17 @@ export const showDetailFile = async (req, res) => {
     if (!isAdmin) {
       [like, dislike] = await Promise.all([
         prisma.files_likes.count({
-          where: { id_file, type: "LIKE" },
+          where: { id_file, type: 'LIKE' },
         }),
         prisma.files_likes.count({
-          where: { id_file, type: "DISLIKE" },
+          where: { id_file, type: 'DISLIKE' },
         }),
       ]);
     }
 
     // ✅ statusLike
     let statusLike = null;
-    if (Me.role === "user" && file.files_likes?.length) {
+    if (Me.role === 'user' && file.files_likes?.length) {
       statusLike = file.files_likes[0].type;
     }
 
@@ -538,12 +541,12 @@ export const showDetailFile = async (req, res) => {
         : {
             like,
             dislike,
-            ...(Me.role === "user" && { statusLike }),
+            ...(Me.role === 'user' && { statusLike }),
           }),
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -568,25 +571,25 @@ export const UplodeNewFile = async (req, res) => {
     const universities = await getUniversities(univ);
 
     if (!universities.length) {
-      return res.status(404).json({ message: "university is not exist" });
+      return res.status(404).json({ message: 'university is not exist' });
     }
 
     // 2. Validate subject info
     const infoExist = await prisma.university_majors.findFirst({
       where: {
-        major: { equals: major, mode: "insensitive" },
-        specialization: { equals: specialty || null, mode: "insensitive" },
+        major: { equals: major, mode: 'insensitive' },
+        specialization: { equals: specialty || null, mode: 'insensitive' },
         academic_year,
-        course: { equals: subject || null, mode: "insensitive" },
+        course: { equals: subject || null, mode: 'insensitive' },
       },
     });
 
     if (!infoExist) {
-      return res.status(403).json({ message: "information is not exist" });
+      return res.status(403).json({ message: 'information is not exist' });
     }
 
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+      return res.status(400).json({ message: 'No file uploaded' });
     }
 
     // 3. Find or create subject
@@ -603,7 +606,7 @@ export const UplodeNewFile = async (req, res) => {
     const cloudinaryResult = await uploadBufferToCloudinary(req.file.buffer);
 
     if (!cloudinaryResult?.secure_url) {
-      throw new Error("Upload failed");
+      throw new Error('Upload failed');
     }
     const file_path = cloudinaryResult.secure_url;
 
@@ -637,12 +640,12 @@ export const UplodeNewFile = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "File uploaded successfully",
+      message: 'File uploaded successfully',
       file,
     });
   } catch (err) {
-    console.error("Upload error:", err);
-    return res.status(500).json({ error: "Server error" });
+    console.error('Upload error:', err);
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -652,32 +655,32 @@ export const downloadFile = async (req, res) => {
     const fileRecord = await prisma.files.findFirst({
       where: {
         id_file,
-        status: "accepted",
+        status: 'accepted',
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
     });
 
     if (!fileRecord) {
-      return res.status(404).json({ error: "File not found or not accepted" });
+      return res.status(404).json({ error: 'File not found or not accepted' });
     }
 
     const fileUrl = fileRecord.file_path; // Cloudinary URL
 
     // To trigger an automatic download from Cloudinary, insert 'fl_attachment' into the URL parameters
     let downloadUrl = fileUrl;
-    if (fileUrl.includes("/upload/")) {
-      downloadUrl = fileUrl.replace("/upload/", "/upload/fl_attachment/");
+    if (fileUrl.includes('/upload/')) {
+      downloadUrl = fileUrl.replace('/upload/', '/upload/fl_attachment/');
     }
 
     // Redirect the user to the direct Cloudinary URL that forces download
     return res.redirect(downloadUrl);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to download file" });
+    res.status(500).json({ error: 'Failed to download file' });
   }
 };
 
@@ -689,10 +692,10 @@ export const deleteMeOwnfile = async (req, res) => {
       where: {
         id_file,
         id_user: Me.id_user,
-        status: "accepted",
+        status: 'accepted',
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
@@ -701,32 +704,32 @@ export const deleteMeOwnfile = async (req, res) => {
     if (!owner) {
       return res
         .status(404)
-        .json({ error: "File not found or not accepted or not owner" });
+        .json({ error: 'File not found or not accepted or not owner' });
     }
     if (!isDevelopment) {
       const publicId = GetPublicId(owner.file_path);
       console.log(publicId);
 
       const result = await cloudinary.uploader.destroy(publicId, {
-        resource_type: "image",
+        resource_type: 'image',
       });
 
       console.log(result);
 
-      if (result.result !== "ok" && result.result !== "not found") {
-        throw new Error("Cloudinary delete failed");
+      if (result.result !== 'ok' && result.result !== 'not found') {
+        throw new Error('Cloudinary delete failed');
       }
     } else {
-      console.log("delete file in cloduinary");
+      console.log('delete file in cloduinary');
     }
 
     await prisma.files.delete({
       where: { id_file },
     });
-    return res.status(200).json({ message: "File deleted successfully" });
+    return res.status(200).json({ message: 'File deleted successfully' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to delete file" });
+    res.status(500).json({ error: 'Failed to delete file' });
   }
 };
 
@@ -739,21 +742,21 @@ export const reportFile = async (req, res) => {
     const fileExist = await prisma.files.findFirst({
       where: {
         id_file,
-        status: "accepted",
+        status: 'accepted',
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
     });
 
     if (!fileExist) {
-      return res.status(404).json({ error: "File not found or not accepted" });
+      return res.status(404).json({ error: 'File not found or not accepted' });
     }
 
     if (fileExist.id_user === Me.id_user) {
-      return res.status(403).json({ error: "You cannot report your own file" });
+      return res.status(403).json({ error: 'You cannot report your own file' });
     }
 
     const reportExist = await prisma.file_reports.findFirst({
@@ -764,7 +767,7 @@ export const reportFile = async (req, res) => {
     });
 
     if (reportExist) {
-      return res.status(400).json({ error: "You already reported this file" });
+      return res.status(400).json({ error: 'You already reported this file' });
     }
 
     const report = await prisma.file_reports.create({
@@ -782,7 +785,7 @@ export const reportFile = async (req, res) => {
     return res.status(200).json(report);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to report file" });
+    res.status(500).json({ error: 'Failed to report file' });
   }
 };
 
@@ -864,22 +867,22 @@ export const addLikeOrDislike = async (req, res) => {
     const Me = req.user;
     const id_file = Number(req.params.id_file);
     const { type } = req.body; // LIKE / DISLIKE
-    console.log("ty", type);
+    console.log('ty', type);
 
     const fileExist = await prisma.files.findFirst({
       where: {
         id_file,
-        status: "accepted",
+        status: 'accepted',
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
     });
 
     if (!fileExist) {
-      return res.status(404).json({ error: "File not found or not accepted" });
+      return res.status(404).json({ error: 'File not found or not accepted' });
     }
 
     const existing = await prisma.files_likes.findUnique({
@@ -904,12 +907,12 @@ export const addLikeOrDislike = async (req, res) => {
 
       // Get updated counts
       const [likeCount, dislikeCount] = await Promise.all([
-        prisma.files_likes.count({ where: { id_file, type: "LIKE" } }),
-        prisma.files_likes.count({ where: { id_file, type: "DISLIKE" } }),
+        prisma.files_likes.count({ where: { id_file, type: 'LIKE' } }),
+        prisma.files_likes.count({ where: { id_file, type: 'DISLIKE' } }),
       ]);
 
       return res.status(200).json({
-        message: "Reaction removed",
+        message: 'Reaction removed',
         likes: likeCount,
         dislikes: dislikeCount,
         status: null,
@@ -943,39 +946,39 @@ export const addLikeOrDislike = async (req, res) => {
     });
 
     // 🔥 notification فقط لل LIKE
-    if (type === "LIKE" && ownerFile.id_user !== Me.id_user) {
+    if (type === 'LIKE' && ownerFile.id_user !== Me.id_user) {
       const newNotification = await prisma.notifications.create({
         data: {
           id_user: ownerFile.id_user,
           message: `${Me.username} liked your file: ${ownerFile.title}`,
           related_id: Me.id_user,
-          related_type: "user",
+          related_type: 'user',
         },
       });
 
-      io.to(String(ownerFile.id_user)).emit("notification", {
+      io.to(String(ownerFile.id_user)).emit('notification', {
         ...newNotification,
         message: `${Me.username} liked your file: ${ownerFile.title}`,
         related_id: Me.id_user,
-        related_type: "user",
+        related_type: 'user',
       });
     }
 
     // Get updated counts
     const [likeCount, dislikeCount] = await Promise.all([
-      prisma.files_likes.count({ where: { id_file, type: "LIKE" } }),
-      prisma.files_likes.count({ where: { id_file, type: "DISLIKE" } }),
+      prisma.files_likes.count({ where: { id_file, type: 'LIKE' } }),
+      prisma.files_likes.count({ where: { id_file, type: 'DISLIKE' } }),
     ]);
 
     return res.status(200).json({
-      message: "processed successfully",
+      message: 'processed successfully',
       likes: likeCount,
       dislikes: dislikeCount,
       status: type,
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Failed to process like" });
+    return res.status(500).json({ error: 'Failed to process like' });
   }
 };
 
@@ -988,17 +991,17 @@ export const saveFileToMyStudyList = async (req, res) => {
     const fileExist = await prisma.files.findFirst({
       where: {
         id_file,
-        status: "accepted",
+        status: 'accepted',
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
     });
 
     if (!fileExist) {
-      return res.status(404).json({ error: "File not found or not accepted" });
+      return res.status(404).json({ error: 'File not found or not accepted' });
     }
 
     const MyStudyListExist = await prisma.study_lists.findFirst({
@@ -1006,7 +1009,7 @@ export const saveFileToMyStudyList = async (req, res) => {
     });
 
     if (!MyStudyListExist) {
-      return res.status(403).json({ error: "this is not your study list" });
+      return res.status(403).json({ error: 'this is not your study list' });
     }
 
     const fileAlreadySaved = await prisma.study_list_files.findUnique({
@@ -1021,7 +1024,7 @@ export const saveFileToMyStudyList = async (req, res) => {
     if (fileAlreadySaved) {
       return res
         .status(400)
-        .json({ error: "File already saved to study list" });
+        .json({ error: 'File already saved to study list' });
     }
 
     const savedFile = await prisma.study_list_files.create({
@@ -1037,10 +1040,10 @@ export const saveFileToMyStudyList = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "File saved to study list successfully", savedFile });
+      .json({ message: 'File saved to study list successfully', savedFile });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to save file to study list" });
+    res.status(500).json({ error: 'Failed to save file to study list' });
   }
 };
 
@@ -1051,17 +1054,17 @@ export const getShareLink = async (req, res) => {
     const file = await prisma.files.findUnique({
       where: {
         id_file,
-        status: "accepted",
+        status: 'accepted',
         file_reports: {
           none: {
-            status: "reviewed",
+            status: 'reviewed',
           },
         },
       },
     });
 
     if (!file) {
-      return res.status(404).json({ error: "File not found or not accepted" });
+      return res.status(404).json({ error: 'File not found or not accepted' });
     }
 
     const link = `${process.env.FRONTEND_URL}/files/${id_file}`;
@@ -1071,6 +1074,6 @@ export const getShareLink = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: 'Server error' });
   }
 };

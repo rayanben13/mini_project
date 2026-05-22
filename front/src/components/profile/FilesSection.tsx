@@ -176,6 +176,8 @@ export default function FilesSection() {
                         key={file.id_file}
                         file={file}
                         showStatus={true}
+                        allowDelete={true}
+                        onDelete={(id) => setMyFiles((prev) => prev.filter((f) => f.id_file !== id))}
                         onNavigate={() => router.push(`/dashboard/${file.id_file}`)}
                     />
                 ))}

@@ -13,9 +13,13 @@ import {
   Clock,
   Loader2,
   ThumbsUp,
+  MoreVertical,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useDeleteMyFile } from "@/hooks/useFilesInformations";
+import { toast } from "sonner";
 
 export default function TopFilesSlider({
   data,
@@ -150,12 +154,33 @@ export const FileCard = memo(
     file,
     onNavigate,
     showStatus = false,
+    allowDelete = false,
+    onDelete,
   }: {
     file: any;
     onNavigate: () => void;
     showStatus?: boolean;
+    allowDelete?: boolean;
+    onDelete?: (id_file: number) => void;
   }) => {
+    const [showDeleteMenu, setShowDeleteMenu] = useState(false);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const deleteMutation = useDeleteMyFile();
+    const menuRef = useRef<HTMLDivElement>(null);
     const previewUrl = getPdfPreview(file.file_path);
+
+    useEffect(() => {
+      if (!showDeleteMenu) return;
+      const handleClickOutside = (event: MouseEvent) => {
+        if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+          setShowDeleteMenu(false);
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [showDeleteMenu]);
 
     // Dynamic semantic status badges
     const getStatusBadge = (status: string) => {
@@ -264,25 +289,126 @@ export const FileCard = memo(
           </div>
 
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
-            {file.likes_count !== undefined && file.likes_count > 0 && (
+            {file.likes_count !== undefined && file.likes_count > 0 ? (
               <p className="text-xs text-slate-400 flex items-center gap-1.5">
                 <ThumbsUp className={`w-5 h-5`} />
                 <span className="font-bold text-slate-700 dark:text-slate-300">
                   {file.likes_count}
                 </span>
               </p>
+            ) : (
+              <span />
+            )}
+
+            {/* 3-dot Menu — Bottom Right */}
+            {allowDelete && file.status === "accepted" && (
+              <div
+                ref={menuRef}
+                className="relative"
+              >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteMenu(!showDeleteMenu);
+                  }}
+                  className="flex items-center justify-center size-7 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+
+                {showDeleteMenu && (
+                  <div className="absolute bottom-full right-0 mb-1.5 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-1 animate-in fade-in slide-in-from-bottom-1 duration-150 z-50">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsDeleteConfirmOpen(true);
+                        setShowDeleteMenu(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
       </>
     );
-
+ 
     return (
       <div onClick={onNavigate} className="block h-full">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer group h-full relative overflow-hidden flex flex-col justify-between">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/[0.02] dark:to-white/[0.02] pointer-events-none" />
           {cardContent}
         </div>
+
+        {/* Custom Premium Delete Confirmation Modal */}
+        {isDeleteConfirmOpen && (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsDeleteConfirmOpen(false);
+            }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 cursor-default"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl border border-slate-200/80 dark:border-slate-800/80 animate-in zoom-in-95 duration-200"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="size-12 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-600 flex-shrink-0">
+                  <Trash2 className="w-5.5 h-5.5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white leading-none">
+                    Delete File
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                    Are you sure you want to permanently delete this file? This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDeleteConfirmOpen(false);
+                  }}
+                  className="flex-1 px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-xs font-extrabold text-slate-700 dark:text-slate-300 cursor-pointer active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteMutation.mutate(file.id_file, {
+                      onSuccess: () => {
+                        toast.success("File deleted successfully");
+                        setIsDeleteConfirmOpen(false);
+                        onDelete?.(file.id_file);
+                      },
+                      onError: (err: any) => {
+                        toast.error(err?.response?.data?.error || "Failed to delete file");
+                      },
+                    });
+                  }}
+                  disabled={deleteMutation.isPending}
+                  className="flex-1 px-4 py-3 rounded-2xl bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-extrabold text-xs transition duration-150 cursor-pointer flex items-center justify-center active:scale-95 gap-1.5"
+                >
+                  {deleteMutation.isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    "Delete File"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   },
