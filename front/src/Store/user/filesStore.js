@@ -108,7 +108,7 @@ const useFilesStore = create((set, get) => ({
       console.error('Error uploading file:', error);
       return {
         success: false,
-        message: error.response?.data?.error || 'Server error',
+        message: error.response?.data?.message || error.response?.data?.error || 'Server error',
       };
     }
   },

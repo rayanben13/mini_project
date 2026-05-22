@@ -20,7 +20,7 @@ import {
   schemaReportFile,
   schemaLikeFile,
 } from '../schemas/auth.schema.js';
-// import { checkDuplicateFile } from '../middleware/checkDuplicateFile.js';
+import { checkDuplicateFile } from '../middleware/checkDuplicateFile.js';
 import '../config/passport.js';
 import passport from 'passport';
 import { UploadFiles } from '../config/Cloudinary.js';
@@ -59,7 +59,7 @@ router.post(
   UploadFiles.single('file'),
   validate(shemaUploadFile),
 
-  // checkDuplicateFile,
+  checkDuplicateFile,
   UplodeNewFile
 );
 

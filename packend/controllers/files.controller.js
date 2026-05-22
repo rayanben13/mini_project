@@ -565,7 +565,7 @@ export const UplodeNewFile = async (req, res) => {
       creation_year,
     } = req.body;
 
-    let file_hash = null;
+    let file_hash = req.fileHash || null;
 
     // 1. Check university
     const universities = await getUniversities(univ);

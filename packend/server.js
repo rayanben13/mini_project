@@ -84,9 +84,9 @@ const swaggerDocument = {
   },
 };
 
-if (process.env.NODE_ENV && process.env.NODE_ENV.trim() === 'production') {
-  app.use(httpsRedirect);
-}
+// if (process.env.NODE_ENV && process.env.NODE_ENV.trim() === 'production') {
+//   app.use(httpsRedirect);
+// }
 
 app.set('trust proxy', 1);
 app.use(express.json());
