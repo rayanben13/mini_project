@@ -16,9 +16,10 @@ const useAiStore = create(
       activeFileId: null,
       activeDocument: null,
       activationLoading: false,
+      hasUnreadResponse: false,
 
       openAiWindow: (fileId = null) => {
-        set({ isAiWindowOpen: true });
+        set({ isAiWindowOpen: true, hasUnreadResponse: false });
         if (fileId) {
           set({ activeFileId: fileId });
         }
@@ -129,15 +130,7 @@ const useAiStore = create(
 
           const isOutsideAiDialog = !get().isAiWindowOpen && typeof window !== 'undefined' && window.location.pathname !== '/dashboard/ai';
           if (isOutsideAiDialog) {
-            toast('New AI assistant response', {
-              description: aiResponse.substring(0, 60) + (aiResponse.length > 60 ? '...' : ''),
-              action: {
-                label: 'Open Chat',
-                onClick: () => {
-                  get().openAiWindow();
-                }
-              }
-            });
+            set({ hasUnreadResponse: true });
           }
           return aiResponse;
         } catch (error) {
@@ -173,15 +166,7 @@ const useAiStore = create(
 
           const isOutsideAiDialog = !get().isAiWindowOpen && typeof window !== 'undefined' && window.location.pathname !== '/dashboard/ai';
           if (isOutsideAiDialog) {
-            toast('New AI assistant response', {
-              description: aiResponse.substring(0, 60) + (aiResponse.length > 60 ? '...' : ''),
-              action: {
-                label: 'Open Chat',
-                onClick: () => {
-                  get().openAiWindow();
-                }
-              }
-            });
+            set({ hasUnreadResponse: true });
           }
           return aiResponse;
         } catch (error) {

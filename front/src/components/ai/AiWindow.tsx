@@ -19,6 +19,7 @@ export default function AiWindow() {
     clearMessages,
     activateLocalDocument,
     clearActiveDocument,
+    hasUnreadResponse,
   } = useAiStore();
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +43,12 @@ export default function AiWindow() {
         className="fixed bottom-6 right-6 md:bottom-8 md:right-8 p-4 bg-primary text-white rounded-full shadow-xl hover:bg-primary/90 hover:scale-105 transition-all z-40 flex items-center justify-center group"
       >
         <Bot className="w-6 h-6" />
+        {hasUnreadResponse && (
+          <span className="absolute -top-1 -right-1 flex h-4 w-4">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white items-center justify-center font-bold">1</span>
+          </span>
+        )}
       </button>
     );
   }
@@ -215,7 +222,7 @@ export default function AiWindow() {
                 const bubbleDir = (!isUser && isRtl) ? 'rtl' : 'ltr';
 
                 return (
-                  <div key={idx} className={`flex gap-3 ${flexRowClass}`}>
+                  <div key={idx} className={`flex gap-3 ${flexRowClass} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                       isUser 
                         ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300' 
