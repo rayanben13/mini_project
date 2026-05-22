@@ -21,7 +21,7 @@ export const setRefreshCookie = (res, token) => {
   res.cookie('refreshToken', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV.trim() === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV.trim() === 'production' ? 'none' : 'lax',
     maxAge: REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
     path: '/',
   });
@@ -32,7 +32,7 @@ export const clearRefreshCookie = (res) => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV.trim() === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV.trim() === 'production' ? 'none' : 'lax',
     path: '/',
   });
 };
@@ -40,7 +40,7 @@ export const setAccessToken = (res, token) => {
   res.cookie('accessToken', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV.trim() === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV.trim() === 'production' ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/',
   });
@@ -52,7 +52,7 @@ export const clearAccessToken = (res) => {
   res.clearCookie('accessToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV.trim() === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV.trim() === 'production' ? 'none' : 'lax',
     path: '/',
   });
 

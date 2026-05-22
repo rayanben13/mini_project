@@ -2,7 +2,7 @@ import axios from 'axios';
 import { create } from 'zustand';
 import AuthStore from '../AuthStore.js';
 
-const NOTIFICATION_API_URL = 'http://localhost:5000/api/notification';
+const NOTIFICATION_API_URL = 'https://mini-project-44.onrender.com/api/notification';
 
 const useNotificationStore = create((set) => ({
   loading: false,

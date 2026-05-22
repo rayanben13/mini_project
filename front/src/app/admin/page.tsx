@@ -281,6 +281,10 @@ export default function AdminPage() {
                                     Contributor
                                 </th>
 
+                                <th className="px-8 py-5 text-center font-bold text-primary">
+                                    Score
+                                </th>
+
                                 <th className="px-8 py-5 text-center font-bold">
                                     Lists
                                 </th>
@@ -329,6 +333,12 @@ export default function AdminPage() {
                                                     {contributor.fullname}
                                                 </span>
                                             </div>
+                                        </td>
+
+                                        <td className="px-8 py-5 text-center">
+                                            <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-primary/10 text-primary">
+                                                {contributor.score || 0}
+                                            </span>
                                         </td>
 
                                         <td className="px-8 py-5 text-center font-semibold text-slate-600 dark:text-slate-300">

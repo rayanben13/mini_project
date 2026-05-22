@@ -1,7 +1,7 @@
 'use client';
 
 import useFilesStore from '@/Store/user/filesStore';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -61,6 +61,11 @@ function UploadFileBtn({
   const { UplodeNewFile, loading } = useFilesStore();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const {
     register,
@@ -148,6 +153,23 @@ function UploadFileBtn({
 
     fetchSuggestions(field, value, extra);
   };
+
+  if (!mounted) {
+    if (variant === 'sidebar') {
+      return (
+        <div className="flex items-center gap-3 w-full cursor-pointer">
+          <PlusCircle className="w-5 h-5" />
+          <span className="font-medium">Upload File</span>
+        </div>
+      );
+    }
+    return (
+      <Button className="bg-[#0975e6] hover:bg-[#0866c9] text-white gap-2 rounded-xl px-6 py-6 shadow-lg shadow-[#0975e6]/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+        <UploadCloud className="w-5 h-5" />
+        <span className="font-bold">Upload New File</span>
+      </Button>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

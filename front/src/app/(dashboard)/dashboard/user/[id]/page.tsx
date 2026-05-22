@@ -58,8 +58,8 @@ export default function PublicUserProfile() {
             <div className="space-y-8">
                 <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 px-2 lg:px-0">
                     {[
-                        { id: 'files', label: 'User Files', icon: FileText, count: userFiles.length || 0 },
-                        { id: 'lists', label: 'Study Lists', icon: Shapes, count: userStudyLists.length || 0 },
+                        { id: 'files', label: 'User Files', icon: FileText, count: userFiles?.meta?.total_files || userFiles?.data?.length || 0 },
+                        { id: 'lists', label: 'Study Lists', icon: Shapes, count: userStudyLists?.meta?.total_study_list || userStudyLists?.data?.length || 0 },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -87,7 +87,7 @@ export default function PublicUserProfile() {
                                 <div className="flex items-center justify-center h-48">
                                     <Loader2 className="w-8 h-8 animate-spin text-[#0975e6]" />
                                 </div>
-                            ) : userFiles.data.length > 0 ? (
+                            ) : (userFiles?.data?.length || 0) > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {userFiles.data.map((file: any) => (
                                         <FileCard
@@ -110,7 +110,7 @@ export default function PublicUserProfile() {
                                 <div className="flex items-center justify-center h-48">
                                     <Loader2 className="w-8 h-8 animate-spin text-[#0975e6]" />
                                 </div>
-                            ) : userStudyLists.data.length > 0 ? (
+                            ) : (userStudyLists?.data?.length || 0) > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {userStudyLists.data.map((list: any) => (
                                         <div

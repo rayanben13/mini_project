@@ -122,10 +122,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-const port = process.env.PORT;
+import { createServer } from 'http';
+import { io } from './config/socket.js';
 
-app.listen(port, () => {
+const server = createServer(app);
+io.attach(server);
+
+const port = process.env.PORT || 5000;
+
+server.listen(port, () => {
   console.log(`🚀 Server running on port http://localhost:${port}`);
 });
-
-// Trigger restart

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { create } from 'zustand';
 import AuthStore from '../AuthStore.js';
 
-const STUDYLIST_API_URL = 'http://localhost:5000/api/studyList';
+const STUDYLIST_API_URL = 'https://mini-project-44.onrender.com/api/studyList';
 
 const useStudyListStore = create((set) => ({
   loading: false,

@@ -2,9 +2,9 @@ import axios from 'axios';
 import { create } from 'zustand';
 import AuthStore from './AuthStore.js';
 
-const SEARCH_API_URL = 'http://localhost:5000/api/search';
-const FILES_API_URL = 'http://localhost:5000/api/files';
-const SUBJECTS_API_URL = 'http://localhost:5000/api/subjects';
+const SEARCH_API_URL = 'https://mini-project-44.onrender.com/api/search';
+const FILES_API_URL = 'https://mini-project-44.onrender.com/api/files';
+const SUBJECTS_API_URL = 'https://mini-project-44.onrender.com/api/subjects';
 
 const allActurStore = create((set, get) => ({
   loading: false,

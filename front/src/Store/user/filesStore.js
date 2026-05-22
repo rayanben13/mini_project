@@ -2,7 +2,7 @@ import axios from 'axios';
 import { create } from 'zustand';
 import AuthStore from '../AuthStore.js';
 
-const FILES_API_URL = 'http://localhost:5000/api/files';
+const FILES_API_URL = 'https://mini-project-44.onrender.com/api/files';
 
 const useFilesStore = create((set, get) => ({
   loading: false,
@@ -108,7 +108,7 @@ const useFilesStore = create((set, get) => ({
       console.error('Error uploading file:', error);
       return {
         success: false,
-        message: error.response?.data?.error || 'Server error',
+        message: error.response?.data?.message || error.response?.data?.error || 'Server error',
       };
     }
   },

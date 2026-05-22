@@ -1,10 +1,10 @@
 import allActurStore from "@/Store/allActurStore";
 import AuthStore from "@/Store/AuthStore";
 import useFilesStore from "@/Store/user/filesStore";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://mini-project-44.onrender.com/api";
 
 export function showTopFilesForUser(page: number, limit: number) {
     const { showTopFilesForUser } = useFilesStore();
@@ -63,6 +63,24 @@ export const useSearchFiles = (id_file: number) => {
     queryFn: () => showDetailFile(Number(id_file)),
     enabled: !!id_file && !!token,
     staleTime: 2 * 60 * 1000,
+  });
+};
+
+export const useDeleteMyFile = () => {
+  const queryClient = useQueryClient();
+  const { token } = AuthStore();
+
+  return useMutation({
+    mutationFn: async (id_file: number) => {
+      const response = await axios.delete(`${API_URL}/files/deleteMeOwnfile/${id_file}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myFiles'] });
+      queryClient.invalidateQueries({ queryKey: ['topFilesForUser'] });
+    },
   });
 };
 

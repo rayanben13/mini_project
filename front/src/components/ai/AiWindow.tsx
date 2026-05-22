@@ -7,26 +7,28 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 export default function AiWindow() {
-  const { messages, loading, isAiWindowOpen, activeFileId, closeAiWindow, sendAiWithFile, sendAiWithId, clearMessages } = useAiStore();
+  const {
+    messages,
+    loading,
+    isAiWindowOpen,
+    activeDocument,
+    activationLoading,
+    closeAiWindow,
+    sendAiWithFile,
+    sendAiWithId,
+    clearMessages,
+    activateLocalDocument,
+    clearActiveDocument,
+    hasUnreadResponse,
+  } = useAiStore();
   const [input, setInput] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [localFileName, setLocalFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedLang, setSelectedLang] = useState<"en" | "fr" | "ar">("ar");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Active Document State
-  const [selectedLibraryFile, setSelectedLibraryFile] = useState<any | null>(null);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  useEffect(() => {
-    if (activeFileId) {
-      setSelectedLibraryFile({ id_file: activeFileId, title: "Document from Library" });
-    }
-  }, [activeFileId]);
 
   useEffect(() => {
     if (isAiWindowOpen) {
@@ -41,54 +43,59 @@ export default function AiWindow() {
         className="fixed bottom-6 right-6 md:bottom-8 md:right-8 p-4 bg-primary text-white rounded-full shadow-xl hover:bg-primary/90 hover:scale-105 transition-all z-40 flex items-center justify-center group"
       >
         <Bot className="w-6 h-6" />
+        {hasUnreadResponse && (
+          <span className="absolute -top-1 -right-1 flex h-4 w-4">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] text-white items-center justify-center font-bold">1</span>
+          </span>
+        )}
       </button>
     );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() && !file && !selectedLibraryFile && !localFileName) return;
+    if (!input.trim() || !activeDocument) return;
 
     const messageToSend = input;
-    const fileToSend = file;
-    const libraryFileId = selectedLibraryFile?.id_file;
-
     setInput("");
-    setFile(null); // Clear the actual File object so we don't re-upload
     setError(null);
 
     try {
-      if (libraryFileId) {
-        await sendAiWithId(messageToSend, libraryFileId, selectedLang);
+      if (activeDocument.type === "library") {
+        await sendAiWithId(messageToSend, activeDocument.id, selectedLang);
       } else {
-        await sendAiWithFile(messageToSend, fileToSend || new File([], "empty.pdf", { type: "application/pdf" }), selectedLang);
+        await sendAiWithFile(messageToSend, null, selectedLang);
       }
     } catch (error) {
       console.error("Failed to send message:", error);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
       if (selectedFile.type !== "application/pdf") {
         setError("Only PDF files are supported");
-        e.target.value = '';
+        e.target.value = "";
         return;
       }
       
       const maxSize = 5 * 1024 * 1024;
       if (selectedFile.size > maxSize) {
         setError("File size exceeds 5MB limit");
-        e.target.value = '';
+        e.target.value = "";
         return;
       }
       
-      setFile(selectedFile);
-      setLocalFileName(selectedFile.name);
-      setSelectedLibraryFile(null);
+      try {
+        await activateLocalDocument(selectedFile);
+      } catch (err) {
+        console.error(err);
+      }
+      e.target.value = "";
     }
   };
 
@@ -137,10 +144,8 @@ export default function AiWindow() {
 
               <button
                 onClick={() => {
+                  clearActiveDocument();
                   clearMessages();
-                  setFile(null);
-                  setLocalFileName(null);
-                  setSelectedLibraryFile(null);
                 }}
                 className="text-xs font-bold text-slate-500 hover:text-red-500 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10"
               >
@@ -169,14 +174,18 @@ export default function AiWindow() {
                   </p>
                 </div>
 
-                {!(localFileName || selectedLibraryFile) ? (
+                {!activeDocument ? (
                   <div className="flex items-center gap-4 mt-4">
                     <label 
                       htmlFor="window-file-upload-center"
-                      className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors cursor-pointer font-medium shadow-sm hover:shadow"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors cursor-pointer font-medium shadow-sm hover:shadow disabled:opacity-75 disabled:cursor-not-allowed"
                     >
-                      <Paperclip className="w-5 h-5" />
-                      Upload PDF
+                      {activationLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Paperclip className="w-5 h-5" />
+                      )}
+                      {activationLoading ? "Processing PDF..." : "Upload PDF"}
                     </label>
                     <input
                       type="file"
@@ -184,6 +193,7 @@ export default function AiWindow() {
                       className="hidden"
                       onChange={handleFileChange}
                       accept=".pdf"
+                      disabled={activationLoading}
                     />
                   </div>
                 ) : (
@@ -194,7 +204,7 @@ export default function AiWindow() {
                     <div className="text-left">
                       <p className="text-sm font-bold">File Selected Successfully</p>
                       <p className="text-xs opacity-80 truncate max-w-[200px]">
-                        {localFileName || selectedLibraryFile?.title}
+                        {activeDocument.type === "local" ? activeDocument.name : activeDocument.title}
                       </p>
                     </div>
                   </div>
@@ -212,7 +222,7 @@ export default function AiWindow() {
                 const bubbleDir = (!isUser && isRtl) ? 'rtl' : 'ltr';
 
                 return (
-                  <div key={idx} className={`flex gap-3 ${flexRowClass}`}>
+                  <div key={idx} className={`flex gap-3 ${flexRowClass} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                       isUser 
                         ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300' 
@@ -275,19 +285,15 @@ export default function AiWindow() {
               </div>
             )}
             
-            {(localFileName || selectedLibraryFile) && (
+            {activeDocument && (
               <div className="mb-3 flex items-center gap-2 bg-slate-100 dark:bg-slate-800 w-fit px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
                 <Paperclip className="w-4 h-4 text-primary" />
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[200px]">
-                  {localFileName ? localFileName : selectedLibraryFile?.title}
+                  {activeDocument.type === "local" ? activeDocument.name : activeDocument.title}
                 </span>
                 <button 
                   type="button"
-                  onClick={() => {
-                    setFile(null);
-                    setLocalFileName(null);
-                    setSelectedLibraryFile(null);
-                  }}
+                  onClick={clearActiveDocument}
                   className="ml-2 text-slate-400 hover:text-red-500 transition-colors"
                 >
                   <X className="w-4 h-4" />
@@ -303,28 +309,33 @@ export default function AiWindow() {
                   className="hidden"
                   onChange={handleFileChange}
                   accept=".pdf"
+                  disabled={activationLoading}
                 />
                 <label 
                   htmlFor="window-file-upload"
                   className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700"
                   title="Upload PDF File"
                 >
-                  <Paperclip className="w-5 h-5" />
+                  {activationLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  ) : (
+                    <Paperclip className="w-5 h-5" />
+                  )}
                 </label>
                 
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={messages.length === 0 && !localFileName && !selectedLibraryFile ? "Please select a file first..." : "Ask me anything..."}
+                  placeholder={!activeDocument ? "Please select a file first..." : "Ask me anything..."}
                   className="flex-1 min-w-0 bg-transparent border-none py-3 px-2 text-sm font-medium focus:outline-none focus:ring-0 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 disabled:opacity-50"
-                  disabled={loading || (messages.length === 0 && !localFileName && !selectedLibraryFile)}
+                  disabled={loading || !activeDocument || activationLoading}
                 />
               </div>
               
               <button
                 type="submit"
-                disabled={(!input.trim() && !file && !selectedLibraryFile && !localFileName) || loading || (messages.length === 0 && !localFileName && !selectedLibraryFile)}
+                disabled={!input.trim() || loading || !activeDocument || activationLoading}
                 className="h-[46px] w-[46px] flex items-center justify-center shrink-0 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}

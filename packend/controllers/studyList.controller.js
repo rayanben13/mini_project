@@ -5,7 +5,6 @@ import {
 import { io } from '../config/socket.js';
 import prisma from '../lib/prisma.js';
 
-
 let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
 
 export const showRecommendedStudyList = async (req, res) => {
@@ -69,13 +68,15 @@ export const showRecommendedStudyList = async (req, res) => {
     const savedIds = new Set(savedLists.map((s) => s.id_stuList));
 
     // 📌 تحويل count وإضافة حالة الحفظ
-    const formattedStudyLists = studyLists.map((item) => ({
-      id_stuList: item.id_stuList,
-      name: item.name,
-      users: item.users,
-      count_files: item._count.study_list_files,
-      isSaved: savedIds.has(item.id_stuList),
-    }));
+    const formattedStudyLists = studyLists
+      .filter((item) => item._count.study_list_files > 0)
+      .map((item) => ({
+        id_stuList: item.id_stuList,
+        name: item.name,
+        users: item.users,
+        count_files: item._count.study_list_files,
+        isSaved: savedIds.has(item.id_stuList),
+      }));
 
     // 📌 total count
     const total_recommended_study_list = await prisma.study_lists.count({
@@ -707,7 +708,8 @@ export const addStudylistToAddedSection = async (req, res) => {
 
     if (isOwner) {
       return res.status(400).json({
-        error: "You are the owner of this study list, it's already in your library",
+        error:
+          "You are the owner of this study list, it's already in your library",
       });
     }
 

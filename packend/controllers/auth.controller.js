@@ -13,8 +13,8 @@ import {
   generateAccessToken,
   generateRefreshToken,
   setAccessToken,
-  setRefreshCookie
-} from "../config/token.js";
+  setRefreshCookie,
+} from '../config/token.js';
 
 import redis from '../config/redis.js';
 
@@ -100,8 +100,8 @@ export const resendVerificationCode = async (req, res) => {
     );
     isDevelopment
       ? console.log(
-        `🔄 New Verification code for ${email}: ${verificationCode}`,
-      )
+          `🔄 New Verification code for ${email}: ${verificationCode}`
+        )
       : await sendVerificationEmail(email, verificationCode);
     res
       .status(200)
@@ -151,8 +151,8 @@ export const verify = async (req, res) => {
     await redis.del(`verificationCode:${email}`);
     isDevelopment
       ? console.log(
-        `🎉 Welcome email sent to ${email} and his is the your token ${accessToken}`,
-      )
+          `🎉 Welcome email sent to ${email} and his is the your token ${accessToken}`
+        )
       : await sendWelcomeEmail(email, user.username);
 
     res.status(200).json({
@@ -186,8 +186,8 @@ export const login = async (req, res) => {
       },
     });
 
-    if (!user_informationExists && userExists.role === "user") {
-      return res.status(404).json({ error: "User information is NOT exist " });
+    if (!user_informationExists && userExists.role === 'user') {
+      return res.status(404).json({ error: 'User information is NOT exist ' });
     }
 
     const user = userExists;
@@ -213,30 +213,37 @@ export const login = async (req, res) => {
     setRefreshCookie(res, refreshToken);
     setAccessToken(res, accessToken);
 
-    res.cookie("role", user.role, {
+    res.cookie('role', user.role, {
       httpOnly: false, // لازم
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
+      path: '/',
     });
-
 
     if (user.role === 'admin') {
       console.log(
         `🎉 Welcome again Admin : ${email} and his token ${accessToken}`
       );
     } else {
-      isDevelopment
-        ? console.log(
-          `🎉 Welcome again email : ${email} and his token ${accessToken}`,
-        )
-        : await sendWelcomeEmail(email, user.username);
+      if (isDevelopment) {
+        console.log(`🎉 Welcome again email : ${email} and his token ${accessToken}`);
+      } else {
+        try {
+          await sendWelcomeEmail(email, user.username);
+        } catch (emailError) {
+          console.error("⚠️ Failed to send welcome email, but continuing login:", emailError.message);
+        }
+      }
     }
 
-    return res.status(201).json({ accessToken, role: user.role });
+    return res.status(200).json({
+      message: 'Login successful',
+      accessToken,
+      role: user.role,
+    });
   } catch (error) {
-    console.log("Error : ", error);
+    console.log('Error : ', error);
     process.env.NODE_ENV === 'development' &&
       console.log('❌ Error in login:', error);
     res.status(500).json({
@@ -284,8 +291,8 @@ export const forgotPassword = async (req, res) => {
 
     isDevelopment
       ? console.log(
-        `🔄 Password reset token for ${email} : ${process.env.FRONTEND_URL}/reset-password/${resetToken}?email=${email}}`,
-      )
+          `🔄 Password reset token for ${email} : ${process.env.FRONTEND_URL}/reset-password/${resetToken}?email=${email}}`
+        )
       : await sendPasswordResetEmail(user.email, resetToken);
 
     return res.status(200).json({
@@ -330,7 +337,7 @@ export const resetPassword = async (req, res) => {
 export const logout = (req, res) => {
   clearRefreshCookie(res);
   clearAccessToken(res);
-  res.json({ message: "Logged out" });
+  res.json({ message: 'Logged out' });
 };
 
 export const SharchMoreInformation = async (req, res) => {
@@ -339,32 +346,32 @@ export const SharchMoreInformation = async (req, res) => {
     const name = req.query.name?.trim();
 
     if (!mode || !name) {
-      return res.status(400).json({ message: "mode and name are required" });
+      return res.status(400).json({ message: 'mode and name are required' });
     }
 
     switch (mode) {
       // 🔵 Universities
-      case "univ": {
+      case 'univ': {
         let universities = await getUniversities(name);
         return res.status(200).json({ universities: universities.slice(0, 4) });
       }
 
       // 🟢 Majors
-      case "major": {
+      case 'major': {
         const majors = await prisma.university_majors.findMany({
           where: {
             major: {
               contains: name,
-              mode: "insensitive",
+              mode: 'insensitive',
             },
           },
           select: { major: true },
-          distinct: ["major"],
+          distinct: ['major'],
           take: 4,
         });
 
         if (!majors.length) {
-          return res.status(404).json({ message: "No results found" });
+          return res.status(404).json({ message: 'No results found' });
         }
 
         return res.status(200).json({
@@ -373,30 +380,30 @@ export const SharchMoreInformation = async (req, res) => {
       }
 
       // 🟡 Specialization
-      case "specialty": {
+      case 'specialty': {
         const year = req.query.year?.trim();
         const major = req.query.major?.trim();
 
         if (!year || !major) {
-          return res.status(400).json({ message: "enter year and major" });
+          return res.status(400).json({ message: 'enter year and major' });
         }
 
         const specialties = await prisma.university_majors.findMany({
           where: {
             specialization: {
               contains: name,
-              mode: "insensitive",
+              mode: 'insensitive',
             },
             academic_year: year,
             major,
           },
           select: { specialization: true },
-          distinct: ["specialization"],
+          distinct: ['specialization'],
           take: 4,
         });
 
         if (!specialties.length) {
-          return res.status(404).json({ message: "No results found" });
+          return res.status(404).json({ message: 'No results found' });
         }
 
         return res.status(200).json({
@@ -405,37 +412,39 @@ export const SharchMoreInformation = async (req, res) => {
       }
 
       // 🔴 Subjects
-      case "subject": {
+      case 'subject': {
         const year = req.query.year?.trim();
         const major = req.query.major?.trim();
         const specialization = req.query.specialization?.trim();
 
-        const yearAllowed = ["L1", "L2", "L3"];
+        const yearAllowed = ['L1', 'L2', 'L3'];
 
         const subjects = await prisma.university_majors.findMany({
           where: {
             course: {
               contains: name,
-              mode: "insensitive",
+              mode: 'insensitive',
             },
             ...(year && { academic_year: year }),
             ...(major && {
-              major: { contains: major, mode: "insensitive" },
+              major: { contains: major, mode: 'insensitive' },
             }),
-            ...(year && !yearAllowed.includes(year) && specialization && {
-              specialization: {
-                contains: specialization,
-                mode: "insensitive",
-              },
-            }),
+            ...(year &&
+              !yearAllowed.includes(year) &&
+              specialization && {
+                specialization: {
+                  contains: specialization,
+                  mode: 'insensitive',
+                },
+              }),
           },
           select: { course: true },
-          distinct: ["course"],
+          distinct: ['course'],
           take: 4,
         });
 
         if (!subjects.length) {
-          return res.status(404).json({ message: "No results found" });
+          return res.status(404).json({ message: 'No results found' });
         }
 
         return res.status(200).json({
@@ -445,11 +454,11 @@ export const SharchMoreInformation = async (req, res) => {
 
       // ❌ default
       default:
-        return res.status(400).json({ message: "Invalid mode" });
+        return res.status(400).json({ message: 'Invalid mode' });
     }
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -461,27 +470,29 @@ export const addedUserInformation = async (req, res) => {
     // 1. التحقق من الجامعة
     const universities = await getUniversities(univ);
 
-    if (user.role !== "user") {
-      return res.status(404).json({ message: "you are not user" });
+    if (user.role !== 'user') {
+      return res.status(404).json({ message: 'you are not user' });
     }
 
     if (universities.length === 0) {
-      return res.status(404).json({ message: "university is not exist" });
+      return res.status(404).json({ message: 'university is not exist' });
     }
     if (universities.length > 1) {
-      return res.status(404).json({ message: "university is not exist" });
+      return res.status(404).json({ message: 'university is not exist' });
     }
 
     const infoExist = await prisma.university_majors.findFirst({
       where: {
-        major: { equals: major, mode: "insensitive" },
-        specialization: specialty ? { equals: specialty, mode: "insensitive" } : null,
+        major: { equals: major, mode: 'insensitive' },
+        specialization: specialty
+          ? { equals: specialty, mode: 'insensitive' }
+          : null,
         academic_year: academic_year,
       },
     });
 
     if (!infoExist) {
-      return res.status(404).json({ message: "information is not exist" });
+      return res.status(404).json({ message: 'information is not exist' });
     }
 
     // 3. التحقق من أن المستخدم لم يضف بياناته مسبقاً (استخدام findUnique أفضل للـ ID)
@@ -489,7 +500,7 @@ export const addedUserInformation = async (req, res) => {
       where: { id_user: user.id_user },
     });
     if (existingInfo) {
-      return res.status(400).json({ message: "information is already exist" });
+      return res.status(400).json({ message: 'information is already exist' });
     }
 
     const infoAdded = await prisma.user_information.create({
@@ -504,9 +515,9 @@ export const addedUserInformation = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "information is added", user_information: infoAdded });
+      .json({ message: 'information is added', user_information: infoAdded });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: 'Server error' });
   }
 };

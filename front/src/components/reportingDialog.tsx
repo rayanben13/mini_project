@@ -40,11 +40,13 @@ type ReportFormValues = z.infer<typeof reportSchema>;
 interface ReportDialogProps {
   file: { id_file: string | number };
   userInfo_role?: string;
+  onlyIcon?: boolean;
 }
 
 export default function ReportDialog({
   file,
   userInfo_role,
+  onlyIcon = false,
 }: ReportDialogProps) {
   const router = useRouter();
 
@@ -116,20 +118,30 @@ export default function ReportDialog({
     <>
       {/* Trigger Button */}
       <button
-        title="add report"
+        title="Report document"
         onClick={handleOpenReport}
-        className="border border-border rounded-xl text-red-500 hover:bg-red-500/10 transition"
+        className={`border border-border text-red-500 hover:bg-red-500/10 transition duration-200 active:scale-95 cursor-pointer flex-shrink-0 ${
+          onlyIcon
+            ? "flex items-center justify-center w-11 h-11 rounded-xl"
+            : "rounded-xl"
+        }`}
       >
-        {/* Mobile */}
-        <span className="flex items-center justify-center p-2 xl:hidden">
-          <Flag className="size-5" />
-        </span>
+        {onlyIcon ? (
+          <Flag className="w-5 h-5" />
+        ) : (
+          <>
+            {/* Mobile */}
+            <span className="flex items-center justify-center p-2 xl:hidden">
+              <Flag className="size-5" />
+            </span>
 
-        {/* Desktop */}
-        <span className="hidden xl:flex items-center gap-2 px-4 py-2 font-medium">
-          <Flag className="size-4" />
-          Report
-        </span>
+            {/* Desktop */}
+            <span className="hidden xl:flex items-center gap-2 px-4 py-2 font-medium">
+              <Flag className="size-4" />
+              Report
+            </span>
+          </>
+        )}
       </button>
 
       {/* Dialog */}

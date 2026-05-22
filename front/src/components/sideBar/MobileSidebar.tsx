@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Bell,
@@ -11,35 +11,36 @@ import {
   Menu,
   ShieldCheck,
   UserCircle,
-} from "lucide-react";
-import { useState } from "react";
+  Home,
+} from 'lucide-react';
+import { useState } from 'react';
 
-import { useMyNotificationsList } from "@/hooks/useNotifications";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useMyNotificationsList } from '@/hooks/useNotifications';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import {
   Sheet,
   SheetContent,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 
-import useAiStore from "@/Store/ai/aiStore";
-import UploadFileBtn from "../profile/uploadFileBtn";
+import useAiStore from '@/Store/ai/aiStore';
+import UploadFileBtn from '../profile/uploadFileBtn';
 
 const items = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "My Library", url: "/dashboard/study-list", icon: BookOpen },
-  { title: "AI Assistant", url: "/dashboard/ai", icon: Bot },
-  { title: "My Profile", url: "/dashboard/profile", icon: UserCircle },
-  { title: "Notifications", url: "/dashboard/notification", icon: Bell },
+  { title: 'Home', url: '/dashboard', icon: Home },
+  { title: 'My Library', url: '/dashboard/study-list', icon: BookOpen },
+  { title: 'AI Assistant', url: '/dashboard/ai', icon: Bot },
+  { title: 'My Profile', url: '/dashboard/profile', icon: UserCircle },
+  { title: 'Notifications', url: '/dashboard/notification', icon: Bell },
 ];
 
 const adminItems = [
-  { title: "Admin Panel", url: "/admin", icon: ShieldCheck },
-  { title: "Files", url: "/admin/files", icon: File },
-  { title: "Reports", url: "/admin/reports", icon: FileWarning },
+  { title: 'Admin Panel', url: '/admin', icon: ShieldCheck },
+  { title: 'Files', url: '/admin/files', icon: File },
+  { title: 'Reports', url: '/admin/reports', icon: FileWarning },
 ];
 
 export function MobileSidebar() {
@@ -52,7 +53,7 @@ export function MobileSidebar() {
   const unreadCount =
     notifData?.data?.filter((n: any) => !n.is_read).length || 0;
 
-  const isAdmin = pathname.startsWith("/admin");
+  const isAdmin = pathname.startsWith('/admin');
   const currentItems = isAdmin ? adminItems : items;
 
   const handleCloseSidebar = () => setOpen(false);
@@ -105,7 +106,7 @@ export function MobileSidebar() {
 
               <div>
                 <h2 className="font-black text-lg bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
-                  {isAdmin ? "Admin Console" : "StudyShare"}
+                  {isAdmin ? 'Admin Console' : 'StudyShare'}
                 </h2>
                 <p className="text-[11px] text-muted-foreground">
                   Smart Learning Platform
@@ -123,11 +124,11 @@ export function MobileSidebar() {
             <div className="space-y-2">
               {currentItems.map((item) => {
                 const isActive =
-                  item.url === "/dashboard" || item.url === "/admin"
+                  item.url === '/dashboard' || item.url === '/admin'
                     ? pathname === item.url
                     : pathname.startsWith(item.url);
 
-                return item.title === "AI Assistant" ? (
+                return item.title === 'AI Assistant' ? (
                   <button
                     key={item.title}
                     onClick={() => {
@@ -177,7 +178,7 @@ export function MobileSidebar() {
                             shadow-sm
                             border border-primary/10
                           `
-                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                       }
                     `}
                   >
@@ -189,8 +190,8 @@ export function MobileSidebar() {
                           transition
                           ${
                             isActive
-                              ? "bg-primary/10 text-primary"
-                              : "bg-muted/50 group-hover:bg-background"
+                              ? 'bg-primary/10 text-primary'
+                              : 'bg-muted/50 group-hover:bg-background'
                           }
                         `}
                       >
@@ -199,14 +200,14 @@ export function MobileSidebar() {
 
                       <span
                         className={`text-[15px] ${
-                          isActive ? "font-semibold" : "font-medium"
+                          isActive ? 'font-semibold' : 'font-medium'
                         }`}
                       >
                         {item.title}
                       </span>
                     </div>
 
-                    {item.title === "Notifications" && unreadCount > 0 && (
+                    {item.title === 'Notifications' && unreadCount > 0 && (
                       <span
                         className="
                           min-w-5 h-5 px-1.5
