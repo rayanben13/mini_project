@@ -62,15 +62,10 @@ export default function ResetPasswordPage() {
     const result = await resetPassword({
       email,
       password: values.password,
-<<<<<<< HEAD
-      token,
-    });
-=======
       confirmPassword: values.confirmPassword,
       token,
     });
 
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
     if (result.success) {
       toast.success('Password updated! Redirecting...');
       setTimeout(() => router.push('/login'), 1200);
