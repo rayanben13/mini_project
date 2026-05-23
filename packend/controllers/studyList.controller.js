@@ -39,6 +39,11 @@ export const showRecommendedStudyList = async (req, res) => {
             fullname: true,
           },
         },
+        subjects: {
+          select: {
+            course: true,
+          },
+        },
         _count: {
           select: {
             study_list_files: {
@@ -74,6 +79,7 @@ export const showRecommendedStudyList = async (req, res) => {
         id_stuList: item.id_stuList,
         name: item.name,
         users: item.users,
+        course: item.subjects?.course,
         count_files: item._count.study_list_files,
         isSaved: savedIds.has(item.id_stuList),
       }));
@@ -126,6 +132,11 @@ export const showMyStudyList = async (req, res) => {
         name: true,
         description: true,
         privacy: true,
+        subjects: {
+          select: {
+            course: true,
+          },
+        },
         users: {
           select: {
             id_user: true,
@@ -161,6 +172,7 @@ export const showMyStudyList = async (req, res) => {
       count_files: item._count.study_list_files,
       count_likes: item._count.studyList_likes,
       description: item.description,
+      course: item.subjects?.course,
       privacy: item.privacy,
     }));
 
@@ -219,6 +231,11 @@ export const showStudyListUserById = async (req, res) => {
       select: {
         id_stuList: true,
         name: true,
+        subjects: {
+          select: {
+            course: true,
+          },
+        },
         users: {
           select: {
             id_user: true,
@@ -249,6 +266,7 @@ export const showStudyListUserById = async (req, res) => {
       id_stuList: item.id_stuList,
       name: item.name,
       users: item.users,
+      course: item.subjects?.course,
       count_files: item._count.study_list_files,
     }));
     const total_study_list = await prisma.study_lists.count({
@@ -393,6 +411,11 @@ export const showDetailStudyList = async (req, res) => {
         description: true,
         privacy: true,
         created_at: true,
+        subjects: {
+          select: {
+            course: true,
+          },
+        },
 
         users: {
           select: {
@@ -516,6 +539,7 @@ export const showDetailStudyList = async (req, res) => {
       users: studyList.users,
       count_files: studyList._count.study_list_files,
       count_loved: studyList._count.studyList_likes,
+      course: studyList.subjects?.course,
       isLoved,
       isOwner,
       isSaved,
