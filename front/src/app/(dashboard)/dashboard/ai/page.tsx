@@ -15,10 +15,6 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
 function AiAssistantContent() {
-<<<<<<< HEAD
-  const { messages, loading, sendAiWithFile, sendAiWithId, clearMessages } =
-    useAiStore();
-=======
   const {
     messages,
     loading,
@@ -31,7 +27,6 @@ function AiAssistantContent() {
     activateLocalDocument,
     clearActiveDocument,
   } = useAiStore();
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
   const { showMyFiles, loading: filesLoading } = useFilesStore();
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -40,12 +35,6 @@ function AiAssistantContent() {
 
   // Library Modal State
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
-<<<<<<< HEAD
-  const [selectedLibraryFile, setSelectedLibraryFile] = useState<any | null>(
-    null,
-  );
-=======
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
   const [libraryFiles, setLibraryFiles] = useState<any[]>([]);
 
   // URL params
@@ -58,17 +47,11 @@ function AiAssistantContent() {
 
   useEffect(() => {
     if (fileIdParam) {
-<<<<<<< HEAD
-      setSelectedLibraryFile({
-        id_file: fileIdParam,
-        title: "Document from Library",
-      });
-=======
-      const currentActiveId = activeDocument?.type === 'library' ? activeDocument.id : null;
+      const currentActiveId =
+        activeDocument?.type === "library" ? activeDocument.id : null;
       if (Number(fileIdParam) !== Number(currentActiveId)) {
         activateLibraryDocument(Number(fileIdParam), "Document from Library");
       }
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
     }
   }, [fileIdParam]);
 
@@ -98,12 +81,7 @@ function AiAssistantContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-<<<<<<< HEAD
-    if (!input.trim() && !file && !selectedLibraryFile && !localFileName)
-      return;
-=======
     if (!input.trim() || !activeDocument) return;
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
 
     const messageToSend = input;
     setInput("");
@@ -113,15 +91,7 @@ function AiAssistantContent() {
       if (activeDocument.type === "library") {
         await sendAiWithId(messageToSend, activeDocument.id, "en");
       } else {
-<<<<<<< HEAD
-        await sendAiWithFile(
-          messageToSend,
-          fileToSend || new File([], "empty.pdf", { type: "application/pdf" }),
-          "en",
-        );
-=======
         await sendAiWithFile(messageToSend, null, "en");
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
       }
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -147,20 +117,13 @@ function AiAssistantContent() {
         e.target.value = ""; // Reset input
         return;
       }
-<<<<<<< HEAD
 
-      setFile(selectedFile);
-      setLocalFileName(selectedFile.name);
-      setSelectedLibraryFile(null); // Clear library file if local is selected
-=======
-      
       try {
         await activateLocalDocument(selectedFile);
       } catch (err) {
         console.error(err);
       }
-      e.target.value = '';
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
+      e.target.value = "";
     }
   };
 
@@ -208,25 +171,17 @@ function AiAssistantContent() {
                 How can I help you today?
               </h3>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 max-w-sm mx-auto leading-relaxed px-4">
-<<<<<<< HEAD
-                Upload a document and ask me any questions about it. I&apos;ll
-                read through and find the answers for you.
-=======
-                Please upload a document or select one from your library first. I'll read through it and help you find the answers.
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
+                Please upload a document or select one from your library first.
+                I'll read through it and help you find the answers.
               </p>
             </div>
           </div>
         ) : (
           messages.map((msg: any, idx: number) => (
-<<<<<<< HEAD
             <div
               key={idx}
-              className={`flex gap-3 sm:gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+              className={`flex gap-3 sm:gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""} animate-in fade-in slide-in-from-bottom-2 duration-300`}
             >
-=======
-            <div key={idx} className={`flex gap-3 sm:gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
               {/* Avatar */}
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
@@ -283,17 +238,14 @@ function AiAssistantContent() {
             </button>
           </div>
         )}
-<<<<<<< HEAD
 
-        {(localFileName || selectedLibraryFile) && (
-=======
-        
         {activeDocument && (
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
           <div className="mb-3 flex items-center gap-2 bg-slate-100 dark:bg-slate-800 w-fit px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
             <Paperclip className="w-4 h-4 text-primary" />
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[200px]">
-              {activeDocument.type === "local" ? activeDocument.name : activeDocument.title}
+              {activeDocument.type === "local"
+                ? activeDocument.name
+                : activeDocument.title}
             </span>
             <button
               type="button"
@@ -341,7 +293,11 @@ function AiAssistantContent() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={!activeDocument ? "Please select a file first..." : "Ask me anything about your document..."}
+              placeholder={
+                !activeDocument
+                  ? "Please select a file first..."
+                  : "Ask me anything about your document..."
+              }
               className="flex-1 bg-transparent border-none py-4 px-3 text-sm font-medium focus:outline-none focus:ring-0 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
               disabled={loading || !activeDocument || activationLoading}
             />
@@ -349,17 +305,9 @@ function AiAssistantContent() {
 
           <button
             type="submit"
-<<<<<<< HEAD
             disabled={
-              (!input.trim() &&
-                !file &&
-                !selectedLibraryFile &&
-                !localFileName) ||
-              loading
+              !input.trim() || loading || !activeDocument || activationLoading
             }
-=======
-            disabled={!input.trim() || loading || !activeDocument || activationLoading}
->>>>>>> a81ab165600f3c5a4a0f777c2652aafb211dfefb
             className="h-[52px] px-6 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading ? (
@@ -406,7 +354,11 @@ function AiAssistantContent() {
                     <button
                       key={fileItem.id_file}
                       onClick={() => {
-                        activateLibraryDocument(fileItem.id_file, fileItem.title || fileItem.file_path?.split('/').pop());
+                        activateLibraryDocument(
+                          fileItem.id_file,
+                          fileItem.title ||
+                            fileItem.file_path?.split("/").pop(),
+                        );
                         setIsLibraryModalOpen(false);
                       }}
                       className="w-full text-left p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:bg-primary/5 transition-all flex items-center gap-3 group"
