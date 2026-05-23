@@ -140,8 +140,6 @@ export const showDetailSubject = async (req, res) => {
         type: true,
         status: true,
       },
-      skip: skipFiles,
-      take: limitFiles,
     });
     // 🟢 grouping
     const types = ["TD", "TP", "COURS", "EF", "CC", "RESUME", "OTHER"];
