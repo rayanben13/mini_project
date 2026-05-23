@@ -138,8 +138,6 @@ export const showDetailSubject = async (req, res) => {
         type: true,
         status: true,
       },
-      skip: skipFiles,
-      take: limitFiles,
     });
 
     // 🟢 grouping
