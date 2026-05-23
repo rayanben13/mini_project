@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "https://mini-project-44.onrender.com/api/admin/reportedFiles";
+const API_URL = "http://localhost:5000/api/admin/reportedFiles";
 
 const useReportedFilesStore = create((set, get) => ({
   reportedFilesStatusData: null,
@@ -86,6 +86,9 @@ const useReportedFilesStore = create((set, get) => ({
         reportedFiles: state.reportedFiles.filter(item => item.id_file !== id_file),
         reportedDetails: null
       }));
+
+      // Fetch the updated stats
+      get().fetchReportedFilesStatus();
 
       return { success: true, message: response.data.message || response.data.succes };
     } catch (error) {

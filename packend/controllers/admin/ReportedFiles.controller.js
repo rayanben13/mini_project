@@ -290,6 +290,7 @@ export const showReportedDetails = async (req, res) => {
             id_user: true,
             username: true,
             fullname: true,
+            img_user: true,
           },
         },
         reason: true,

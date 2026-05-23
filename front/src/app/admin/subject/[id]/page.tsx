@@ -1,14 +1,11 @@
 "use client";
 
-import AddedStudyListCard from "@/components/studyList/addedStudyListCard";
 import TopFilesSlider from "@/components/topFiles";
 import { Button } from "@/components/ui/button";
 import { useSubjectDetails } from "@/hooks/useSubjectsInfo";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 import {
     BadgeCheck,
-    Bookmark,
     BookOpen,
     ChevronLeft,
     FileEdit,
@@ -18,9 +15,7 @@ import {
     Layout,
     Loader2,
     ScrollText,
-    Shapes,
     ShieldQuestion,
-    Sparkles
 } from 'lucide-react';
 import { useParams, useRouter } from "next/navigation";
 
@@ -62,8 +57,14 @@ export default function SubjectDetailPage() {
         );
     }
 
-    const { subject, files, study_lists } = data;
+    const { subject, files } = data;
 
+    const totalFiles = files
+        ? Object.values(files).reduce(
+            (acc: number, curr: any) => acc + (curr?.length || 0),
+            0
+        )
+        : 0;
 
     // تصنيف الملفات حسب النوع
     const categories = [
@@ -78,27 +79,33 @@ export default function SubjectDetailPage() {
     return (
         <main className="max-w-7xl mx-auto p-6 lg:p-10 space-y-16 pb-32">
             {/* Hero Section */}
-            <section className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-10 lg:p-16 text-white shadow-2xl">
+            <section className="relative overflow-hidden rounded-[2.5rem] bg-white dark:bg-slate-900 p-10 lg:p-16 text-white shadow-2xl">
                 <div className="relative z-10 space-y-6 max-w-3xl">
                     <Button
                         onClick={() => router.back()}
                         variant="ghost"
-                        className="text-white/70 hover:text-white hover:bg-white/10 rounded-full px-4 -ml-2"
+                        className="text-slate-400  hover:text-slate-500 hover:cursor-pointer hover:bg-white/10 rounded-full px-4 -ml-2"
                     >
-                        <ChevronLeft className="w-5 h-5 mr-1" /> Back
+                        <ChevronLeft className="w-5 h-5 mr-1 " /> Back
                     </Button>
 
                     <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-blue-400 text-[10px] font-bold uppercase tracking-wider">
                             <BadgeCheck className="w-4 h-4" />
-                            <span>{subject?.academic_year} • {subject?.major}</span>
+                            <span>
+                                {subject?.academic_year} • {subject?.major}
+                            </span>
                         </div>
-                        <h1 className="text-4xl lg:text-6xl font-black tracking-tight leading-[1.1]">
+                        <h1 className="text-4xl lg:text-6xl font-black tracking-tight leading-[1.1]  text-black dark:text-white">
                             {subject?.course}
                         </h1>
                         <p className="text-slate-400 text-lg leading-relaxed">
-                            Complete archive of study materials for <strong className="text-white">{subject?.course}</strong>.
-                            Filter through lectures, practicals, and exams curated by your peers.
+                            Complete archive of study materials for{' '}
+                            <strong className="text-black dark:text-white">
+                                {subject?.course}
+                            </strong>{' '}
+                            {subject?.course_description ||
+                                ' . Filter through lectures, practicals, and exams curated by your peers.'}
                         </p>
                     </div>
 
@@ -108,17 +115,12 @@ export default function SubjectDetailPage() {
                                 <FileText className="w-5 h-5" />
                             </div>
                             <div>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none">Resources</p>
-                                <p className="font-bold text-lg mt-1">Multi-Category</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="size-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400">
-                                <Bookmark className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none">Curated</p>
-                                <p className="font-bold text-lg mt-1">{study_lists?.length || 0} Lists</p>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none">
+                                    Resources
+                                </p>
+                                <p className="font-bold text-lg mt-1 text-black dark:text-white">
+                                    {totalFiles} Files
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -132,7 +134,6 @@ export default function SubjectDetailPage() {
             {/* Files Sections with Sliders */}
             <div className="space-y-20">
                 {categories.map((cat) => {
-                    // Note: files is an object grouped by type
                     const categoryFiles = files?.[cat.id];
                     if (!categoryFiles || categoryFiles.length === 0) return null;
 
@@ -144,7 +145,11 @@ export default function SubjectDetailPage() {
                                 key={cat.id}
                                 data={categoryFiles}
                                 title={cat.title}
-                                icon={<div className={cn("p-2 rounded-lg", style.bg, style.color)}>{style.icon}</div>}
+                                icon={
+                                    <div className={cn('p-2 rounded-lg', style.bg, style.color)}>
+                                        {style.icon}
+                                    </div>
+                                }
                                 hasMore={false}
                                 itemKey="id_file"
                                 onFileClick={(fileId) => router.push(`/admin/files/${fileId}`)}
@@ -152,55 +157,6 @@ export default function SubjectDetailPage() {
                         </div>
                     );
                 })}
-
-                {/* Study Lists Section */}
-                {study_lists && study_lists.length > 0 && (
-                    <section className="space-y-8">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
-                                <Shapes className="w-8 h-8 text-[#0975e6]" />
-                                Recommended Study Lists
-                            </h3>
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
-                                {study_lists.length} Collections
-                            </span>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {study_lists.map((list: any) => (
-                                <div
-                                    key={list.id_stuList || list.id_list}
-                                    onClick={() => router.push(`/dashboard/study_list/${list.id_stuList || list.id_list}`)}
-                                >
-                                    <AddedStudyListCard
-                                        id={list.id_stuList || list.id_list}
-                                        title={list.name || list.name_list}
-                                        files={list._count?.study_list_files || list._count?.files || 0}
-                                        userName={list.users?.fullname || list.user?.fullname || "Community Member"}
-                                        showSave={true}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
-            </div>
-
-            {/* Global Stats Float */}
-            <div className="fixed bottom-10 right-10 z-50">
-                <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-4 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4"
-                >
-                    <div className="size-12 rounded-2xl bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                        <Sparkles className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Status</p>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">Active Subject Hub</p>
-                    </div>
-                </motion.div>
             </div>
         </main>
     );

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { create } from 'zustand';
 import AuthStore from '../AuthStore.js';
 
-const FILES_API_URL = 'https://mini-project-44.onrender.com/api/files';
+const FILES_API_URL = 'http://localhost:5000/api/files';
 
 const useFilesStore = create((set, get) => ({
   loading: false,
