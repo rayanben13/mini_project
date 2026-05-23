@@ -1,11 +1,10 @@
-'use client';
+"use client";
 
-import AddedStudyListCard from '@/components/studyList/addedStudyListCard';
-import TopFilesSlider from '@/components/topFiles';
-import { Button } from '@/components/ui/button';
-import { useSubjectDetails } from '@/hooks/useSubjectsInfo';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import AddedStudyListCard from "@/components/studyList/addedStudyListCard";
+import TopFilesSlider from "@/components/topFiles";
+import { Button } from "@/components/ui/button";
+import { useSubjectDetails } from "@/hooks/useSubjectsInfo";
+import { cn } from "@/lib/utils";
 import {
   BadgeCheck,
   Bookmark,
@@ -20,61 +19,60 @@ import {
   ScrollText,
   Shapes,
   ShieldQuestion,
-  Sparkles,
-} from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
+} from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 
 // دالة مساعدة لاختيار الأيقونة والألوان بناءً على نوع الملف
 const getCategoryStyles = (category: string) => {
   switch (category) {
-    case 'COURS':
+    case "COURS":
       return {
         icon: <BookOpen className="w-5 h-5" />,
-        color: 'text-blue-600',
-        bg: 'bg-blue-100',
-        accent: 'from-blue-500/10 to-transparent',
+        color: "text-blue-600",
+        bg: "bg-blue-100",
+        accent: "from-blue-500/10 to-transparent",
       };
-    case 'TD':
+    case "TD":
       return {
         icon: <FileEdit className="w-5 h-5" />,
-        color: 'text-emerald-600',
-        bg: 'bg-emerald-100',
-        accent: 'from-emerald-500/10 to-transparent',
+        color: "text-emerald-600",
+        bg: "bg-emerald-100",
+        accent: "from-emerald-500/10 to-transparent",
       };
-    case 'TP':
+    case "TP":
       return {
         icon: <FlaskConical className="w-5 h-5" />,
-        color: 'text-amber-600',
-        bg: 'bg-amber-100',
-        accent: 'from-amber-500/10 to-transparent',
+        color: "text-amber-600",
+        bg: "bg-amber-100",
+        accent: "from-amber-500/10 to-transparent",
       };
-    case 'EF':
+    case "EF":
       return {
         icon: <ScrollText className="w-5 h-5" />,
-        color: 'text-purple-600',
-        bg: 'bg-purple-100',
-        accent: 'from-purple-500/10 to-transparent',
+        color: "text-purple-600",
+        bg: "bg-purple-100",
+        accent: "from-purple-500/10 to-transparent",
       };
-    case 'CC':
+    case "CC":
       return {
         icon: <ShieldQuestion className="w-5 h-5" />,
-        color: 'text-rose-600',
-        bg: 'bg-rose-100',
-        accent: 'from-rose-500/10 to-transparent',
+        color: "text-rose-600",
+        bg: "bg-rose-100",
+        accent: "from-rose-500/10 to-transparent",
       };
-    case 'RESUME':
+    case "RESUME":
       return {
         icon: <Layout className="w-5 h-5" />,
-        color: 'text-indigo-600',
-        bg: 'bg-indigo-100',
-        accent: 'from-indigo-500/10 to-transparent',
+        color: "text-indigo-600",
+        bg: "bg-indigo-100",
+        accent: "from-indigo-500/10 to-transparent",
       };
     default:
       return {
         icon: <FileText className="w-5 h-5" />,
-        color: 'text-slate-600',
-        bg: 'bg-slate-100',
-        accent: 'from-slate-500/10 to-transparent',
+        color: "text-slate-600",
+        bg: "bg-slate-100",
+        accent: "from-slate-500/10 to-transparent",
       };
   }
 };
@@ -115,18 +113,18 @@ export default function SubjectDetailPage() {
   const totalFiles = files
     ? Object.values(files).reduce(
         (acc: number, curr: any) => acc + (curr?.length || 0),
-        0
+        0,
       )
     : 0;
 
   // تصنيف الملفات حسب النوع
   const categories = [
-    { id: 'COURS', title: 'Course Lectures', icon: BookOpen },
-    { id: 'TD', title: 'Tutorials (TD)', icon: FileEdit },
-    { id: 'TP', title: 'Practicals (TP)', icon: FlaskConical },
-    { id: 'CC', title: 'Continuous Control (CC)', icon: HelpCircle },
-    { id: 'EF', title: 'Final Exams (EF)', icon: ScrollText },
-    { id: 'RESUME', title: 'Summaries & Resumes', icon: Layout },
+    { id: "COURS", title: "Course Lectures", icon: BookOpen },
+    { id: "TD", title: "Tutorials (TD)", icon: FileEdit },
+    { id: "TP", title: "Practicals (TP)", icon: FlaskConical },
+    { id: "CC", title: "Continuous Control (CC)", icon: HelpCircle },
+    { id: "EF", title: "Final Exams (EF)", icon: ScrollText },
+    { id: "RESUME", title: "Summaries & Resumes", icon: Layout },
   ];
 
   return (
@@ -153,12 +151,12 @@ export default function SubjectDetailPage() {
               {subject?.course}
             </h1>
             <p className="text-slate-400 text-lg leading-relaxed">
-              Complete archive of study materials for{' '}
+              Complete archive of study materials for{" "}
               <strong className="text-black dark:text-white">
                 {subject?.course}
-              </strong>{' '}
+              </strong>
               {subject?.course_description ||
-                ' . Filter through lectures, practicals, and exams curated by your peers.'}
+                " . Filter through lectures, practicals, and exams curated by your peers."}
             </p>
           </div>
 
@@ -213,7 +211,7 @@ export default function SubjectDetailPage() {
                 data={categoryFiles}
                 title={cat.title}
                 icon={
-                  <div className={cn('p-2 rounded-lg', style.bg, style.color)}>
+                  <div className={cn("p-2 rounded-lg", style.bg, style.color)}>
                     {style.icon}
                   </div>
                 }
@@ -245,7 +243,7 @@ export default function SubjectDetailPage() {
                   className="cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() =>
                     router.push(
-                      `/dashboard/study_list/${list.id_stuList || list.id_list}`
+                      `/dashboard/study_list/${list.id_stuList || list.id_list}`,
                     )
                   }
                 >
@@ -258,9 +256,9 @@ export default function SubjectDetailPage() {
                     userName={
                       list.users?.fullname ||
                       list.user?.fullname ||
-                      'Community Member'
+                      "Community Member"
                     }
-                    showSave={true}
+                    course={subject?.course || "Unknown"}
                   />
                 </div>
               ))}

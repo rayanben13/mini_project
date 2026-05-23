@@ -38,6 +38,8 @@ interface StudyListCardProps {
   readonly privacy?: "public" | "private";
   readonly files: number;
   readonly likes: number;
+  readonly course: string;
+
   readonly isLoved?: boolean;
   readonly isOwner?: boolean;
 }
@@ -46,16 +48,15 @@ export default function StudyListCard({
   id,
   title,
   description = "",
+  course,
   privacy = "public",
   files,
-  likes,
-  isLoved = false,
+
   isOwner = true,
 }: StudyListCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
-  const { editStudyList, deleteStudyList, loveStudyList, loading } =
-    useStudyListStore();
+  const { editStudyList, deleteStudyList, loading } = useStudyListStore();
   const queryClient = useQueryClient();
 
   // Form states
@@ -161,7 +162,7 @@ export default function StudyListCard({
 
           {description && (
             <p className="text-[13px] text-[#74777f] dark:text-slate-400 line-clamp-1">
-              {description}
+              {course}
             </p>
           )}
 

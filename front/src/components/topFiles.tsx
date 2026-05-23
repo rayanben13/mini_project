@@ -2,6 +2,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useDeleteMyFile } from "@/hooks/useFilesInformations";
 import { getPdfPreview } from "@/utils/cloudinary";
 import useEmblaCarousel from "embla-carousel-react";
 import {
@@ -12,13 +13,12 @@ import {
   ChevronRight,
   Clock,
   Loader2,
-  ThumbsUp,
   MoreVertical,
+  ThumbsUp,
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { useDeleteMyFile } from "@/hooks/useFilesInformations";
 import { toast } from "sonner";
 
 export default function TopFilesSlider({
@@ -178,7 +178,10 @@ export const FileCard = memo(
     useEffect(() => {
       if (!showDeleteMenu) return;
       const handleClickOutside = (event: MouseEvent) => {
-        if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        if (
+          menuRef.current &&
+          !menuRef.current.contains(event.target as Node)
+        ) {
           setShowDeleteMenu(false);
         }
       };
@@ -286,12 +289,6 @@ export const FileCard = memo(
             <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-[#ae1ce9] transition-colors">
               {file.title}
             </h3>
-
-            <div className="flex items-center gap-2 mt-2 text-slate-500 dark:text-slate-400">
-              <span className="text-xs font-medium truncate max-w-[150px]">
-                {file.course || "No Course"}
-              </span>
-            </div>
           </div>
 
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
@@ -308,10 +305,7 @@ export const FileCard = memo(
 
             {/* 3-dot Menu — Bottom Right */}
             {allowDelete && file.status === "accepted" && (
-              <div
-                ref={menuRef}
-                className="relative"
-              >
+              <div ref={menuRef} className="relative">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -343,7 +337,7 @@ export const FileCard = memo(
         </div>
       </>
     );
- 
+
     return (
       <div onClick={onNavigate} className="block h-full">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer group h-full relative overflow-hidden flex flex-col justify-between">
@@ -360,7 +354,7 @@ export const FileCard = memo(
             }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 cursor-default"
           >
-            <div 
+            <div
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl border border-slate-200/80 dark:border-slate-800/80 animate-in zoom-in-95 duration-200"
             >
@@ -373,7 +367,8 @@ export const FileCard = memo(
                     Delete File
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
-                    Are you sure you want to permanently delete this file? This action cannot be undone.
+                    Are you sure you want to permanently delete this file? This
+                    action cannot be undone.
                   </p>
                 </div>
               </div>
@@ -398,7 +393,9 @@ export const FileCard = memo(
                         onDelete?.(file.id_file);
                       },
                       onError: (err: any) => {
-                        toast.error(err?.response?.data?.error || "Failed to delete file");
+                        toast.error(
+                          err?.response?.data?.error || "Failed to delete file",
+                        );
                       },
                     });
                   }}

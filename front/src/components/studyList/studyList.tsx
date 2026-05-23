@@ -1,12 +1,16 @@
 "use client";
 
+import { AddStudyListCard } from "@/app/(dashboard)/dashboard/study-list/AddStudyListCard";
 import { useMyStudyList } from "@/hooks/useStudyList";
 import { useRouter } from "next/navigation";
 import StudyListCard from "./StudyListCard";
 import StudyListSkeleton from "./StudyListSkeleton";
-import { AddStudyListCard } from "@/app/(dashboard)/dashboard/study-list/AddStudyListCard";
 
-export default function StudyList({ onOpenCreateModal }: { readonly onOpenCreateModal?: () => void }) {
+export default function StudyList({
+  onOpenCreateModal,
+}: {
+  readonly onOpenCreateModal?: () => void;
+}) {
   const { data: myStudyList, isLoading, error } = useMyStudyList();
   const router = useRouter();
 
@@ -29,12 +33,14 @@ export default function StudyList({ onOpenCreateModal }: { readonly onOpenCreate
           key={item.id_stuList}
           onClick={(e) => {
             if ((e.target as HTMLElement).closest("[data-stop]")) return;
-            router.push(`/dashboard/study-list/${item.id_stuList}`)
+            router.push(`/dashboard/study-list/${item.id_stuList}`);
           }}
         >
+          {/* Debug log to check data */}
           <StudyListCard
             id={item.id_stuList}
             title={item.name}
+            course={item.course}
             description={item.description}
             privacy={item.privacy}
             files={item.count_files}
@@ -45,9 +51,7 @@ export default function StudyList({ onOpenCreateModal }: { readonly onOpenCreate
       ))}
 
       {/* Render the Create List card directly inside the grid if onOpenCreateModal is provided */}
-      {onOpenCreateModal && (
-        <AddStudyListCard onClick={onOpenCreateModal} />
-      )}
+      {onOpenCreateModal && <AddStudyListCard onClick={onOpenCreateModal} />}
     </div>
   );
 }

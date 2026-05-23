@@ -1,6 +1,6 @@
-import prisma from '../lib/prisma.js';
+import prisma from "../lib/prisma.js";
 
-let isDevelopment = process.env.NODE_ENV?.trim() === 'development';
+let isDevelopment = process.env.NODE_ENV?.trim() === "development";
 
 export const yourSubjects = async (req, res) => {
   try {
@@ -40,17 +40,17 @@ export const yourSubjects = async (req, res) => {
           select: {
             files: {
               where: {
-                status: 'accepted',
+                status: "accepted",
                 file_reports: {
                   none: {
-                    status: 'reviewed',
+                    status: "reviewed",
                   },
                 },
               },
             },
             study_lists: {
               where: {
-                privacy: 'public',
+                privacy: "public",
               },
             },
           },
@@ -73,7 +73,7 @@ export const yourSubjects = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -81,9 +81,10 @@ export const showDetailSubject = async (req, res) => {
   try {
     const Me = req.user;
     const id_subject = Number(req.params.id_subject);
+
     console.log(Me);
     if (isNaN(id_subject)) {
-      return res.status(400).json({ error: 'Invalid subject ID' });
+      return res.status(400).json({ error: "Invalid subject ID" });
     }
 
     // 🟢 pagination files
@@ -105,17 +106,17 @@ export const showDetailSubject = async (req, res) => {
     });
 
     if (!subject) {
-      return res.status(404).json({ error: 'Subject not found' });
+      return res.status(404).json({ error: "Subject not found" });
     }
 
     // 🟢 files
     const totalFiles = await prisma.files.count({
       where: {
         id_subject,
-        status: 'accepted',
+        status: "accepted",
         file_reports: {
           none: {
-            status: 'reviewed',
+            status: "reviewed",
           },
         },
       },
@@ -124,13 +125,14 @@ export const showDetailSubject = async (req, res) => {
     const files = await prisma.files.findMany({
       where: {
         id_subject,
-        status: 'accepted',
+        status: "accepted",
         file_reports: {
           none: {
-            status: 'reviewed',
+            status: "reviewed",
           },
         },
       },
+
       select: {
         id_file: true,
         file_path: true,
@@ -141,9 +143,8 @@ export const showDetailSubject = async (req, res) => {
       skip: skipFiles,
       take: limitFiles,
     });
-
     // 🟢 grouping
-    const types = ['TD', 'TP', 'COURS', 'EF', 'CC', 'RESUME', 'OTHER'];
+    const types = ["TD", "TP", "COURS", "EF", "CC", "RESUME", "OTHER"];
     const groupedFiles = {};
     types.forEach((t) => (groupedFiles[t] = []));
 
@@ -152,7 +153,7 @@ export const showDetailSubject = async (req, res) => {
       if (types.includes(type)) {
         groupedFiles[type].push(file);
       } else {
-        groupedFiles['OTHER'].push(file);
+        groupedFiles["OTHER"].push(file);
       }
     });
 
@@ -160,7 +161,7 @@ export const showDetailSubject = async (req, res) => {
     let studyLists = [];
     let listsMeta = null;
 
-    if (Me.role === 'user') {
+    if (Me.role === "user") {
       const pageLists = Math.max(Number(req.query.page_lists) || 1, 1);
       const limitLists = Math.min(Number(req.query.limit_lists) || 5, 50);
       const skipLists = (pageLists - 1) * limitLists;
@@ -168,14 +169,14 @@ export const showDetailSubject = async (req, res) => {
       const totalLists = await prisma.study_lists.count({
         where: {
           id_subject,
-          privacy: 'public',
+          privacy: "public",
         },
       });
 
       studyLists = await prisma.study_lists.findMany({
         where: {
           id_subject,
-          privacy: 'public',
+          privacy: "public",
         },
         select: {
           id_stuList: true,
@@ -221,13 +222,13 @@ export const showDetailSubject = async (req, res) => {
         to: (pageFiles - 1) * limitFiles + files.length,
       },
 
-      ...(Me.role === 'user' && {
+      ...(Me.role === "user" && {
         study_lists: studyLists,
         lists_meta: listsMeta,
       }),
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: "Server error" });
   }
 };
