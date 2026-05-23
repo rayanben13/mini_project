@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, FileText, Folder, User } from "lucide-react";
+import { Book, ChevronRight, FileText, Folder, User } from "lucide-react";
 
 interface AddedStudyListCardProps {
   readonly id: number;
@@ -40,7 +40,7 @@ export default function AddedStudyListCard({
             </div>
 
             <div className="flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5" />
+              <Book className="w-3.5 h-3.5" />
               <span className="truncate max-w-[120px]">{course}</span>
             </div>
 
