@@ -40,6 +40,7 @@ export default function RenderState({
           likes={item.count_likes || 0}
           showSave={showSave}
           isAlreadySaved={item.isSaved}
+          course={item.course}
         />
       </div>
     ));
