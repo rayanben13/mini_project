@@ -279,7 +279,7 @@ export const FileCard = memo(
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase text-[#ae1ce9] bg-[#ae1ce9]/10 px-2.5 py-1 rounded-md">
-                {file.major || "General"}
+                {file.major || "Informatique"}
               </span>
               <span className="text-[10px] text-slate-400 font-medium uppercase">
                 {file.type || "Other"}
