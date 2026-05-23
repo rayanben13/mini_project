@@ -139,63 +139,61 @@ export default function SignupPage() {
             </div>
 
             {/* PASSWORD */}
-            <div className="space-y-2 relative">
+            <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Password
               </label>
 
-              <Input
-                {...form.register("password")}
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                disabled={loading}
-                className="dark:bg-gray-900 dark:border-gray-700 pr-10"
-              />
+              <div className="relative flex items-center">
+                <input
+                  {...form.register("password")}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  disabled={loading}
+                  className="w-full h-10 pl-3 pr-10 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-slate-100"
+                />
 
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-
-              {form.formState.errors.password && (
-                <p className="text-red-500 text-sm">
-                  {form.formState.errors.password.message}
-                </p>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 p-1 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* CONFIRM PASSWORD */}
-            <div className="space-y-2 relative">
+            <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Confirm Password
               </label>
 
-              <Input
-                {...form.register("confirmPassword")}
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="••••••••"
-                disabled={loading}
-                className="dark:bg-gray-900 dark:border-gray-700 pr-10"
-              />
+              <div className="relative flex items-center">
+                <input
+                  {...form.register("confirmPassword")}
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  disabled={loading}
+                  className="w-full h-10 pl-3 pr-10 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-slate-100"
+                />
 
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="absolute right-3 p-1 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
 
               {form.formState.errors.confirmPassword && (
                 <p className="text-red-500 text-sm">

@@ -366,7 +366,7 @@ export default function StudyListForDashboard() {
               <div className="flex-1 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-2">
                   <span className="inline-block px-2 py-0.5 rounded-md bg-[#0975e6]/10 text-[10px] font-black tracking-wider uppercase text-[#0975e6]">
-                    {file.type_file || "FILE"}
+                    {file?.subjects?.major || "Unknown major"}
                   </span>
 
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">

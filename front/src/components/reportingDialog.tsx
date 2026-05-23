@@ -58,7 +58,7 @@ export default function ReportDialog({
 
   const reportReasons = [
     "Inappropriate content",
-    "COPYRIGHT issue",
+    "COPYRIGHT issuse",
     "Spam or misleading",
     "Incorrect information",
     "Other",
